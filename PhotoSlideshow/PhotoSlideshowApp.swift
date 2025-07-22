@@ -6,12 +6,26 @@
 //
 
 import SwiftUI
+import os.log
+
+private let logger = Logger(subsystem: "com.example.PhotoSlideshow", category: "App")
 
 @main
 struct PhotoSlideshowApp: App {
+    init() {
+        NSLog("🚀 PhotoSlideshowApp: Application started")
+        logger.info("🚀 PhotoSlideshowApp: Application started via Logger")
+        print("🚀 PhotoSlideshowApp: Application started via print")
+        fflush(stdout)
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear {
+                    NSLog("🚀 PhotoSlideshowApp: WindowGroup appeared")
+                    logger.info("🚀 PhotoSlideshowApp: WindowGroup appeared via Logger")
+                }
         }
     }
 }
