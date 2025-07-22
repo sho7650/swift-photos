@@ -22,21 +22,8 @@ struct ContentView: View {
         Group {
             if isInitialized, let viewModel = viewModel, let keyboardHandler = keyboardHandler {
                 ZStack {
-                    VStack {
-                        Text("🔍 Debug Info:")
-                            .foregroundColor(.white)
-                            .font(.title)
-                        Text("Current Photo: \(viewModel.currentPhoto?.fileName ?? "nil")")
-                            .foregroundColor(.cyan)
-                        Text("Refresh Counter: \(viewModel.refreshCounter)")
-                            .foregroundColor(.green)
-                        Text("Photo State: \(viewModel.currentPhoto?.loadState.description ?? "no photo")")
-                            .foregroundColor(.yellow)
-                        
-                        // Use ObservedObject to force updates
-                        ImageDisplayViewWithObserver(viewModel: viewModel)
-                            .ignoresSafeArea()
-                    }
+                    ImageDisplayViewWithObserver(viewModel: viewModel)
+                        .ignoresSafeArea()
                     
                     if showControls {
                         ControlsView(viewModel: viewModel)

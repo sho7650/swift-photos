@@ -236,21 +236,13 @@ struct DirectNSImageViewWrapper: NSViewRepresentable {
     let nsImage: NSImage
     
     func makeNSView(context: Context) -> NSImageView {
-        print("🖼️ DirectNSImageViewWrapper: Creating NSImageView")
-        print("🖼️ DirectNSImageViewWrapper: NSImage size: \(nsImage.size), isValid: \(nsImage.isValid)")
-        
         let imageView = NSImageView()
         imageView.imageScaling = .scaleProportionallyUpOrDown
         imageView.image = nsImage
-        
-        print("🖼️ DirectNSImageViewWrapper: Image set on NSImageView")
-        print("🖼️ DirectNSImageViewWrapper: NSImageView.image is nil: \(imageView.image == nil)")
-        
         return imageView
     }
     
     func updateNSView(_ nsView: NSImageView, context: Context) {
-        print("🖼️ DirectNSImageViewWrapper: Updating NSImageView")
         nsView.image = nsImage
     }
 }
