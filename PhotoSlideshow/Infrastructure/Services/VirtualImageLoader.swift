@@ -16,6 +16,9 @@ actor VirtualImageLoader {
     private var cacheMisses: Int = 0
     private var totalLoads: Int = 0
     
+    // Completion callback for UI integration
+    private var onImageLoaded: ((UUID, NSImage) -> Void)?
+    
     init(settings: PerformanceSettings = .default) {
         self.settings = settings
         self.windowSize = settings.memoryWindowSize
@@ -23,6 +26,11 @@ actor VirtualImageLoader {
         self.imageLoader = ImageLoader()
         
         print("🗄️ VirtualImageLoader: Initialized with window size: \(windowSize), max memory: \(maxMemoryUsage)MB")
+    }
+    
+    /// Set callback for when images finish loading
+    func setImageLoadedCallback(_ callback: @escaping (UUID, NSImage) -> Void) {
+        self.onImageLoaded = callback
     }
     
     /// Update performance settings at runtime
@@ -136,6 +144,13 @@ actor VirtualImageLoader {
             let image = try await task.value
             loadedImages[photo.id] = image
             loadingTasks.removeValue(forKey: photo.id)
+            
+            // Notify UI that image is loaded
+            if let callback = onImageLoaded {
+                Task { @MainActor in
+                    callback(photo.id, image)
+                }
+            }
             
             // Check memory pressure
             let currentUsage = getMemoryUsage()

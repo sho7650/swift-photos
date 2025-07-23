@@ -39,6 +39,13 @@ public class SlideshowViewModel: ObservableObject {
         self.backgroundPreloader = BackgroundPreloader(settings: self.performanceSettingsManager.settings)
         
         print("🚀 SlideshowViewModel: Initialized with settings - window: \(self.performanceSettingsManager.settings.memoryWindowSize), threshold: \(self.performanceSettingsManager.settings.largeCollectionThreshold)")
+        
+        // Set up virtual loader callback for seamless UI integration
+        Task {
+            await self.virtualLoader.setImageLoadedCallback { [weak self] photoId, image in
+                self?.handleVirtualImageLoaded(photoId: photoId, image: image)
+            }
+        }
     }
     
     
@@ -92,8 +99,11 @@ public class SlideshowViewModel: ObservableObject {
                 let recommendedSettings = performanceSettingsManager.recommendedSettings(for: newSlideshow.photos.count)
                 if recommendedSettings != performanceSettingsManager.settings {
                     print("🚀 Auto-applying recommended settings for \(newSlideshow.photos.count) photos")
+                    print("   📊 Settings: window=\(recommendedSettings.memoryWindowSize), memory=\(recommendedSettings.maxMemoryUsageMB)MB, concurrent=\(recommendedSettings.maxConcurrentLoads)")
                     performanceSettingsManager.updateSettings(recommendedSettings)
                     await updatePerformanceComponents()
+                } else {
+                    print("🚀 Current settings already optimal for \(newSlideshow.photos.count) photos")
                 }
                 
                 // Check if this is a large collection
@@ -275,24 +285,23 @@ public class SlideshowViewModel: ObservableObject {
             photos: currentSlideshow.photos
         )
         
-        // Check if current image is ready
-        if await virtualLoader.getImage(for: photo.id) != nil {
+        // Check if current image is ready in virtual cache
+        if let cachedImage = await virtualLoader.getImage(for: photo.id) {
             print("🖼️ loadCurrentImageVirtual: Image loaded from virtual cache")
             
-            // Create a loaded photo and update in slideshow
-            Task {
-                do {
-                    // Get metadata from domain service if needed
-                    let loadedPhoto = try await domainService.loadImage(for: photo)
-                    updatePhotoInSlideshow(loadedPhoto)
-                } catch {
-                    print("❌ loadCurrentImageVirtual: Failed to create loaded photo: \(error)")
-                }
+            // Create loaded photo directly from cached image
+            Task { @MainActor in
+                var loadedPhoto = photo
+                loadedPhoto.updateLoadState(.loaded(cachedImage))
+                updatePhotoInSlideshow(loadedPhoto)
             }
         } else if !(await virtualLoader.isLoading(photoId: photo.id)) {
             print("🖼️ loadCurrentImageVirtual: Loading current image directly")
-            // Fallback to direct loading if not in cache
+            // Fallback to direct loading if not in cache and not currently loading
             loadCurrentImage()
+        } else {
+            print("🖼️ loadCurrentImageVirtual: Image currently loading in virtual loader")
+            // Image is being loaded by virtual loader - we'll get notified when complete
         }
     }
     
@@ -409,10 +418,45 @@ public class SlideshowViewModel: ObservableObject {
         return (virtualLoader: virtualStats, preloader: preloaderStats)
     }
     
+    /// Get performance recommendation analysis for current collection
+    public func getPerformanceAnalysis() -> (currentSettings: PerformanceSettings, recommendedSettings: PerformanceSettings, collectionSize: Int, estimatedMemoryUsage: Int, canHandle: Bool) {
+        let collectionSize = slideshow?.photos.count ?? 0
+        let currentSettings = performanceSettingsManager.settings
+        let recommendedSettings = performanceSettingsManager.recommendedSettings(for: collectionSize)
+        let estimatedUsage = performanceSettingsManager.estimatedMemoryUsage(for: collectionSize)
+        let canHandle = performanceSettingsManager.canHandleCollection(size: collectionSize)
+        
+        return (
+            currentSettings: currentSettings,
+            recommendedSettings: recommendedSettings,
+            collectionSize: collectionSize,
+            estimatedMemoryUsage: estimatedUsage,
+            canHandle: canHandle
+        )
+    }
+    
     /// Update performance components with current settings
     private func updatePerformanceComponents() async {
         await virtualLoader.updateSettings(performanceSettingsManager.settings)
         await backgroundPreloader.updateSettings(performanceSettingsManager.settings)
+    }
+    
+    /// Handle virtual image loading completion for seamless UI integration
+    @MainActor
+    private func handleVirtualImageLoaded(photoId: UUID, image: NSImage) {
+        guard let currentSlideshow = slideshow else { return }
+        
+        // Find the photo that was loaded
+        if let photoIndex = currentSlideshow.photos.firstIndex(where: { $0.id == photoId }) {
+            let photo = currentSlideshow.photos[photoIndex]
+            
+            // Create loaded photo with the cached image
+            var loadedPhoto = photo
+            loadedPhoto.updateLoadState(.loaded(image))
+            
+            // Update the slideshow
+            updatePhotoInSlideshow(loadedPhoto)
+        }
     }
     
     deinit {
