@@ -96,9 +96,9 @@ public class SlideshowViewModel: ObservableObject {
         do {
             print("🚀 Calling domainService.createSlideshow...")
             
-            // Apply slideshow settings
-            let mode: Slideshow.SlideshowMode = slideshowSettingsManager.settings.randomOrder ? .random : .sequential
-            print("🎬 Applying slideshow settings - randomOrder: \(slideshowSettingsManager.settings.randomOrder), mode: \(mode), autoStart: \(slideshowSettingsManager.settings.autoStart)")
+            // Apply slideshow settings (random order is now handled by file sorting)
+            let mode: Slideshow.SlideshowMode = .sequential
+            print("🎬 Applying slideshow settings - mode: \(mode), autoStart: \(slideshowSettingsManager.settings.autoStart)")
             
             let customInterval = try SlideshowInterval(slideshowSettingsManager.settings.slideDuration)
             let newSlideshow = try await domainService.createSlideshow(
@@ -276,15 +276,16 @@ public class SlideshowViewModel: ObservableObject {
         slideshow = currentSlideshow
     }
     
-    /// Update slideshow mode based on settings change
+    /// Update slideshow mode based on settings change (random order now handled by file sorting)
     private func updateSlideshowMode(randomOrder: Bool) {
         guard var currentSlideshow = slideshow else { 
             print("🎬 updateSlideshowMode: No slideshow to update")
             return 
         }
         
-        let newMode: Slideshow.SlideshowMode = randomOrder ? .random : .sequential
-        print("🎬 updateSlideshowMode: Updating slideshow mode to \(newMode)")
+        // Random order is now handled at file sorting level, slideshow always uses sequential
+        let newMode: Slideshow.SlideshowMode = .sequential
+        print("🎬 updateSlideshowMode: Random order (\(randomOrder)) is handled by file sorting, slideshow mode remains \(newMode)")
         
         currentSlideshow.setMode(newMode)
         slideshow = currentSlideshow

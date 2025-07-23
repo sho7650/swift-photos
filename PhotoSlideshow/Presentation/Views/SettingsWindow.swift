@@ -5,12 +5,14 @@ import AppKit
 public struct SettingsWindow: View {
     @ObservedObject var performanceSettings: PerformanceSettingsManager
     @ObservedObject var slideshowSettings: SlideshowSettingsManager
+    @ObservedObject var sortSettings: SortSettingsManager
     
     @State private var selectedTab: SettingsTab = .performance
     
-    public init(performanceSettings: PerformanceSettingsManager, slideshowSettings: SlideshowSettingsManager) {
+    public init(performanceSettings: PerformanceSettingsManager, slideshowSettings: SlideshowSettingsManager, sortSettings: SortSettingsManager) {
         self.performanceSettings = performanceSettings
         self.slideshowSettings = slideshowSettings
+        self.sortSettings = sortSettings
     }
     
     public var body: some View {
@@ -39,6 +41,8 @@ public struct SettingsWindow: View {
                         PerformanceSettingsView(settings: performanceSettings)
                     case .slideshow:
                         SlideshowSettingsView(settings: slideshowSettings)
+                    case .sorting:
+                        SortSettingsView(settings: sortSettings)
                     case .keyboard:
                         KeyboardShortcutsView()
                     }
@@ -70,6 +74,7 @@ public struct SettingsWindow: View {
     private func resetToDefaults() {
         performanceSettings.resetToDefault()
         slideshowSettings.resetToDefault()
+        sortSettings.resetToDefault()
     }
 }
 
@@ -77,6 +82,7 @@ public struct SettingsWindow: View {
 private enum SettingsTab: CaseIterable {
     case performance
     case slideshow
+    case sorting
     case keyboard
     
     var displayName: String {
@@ -85,6 +91,8 @@ private enum SettingsTab: CaseIterable {
             return "Performance"
         case .slideshow:
             return "Slideshow"
+        case .sorting:
+            return "Sorting"
         case .keyboard:
             return "Keyboard"
         }
@@ -434,9 +442,153 @@ private struct ShortcutRow: View {
     }
 }
 
+/// Sort settings view
+private struct SortSettingsView: View {
+    @ObservedObject var settings: SortSettingsManager
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("File Sorting")
+                .font(.title2)
+                .fontWeight(.semibold)
+            
+            Text("Configure how photos are ordered in the slideshow. Pre-sorting improves cache efficiency.")
+                .foregroundColor(.secondary)
+            
+            VStack(alignment: .leading, spacing: 12) {
+                // Presets
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Presets")
+                        .fontWeight(.medium)
+                    
+                    HStack(spacing: 12) {
+                        Button("Alphabetical") { settings.applyPreset(.alphabetical) }
+                            .buttonStyle(.bordered)
+                        Button("Chronological") { settings.applyPreset(.chronological) }
+                            .buttonStyle(.bordered)
+                        Button("Newest First") { settings.applyPreset(.newestFirst) }
+                            .buttonStyle(.bordered)
+                        Button("Largest First") { settings.applyPreset(.largestFirst) }
+                            .buttonStyle(.bordered)
+                    }
+                    
+                    HStack {
+                        Button("Random") { settings.applyPreset(.randomized) }
+                            .buttonStyle(.bordered)
+                        
+                        if settings.settings.order == .random {
+                            Button("New Random Order") {
+                                settings.regenerateRandomSeed()
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                    }
+                }
+                
+                Divider()
+                
+                // Sort Order
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Sort By")
+                        .fontWeight(.medium)
+                    
+                    Picker("Sort Order", selection: Binding(
+                        get: { settings.settings.order },
+                        set: { newOrder in
+                            let newSettings = SortSettings(
+                                order: newOrder,
+                                direction: settings.settings.direction,
+                                randomSeed: newOrder == .random ? UInt64.random(in: 0...UInt64.max) : settings.settings.randomSeed
+                            )
+                            settings.updateSettings(newSettings)
+                        }
+                    )) {
+                        ForEach(SortSettings.SortOrder.allCases, id: \.self) { order in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(order.displayName)
+                                Text(order.description)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .tag(order)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                }
+                
+                // Sort Direction (not applicable for random)
+                if settings.settings.order != .random {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Direction")
+                            .fontWeight(.medium)
+                        
+                        Picker("Sort Direction", selection: Binding(
+                            get: { settings.settings.direction },
+                            set: { newDirection in
+                                let newSettings = SortSettings(
+                                    order: settings.settings.order,
+                                    direction: newDirection,
+                                    randomSeed: settings.settings.randomSeed
+                                )
+                                settings.updateSettings(newSettings)
+                            }
+                        )) {
+                            ForEach(SortSettings.SortDirection.allCases, id: \.self) { direction in
+                                HStack {
+                                    Text(direction.symbol)
+                                    Text(direction.displayName)
+                                }
+                                .tag(direction)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                    }
+                }
+                
+                Divider()
+                
+                // Current Settings Summary
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Current Settings")
+                        .fontWeight(.medium)
+                    
+                    HStack {
+                        Text("Order:")
+                            .foregroundColor(.secondary)
+                        Text("\(settings.settings.order.displayName) \(settings.settings.order != .random ? settings.settings.direction.symbol : "")")
+                            .fontWeight(.medium)
+                    }
+                    
+                    if settings.settings.order == .random {
+                        HStack {
+                            Text("Seed:")
+                                .foregroundColor(.secondary)
+                            Text(String(settings.settings.randomSeed))
+                                .font(.system(.caption, design: .monospaced))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                
+                // Performance Note
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("💡 Performance Tip")
+                        .fontWeight(.medium)
+                        .foregroundColor(.blue)
+                    
+                    Text("Sorting files before slideshow improves image caching efficiency. Random sorting with a fixed seed ensures consistent order across sessions.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+}
+
 #Preview {
     SettingsWindow(
         performanceSettings: PerformanceSettingsManager(),
-        slideshowSettings: SlideshowSettingsManager()
+        slideshowSettings: SlideshowSettingsManager(),
+        sortSettings: SortSettingsManager()
     )
 }

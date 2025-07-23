@@ -17,15 +17,12 @@ public struct Slideshow: Equatable {
     
     public enum SlideshowMode: String, CaseIterable, Equatable {
         case sequential = "sequential"
-        case random = "random"
         case singleLoop = "single_loop"
         
         public var displayName: String {
             switch self {
             case .sequential:
                 return "Sequential"
-            case .random:
-                return "Random"
             case .singleLoop:
                 return "Single Loop"
             }
@@ -85,9 +82,6 @@ public struct Slideshow: Equatable {
         switch mode {
         case .sequential:
             currentIndex = (currentIndex + 1) % photos.count
-        case .random:
-            let nextIndex = Int.random(in: 0..<photos.count)
-            currentIndex = nextIndex
         case .singleLoop:
             break
         }
@@ -99,9 +93,6 @@ public struct Slideshow: Equatable {
         switch mode {
         case .sequential:
             currentIndex = currentIndex > 0 ? currentIndex - 1 : photos.count - 1
-        case .random:
-            let previousIndex = Int.random(in: 0..<photos.count)
-            currentIndex = previousIndex
         case .singleLoop:
             break
         }

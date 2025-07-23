@@ -4,10 +4,12 @@ import AppKit
 public class FileSystemPhotoRepository: SlideshowRepository {
     private let fileAccess: SecureFileAccess
     private let imageLoader: ImageLoader
+    private let sortSettings: SortSettingsManager
     
-    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader) {
+    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: SortSettingsManager) {
         self.fileAccess = fileAccess
         self.imageLoader = imageLoader
+        self.sortSettings = sortSettings
     }
     
     public func loadPhotos(from folderURL: URL) async throws -> [Photo] {
@@ -41,7 +43,13 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             }
             
             print("🗂️ FileSystemPhotoRepository: Successfully created \(photos.count) photos, failed: \(failedCount)")
-            return photos
+            
+            // Apply sorting based on current sort settings
+            let currentSettings = await sortSettings.settings
+            let sortedPhotos = await sortPhotos(photos, using: currentSettings)
+            print("🗂️ FileSystemPhotoRepository: Applied sorting: \(currentSettings.order.displayName) \(currentSettings.direction.displayName)")
+            
+            return sortedPhotos
             
         } catch {
             print("❌ FileSystemPhotoRepository: Failed in loadPhotos: \(error)")
@@ -69,5 +77,154 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     
     public func loadMetadata(for photo: Photo) async throws -> Photo.PhotoMetadata? {
         return try await imageLoader.extractMetadata(from: photo.imageURL.url)
+    }
+    
+    /// Sort photos according to the specified sort settings
+    private func sortPhotos(_ photos: [Photo], using sortSettings: SortSettings) async -> [Photo] {
+        print("🗂️ FileSystemPhotoRepository: Sorting \(photos.count) photos by \(sortSettings.order.displayName)")
+        
+        switch sortSettings.order {
+        case .fileName:
+            return sortByFileName(photos, direction: sortSettings.direction)
+            
+        case .creationDate:
+            return await sortByCreationDate(photos, direction: sortSettings.direction)
+            
+        case .modificationDate:
+            return await sortByModificationDate(photos, direction: sortSettings.direction)
+            
+        case .fileSize:
+            return await sortByFileSize(photos, direction: sortSettings.direction)
+            
+        case .random:
+            return sortByRandom(photos, seed: sortSettings.randomSeed)
+        }
+    }
+    
+    /// Sort photos by file name
+    private func sortByFileName(_ photos: [Photo], direction: SortSettings.SortDirection) -> [Photo] {
+        let sorted = photos.sorted { photo1, photo2 in
+            let name1 = photo1.fileName.lowercased()
+            let name2 = photo2.fileName.lowercased()
+            return direction == .ascending ? name1 < name2 : name1 > name2
+        }
+        print("🗂️ FileSystemPhotoRepository: Sorted by file name (\(direction.displayName))")
+        return sorted
+    }
+    
+    /// Sort photos by creation date
+    private func sortByCreationDate(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        // Load creation dates for all photos
+        var photosWithDates: [(Photo, Date?)] = []
+        
+        for photo in photos {
+            let creationDate = await getFileCreationDate(for: photo.imageURL.url)
+            photosWithDates.append((photo, creationDate))
+        }
+        
+        let sorted = photosWithDates.sorted { item1, item2 in
+            let date1 = item1.1 ?? Date.distantPast
+            let date2 = item2.1 ?? Date.distantPast
+            return direction == .ascending ? date1 < date2 : date1 > date2
+        }.map { $0.0 }
+        
+        print("🗂️ FileSystemPhotoRepository: Sorted by creation date (\(direction.displayName))")
+        return sorted
+    }
+    
+    /// Sort photos by modification date
+    private func sortByModificationDate(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        // Load modification dates for all photos
+        var photosWithDates: [(Photo, Date?)] = []
+        
+        for photo in photos {
+            let modificationDate = await getFileModificationDate(for: photo.imageURL.url)
+            photosWithDates.append((photo, modificationDate))
+        }
+        
+        let sorted = photosWithDates.sorted { item1, item2 in
+            let date1 = item1.1 ?? Date.distantPast
+            let date2 = item2.1 ?? Date.distantPast
+            return direction == .ascending ? date1 < date2 : date1 > date2
+        }.map { $0.0 }
+        
+        print("🗂️ FileSystemPhotoRepository: Sorted by modification date (\(direction.displayName))")
+        return sorted
+    }
+    
+    /// Sort photos by file size
+    private func sortByFileSize(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        // Load file sizes for all photos
+        var photosWithSizes: [(Photo, Int64)] = []
+        
+        for photo in photos {
+            let fileSize = await getFileSize(for: photo.imageURL.url)
+            photosWithSizes.append((photo, fileSize))
+        }
+        
+        let sorted = photosWithSizes.sorted { item1, item2 in
+            return direction == .ascending ? item1.1 < item2.1 : item1.1 > item2.1
+        }.map { $0.0 }
+        
+        print("🗂️ FileSystemPhotoRepository: Sorted by file size (\(direction.displayName))")
+        return sorted
+    }
+    
+    /// Sort photos randomly with consistent seed
+    private func sortByRandom(_ photos: [Photo], seed: UInt64) -> [Photo] {
+        var generator = SeededRandomNumberGenerator(seed: seed)
+        let shuffled = photos.shuffled(using: &generator)
+        print("🗂️ FileSystemPhotoRepository: Sorted randomly with seed \(seed)")
+        return shuffled
+    }
+    
+    // MARK: - File Attribute Helpers
+    
+    /// Get file creation date
+    private func getFileCreationDate(for url: URL) async -> Date? {
+        do {
+            let resourceValues = try url.resourceValues(forKeys: [.creationDateKey])
+            return resourceValues.creationDate
+        } catch {
+            print("⚠️ Failed to get creation date for \(url.lastPathComponent): \(error)")
+            return nil
+        }
+    }
+    
+    /// Get file modification date
+    private func getFileModificationDate(for url: URL) async -> Date? {
+        do {
+            let resourceValues = try url.resourceValues(forKeys: [.contentModificationDateKey])
+            return resourceValues.contentModificationDate
+        } catch {
+            print("⚠️ Failed to get modification date for \(url.lastPathComponent): \(error)")
+            return nil
+        }
+    }
+    
+    /// Get file size
+    private func getFileSize(for url: URL) async -> Int64 {
+        do {
+            let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
+            return Int64(resourceValues.fileSize ?? 0)
+        } catch {
+            print("⚠️ Failed to get file size for \(url.lastPathComponent): \(error)")
+            return 0
+        }
+    }
+}
+
+/// Seeded random number generator for consistent random sorting
+struct SeededRandomNumberGenerator: RandomNumberGenerator {
+    private var state: UInt64
+    
+    init(seed: UInt64) {
+        self.state = seed
+    }
+    
+    mutating func next() -> UInt64 {
+        // Linear congruential generator
+        state = state &* 1103515245 &+ 12345
+        return state
     }
 }

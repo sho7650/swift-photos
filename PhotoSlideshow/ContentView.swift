@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var isInitialized = false
     @StateObject private var performanceSettings = PerformanceSettingsManager()
     @StateObject private var slideshowSettings = SlideshowSettingsManager()
+    @StateObject private var sortSettings = SortSettingsManager()
     @StateObject private var settingsWindowManager = SettingsWindowManager()
     
     var body: some View {
@@ -84,7 +85,7 @@ struct ContentView: View {
                 let fileAccess = SecureFileAccess()
                 let imageLoader = ImageLoader()
                 let imageCache = ImageCache()
-                let repository = FileSystemPhotoRepository(fileAccess: fileAccess, imageLoader: imageLoader)
+                let repository = FileSystemPhotoRepository(fileAccess: fileAccess, imageLoader: imageLoader, sortSettings: sortSettings)
                 let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
                 
                 // Create view model and handler
@@ -97,7 +98,8 @@ struct ContentView: View {
                 createdKeyboardHandler.onOpenSettings = {
                     settingsWindowManager.openSettingsWindow(
                         performanceSettings: performanceSettings,
-                        slideshowSettings: slideshowSettings
+                        slideshowSettings: slideshowSettings,
+                        sortSettings: sortSettings
                     )
                 }
                 
