@@ -1,5 +1,10 @@
 import Foundation
 
+/// Notification name for sort settings changes
+extension Notification.Name {
+    static let sortSettingsChanged = Notification.Name("sortSettingsChanged")
+}
+
 /// File sorting configuration for slideshow photo organization
 public struct SortSettings: Codable, Equatable {
     /// Sort criteria
@@ -134,16 +139,25 @@ public class SortSettingsManager: ObservableObject {
         settings = newSettings
         saveSettings()
         print("📂 SortSettingsManager: Updated to order: \(settings.order.displayName), direction: \(settings.direction.displayName)")
+        
+        // Notify observers of settings change
+        NotificationCenter.default.post(name: .sortSettingsChanged, object: newSettings)
     }
     
     public func resetToDefault() {
         settings = .alphabetical
         saveSettings()
+        
+        // Notify observers of settings change
+        NotificationCenter.default.post(name: .sortSettingsChanged, object: settings)
     }
     
     public func applyPreset(_ preset: SortSettings) {
         settings = preset
         saveSettings()
+        
+        // Notify observers of settings change
+        NotificationCenter.default.post(name: .sortSettingsChanged, object: settings)
     }
     
     /// Generate new random seed for random sorting
@@ -154,7 +168,7 @@ public class SortSettingsManager: ObservableObject {
                 direction: settings.direction,
                 randomSeed: UInt64.random(in: 0...UInt64.max)
             )
-            updateSettings(newSettings)
+            updateSettings(newSettings) // This will automatically notify observers
         }
     }
     

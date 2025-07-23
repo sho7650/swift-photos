@@ -59,6 +59,19 @@ public class SlideshowViewModel: ObservableObject {
                 self?.updateSlideshowMode(randomOrder: randomOrder)
             }
         }
+        
+        // Listen for sort settings changes
+        NotificationCenter.default.addObserver(
+            forName: .sortSettingsChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            if let _ = notification.object as? SortSettings {
+                Task { @MainActor in
+                    await self?.reloadSlideshowWithNewSorting()
+                }
+            }
+        }
     }
     
     
@@ -291,6 +304,44 @@ public class SlideshowViewModel: ObservableObject {
         slideshow = currentSlideshow
         
         print("🎬 updateSlideshowMode: Slideshow mode updated successfully")
+    }
+    
+    /// Reload slideshow with new sorting settings
+    @MainActor
+    private func reloadSlideshowWithNewSorting() async {
+        guard let folderURL = selectedFolderURL else {
+            print("🔄 reloadSlideshowWithNewSorting: No folder selected, ignoring sort change")
+            return
+        }
+        
+        print("🔄 reloadSlideshowWithNewSorting: Reloading slideshow with new sort settings")
+        
+        // Store current state
+        let wasPlaying = slideshow?.isPlaying ?? false
+        let currentIndex = slideshow?.currentIndex ?? 0
+        
+        // Pause slideshow if playing
+        if wasPlaying {
+            stop()
+        }
+        
+        // Reload slideshow from folder with new sorting
+        await createSlideshow(from: folderURL)
+        
+        // Try to maintain current position if possible
+        if let newSlideshow = slideshow, !newSlideshow.isEmpty {
+            let targetIndex = min(currentIndex, newSlideshow.photos.count - 1)
+            if targetIndex != newSlideshow.currentIndex {
+                goToPhoto(at: targetIndex)
+            }
+            
+            // Resume playing if it was playing before
+            if wasPlaying {
+                play()
+            }
+        }
+        
+        print("🔄 reloadSlideshowWithNewSorting: Slideshow reloaded successfully")
     }
     
     private func startTimer() {
