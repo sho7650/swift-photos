@@ -97,57 +97,52 @@ struct ContentView: View {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
             
             print("📱 PhotoSlideshow DEBUG: Creating dependencies...")
-            do {
-                // Create dependencies safely
-                let fileAccess = SecureFileAccess()
-                let imageLoader = ImageLoader()
-                let imageCache = ImageCache()
-                let repository = FileSystemPhotoRepository(fileAccess: fileAccess, imageLoader: imageLoader, sortSettings: sortSettings)
-                let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
-                
-                // Create view model and UI managers
-                let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings)
-                let createdKeyboardHandler = KeyboardHandler()
-                let createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: createdViewModel)
-                
-                // Setup keyboard handler connections
-                createdKeyboardHandler.viewModel = createdViewModel
-                createdKeyboardHandler.performanceSettings = performanceSettings
-                createdKeyboardHandler.onOpenSettings = {
-                    settingsWindowManager.openSettingsWindow(
-                        performanceSettings: performanceSettings,
-                        slideshowSettings: slideshowSettings,
-                        sortSettings: sortSettings,
-                        transitionSettings: transitionSettings
-                    )
-                }
-                
-                // Setup UI control state manager callbacks
-                createdKeyboardHandler.onKeyboardInteraction = {
-                    createdUIControlStateManager.handleKeyboardInteraction()
-                }
-                createdKeyboardHandler.onToggleDetailedInfo = {
-                    createdUIControlStateManager.toggleDetailedInfo()
-                }
-                createdKeyboardHandler.onToggleControlsVisibility = {
-                    if createdUIControlStateManager.isControlsVisible {
-                        createdUIControlStateManager.hideControls(force: true)
-                    } else {
-                        createdUIControlStateManager.showControls()
-                    }
-                }
-                
-                // Set state
-                self.viewModel = createdViewModel
-                self.keyboardHandler = createdKeyboardHandler
-                self.uiControlStateManager = createdUIControlStateManager
-                self.isInitialized = true
-                
-                print("🏗️ ContentView: Initialization completed successfully")
-                
-            } catch {
-                print("❌ ContentView: Initialization failed: \(error)")
+            // Create dependencies safely
+            let fileAccess = SecureFileAccess()
+            let imageLoader = ImageLoader()
+            let imageCache = ImageCache()
+            let repository = FileSystemPhotoRepository(fileAccess: fileAccess, imageLoader: imageLoader, sortSettings: sortSettings)
+            let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
+            
+            // Create view model and UI managers
+            let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings)
+            let createdKeyboardHandler = KeyboardHandler()
+            let createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: createdViewModel)
+            
+            // Setup keyboard handler connections
+            createdKeyboardHandler.viewModel = createdViewModel
+            createdKeyboardHandler.performanceSettings = performanceSettings
+            createdKeyboardHandler.onOpenSettings = {
+                settingsWindowManager.openSettingsWindow(
+                    performanceSettings: performanceSettings,
+                    slideshowSettings: slideshowSettings,
+                    sortSettings: sortSettings,
+                    transitionSettings: transitionSettings
+                )
             }
+            
+            // Setup UI control state manager callbacks
+            createdKeyboardHandler.onKeyboardInteraction = {
+                createdUIControlStateManager.handleKeyboardInteraction()
+            }
+            createdKeyboardHandler.onToggleDetailedInfo = {
+                createdUIControlStateManager.toggleDetailedInfo()
+            }
+            createdKeyboardHandler.onToggleControlsVisibility = {
+                if createdUIControlStateManager.isControlsVisible {
+                    createdUIControlStateManager.hideControls(force: true)
+                } else {
+                    createdUIControlStateManager.showControls()
+                }
+            }
+            
+            // Set state
+            self.viewModel = createdViewModel
+            self.keyboardHandler = createdKeyboardHandler
+            self.uiControlStateManager = createdUIControlStateManager
+            self.isInitialized = true
+            
+            print("🏗️ ContentView: Initialization completed successfully")
         }
     }
 }

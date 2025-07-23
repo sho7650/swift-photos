@@ -25,11 +25,7 @@ public struct ControlsView: View {
             Button("Select Folder") {
                 print("🎮 ControlsView: Select Folder button pressed")
                 Task { @MainActor in
-                    do {
-                        await viewModel.selectFolder()
-                    } catch {
-                        print("❌ ControlsView: Error in selectFolder task: \(error)")
-                    }
+                    await viewModel.selectFolder()
                 }
             }
             .buttonStyle(.borderedProminent)

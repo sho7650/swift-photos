@@ -99,7 +99,7 @@ public struct ImageDisplayViewWithObserver: View {
             initializeTransitionManager()
             setupTransitionNotifications()
         }
-        .onChange(of: viewModel.currentPhoto?.id) { newPhotoID in
+        .onChange(of: viewModel.currentPhoto?.id) { oldPhotoID, newPhotoID in
             handlePhotoChange(newPhotoID: newPhotoID)
         }
         .animation(getTransitionAnimation(), value: showImage)
@@ -165,18 +165,21 @@ public struct ImageDisplayViewWithObserver: View {
             queue: .main
         ) { [weak transitionSettings] _ in
             print("🎬 ImageDisplayViewWithObserver: Transition settings changed")
-            print("🎬 ImageDisplayViewWithObserver: New settings - enabled: \(transitionSettings?.settings.isEnabled ?? false), effect: \(transitionSettings?.settings.effectType.displayName ?? "unknown")")
             
-            // Force update the transition manager with new settings
-            if let settings = transitionSettings {
-                self.transitionManager = ImageTransitionManager(transitionSettings: settings)
-                print("🎬 ImageDisplayViewWithObserver: Recreated transition manager with new settings")
+            Task { @MainActor in
+                print("🎬 ImageDisplayViewWithObserver: New settings - enabled: \(transitionSettings?.settings.isEnabled ?? false), effect: \(transitionSettings?.settings.effectType.displayName ?? "unknown")")
                 
-                // Trigger a brief visual feedback to show the effect immediately
-                if settings.settings.isEnabled && self.viewModel.currentPhoto != nil {
-                    self.showImage = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                        self.showImage = true
+                // Force update the transition manager with new settings
+                if let settings = transitionSettings {
+                    self.transitionManager = ImageTransitionManager(transitionSettings: settings)
+                    print("🎬 ImageDisplayViewWithObserver: Recreated transition manager with new settings")
+                    
+                    // Trigger a brief visual feedback to show the effect immediately
+                    if settings.settings.isEnabled && self.viewModel.currentPhoto != nil {
+                        self.showImage = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            self.showImage = true
+                        }
                     }
                 }
             }

@@ -45,11 +45,7 @@ public struct MinimalControlsView: View {
                 print("🎮 MinimalControlsView: Select Folder button pressed")
                 uiControlStateManager.handleGestureInteraction()
                 Task { @MainActor in
-                    do {
-                        await viewModel.selectFolder()
-                    } catch {
-                        print("❌ MinimalControlsView: Error in selectFolder task: \(error)")
-                    }
+                    await viewModel.selectFolder()
                 }
             }
             .buttonStyle(.borderedProminent)

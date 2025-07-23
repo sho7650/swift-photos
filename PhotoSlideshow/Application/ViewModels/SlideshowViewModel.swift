@@ -56,7 +56,9 @@ public class SlideshowViewModel: ObservableObject {
             queue: .main
         ) { [weak self] notification in
             if let randomOrder = notification.object as? Bool {
-                self?.updateSlideshowMode(randomOrder: randomOrder)
+                Task { @MainActor in
+                    self?.updateSlideshowMode(randomOrder: randomOrder)
+                }
             }
         }
         
