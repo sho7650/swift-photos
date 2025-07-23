@@ -49,7 +49,7 @@ actor VirtualImageLoader {
         }
     }
     
-    /// Load images within a window around the current index with smart sizing
+    /// Load images within a window around the current index with smart sizing - 並行処理対応版
     func loadImageWindow(around index: Int, photos: [Photo]) async {
         guard !photos.isEmpty else { return }
         
@@ -64,36 +64,102 @@ actor VirtualImageLoader {
         let photosInWindow = Set(photos[startIndex...endIndex].map { $0.id })
         
         // Cancel loading tasks for photos outside the window
+        await cancelOutOfWindowTasks(photosInWindow: photosInWindow)
+        
+        // Remove loaded images outside the window (with some buffer)
+        cleanupOutOfWindowImages(currentIndex: index, photos: photos)
+        
+        // 並行ロード処理 - 中央の画像から外側に向かって優先的にロード
+        await loadImageWindowConcurrently(
+            centerIndex: index,
+            startIndex: startIndex,
+            endIndex: endIndex,
+            photos: photos
+        )
+    }
+    
+    /// 新機能: 非同期ウィンドウロード - バックグラウンドでキャッシュを再構成
+    func loadImageWindowAsync(around index: Int, photos: [Photo]) {
+        Task {
+            await loadImageWindow(around: index, photos: photos)
+            print("🗄️ VirtualImageLoader: Background window reconstruction completed for index \(index)")
+        }
+    }
+    
+    /// 並行処理でウィンドウ内画像をロード
+    private func loadImageWindowConcurrently(
+        centerIndex: Int,
+        startIndex: Int,
+        endIndex: Int,
+        photos: [Photo]
+    ) async {
+        // 中央から外側への距離ベースで優先度を決定
+        let photosToLoad = (startIndex...endIndex).map { idx in
+            let photo = photos[idx]
+            let distance = abs(idx - centerIndex)
+            return (photo: photo, distance: distance, index: idx)
+        }
+        .sorted { $0.distance < $1.distance } // 距離が近い順にソート
+        
+        // 最大並行数を設定（中央画像は即座、その他は段階的に）
+        let maxConcurrent = min(settings.maxConcurrentLoads, photosToLoad.count)
+        
+        await withTaskGroup(of: Void.self) { group in
+            var semaphore = 0
+            
+            for (photo, distance, idx) in photosToLoad {
+                // セマフォで並行数制御
+                while semaphore >= maxConcurrent {
+                    await group.next()
+                    semaphore -= 1
+                }
+                
+                // 中央画像（distance = 0）は最優先
+                let priority: TaskPriority = distance == 0 ? .userInitiated : .utility
+                
+                group.addTask(priority: priority) { [weak self] in
+                    await self?.loadImageIfNeeded(photo: photo)
+                }
+                semaphore += 1
+            }
+        }
+    }
+    
+    /// ウィンドウ外のタスクをキャンセル
+    private func cancelOutOfWindowTasks(photosInWindow: Set<UUID>) async {
         for (photoId, task) in loadingTasks {
             if !photosInWindow.contains(photoId) {
                 task.cancel()
                 loadingTasks.removeValue(forKey: photoId)
+                print("🚫 VirtualImageLoader: Cancelled out-of-window load for \(photoId)")
             }
         }
-        
-        // Remove loaded images outside the window (with some buffer)
+    }
+    
+    /// ウィンドウ外の画像をクリーンアップ
+    private func cleanupOutOfWindowImages(currentIndex: Int, photos: [Photo]) {
         let bufferSize = windowSize * 2
-        let bufferStart = max(0, index - bufferSize)
-        let bufferEnd = min(photos.count - 1, index + bufferSize)
+        let bufferStart = max(0, currentIndex - bufferSize)
+        let bufferEnd = min(photos.count - 1, currentIndex + bufferSize)
         let photosInBuffer = Set(photos[bufferStart...bufferEnd].map { $0.id })
         
+        let beforeCount = loadedImages.count
         loadedImages = loadedImages.filter { photosInBuffer.contains($0.key) }
+        let afterCount = loadedImages.count
         
-        // Load images in the window
-        await withTaskGroup(of: Void.self) { group in
-            for i in startIndex...endIndex {
-                let photo = photos[i]
-                
-                // Skip if already loaded or loading
-                if loadedImages[photo.id] != nil || loadingTasks[photo.id] != nil {
-                    continue
-                }
-                
-                group.addTask { [weak self] in
-                    await self?.loadImage(photo: photo)
-                }
-            }
+        if beforeCount != afterCount {
+            print("🧹 VirtualImageLoader: Cleaned up \(beforeCount - afterCount) out-of-window images")
         }
+    }
+    
+    /// 必要に応じて画像をロード（重複チェック付き）
+    private func loadImageIfNeeded(photo: Photo) async {
+        // すでにロード済みまたはロード中の場合はスキップ
+        guard loadedImages[photo.id] == nil && loadingTasks[photo.id] == nil else {
+            return
+        }
+        
+        await loadImage(photo: photo)
     }
     
     /// Get a loaded image if available
@@ -105,6 +171,31 @@ actor VirtualImageLoader {
             cacheMisses += 1
             return nil
         }
+    }
+    
+    /// プログレスバージャンプ専用: 全タスクをキャンセルして特定画像のロードを優先
+    func cancelAllForProgressJump() async {
+        print("🚫 VirtualImageLoader: Cancelling all tasks for progress bar jump")
+        
+        for (photoId, task) in loadingTasks {
+            task.cancel()
+            print("🚫 VirtualImageLoader: Cancelled task for \(photoId)")
+        }
+        loadingTasks.removeAll()
+    }
+    
+    /// 特定画像のロードタスクをキャンセル
+    func cancelLoad(for photoId: UUID) async {
+        if let task = loadingTasks[photoId] {
+            task.cancel()
+            loadingTasks.removeValue(forKey: photoId)
+            print("🚫 VirtualImageLoader: Cancelled load for \(photoId)")
+        }
+    }
+    
+    /// 現在ロード中のタスク数を取得
+    func getActiveTaskCount() -> Int {
+        return loadingTasks.count
     }
     
     /// Check if an image is currently being loaded

@@ -174,9 +174,9 @@ public struct MinimalControlsView: View {
                 currentIndex: slideshow.currentIndex,
                 totalCount: slideshow.count
             ) { targetIndex in
-                print("🎯 MinimalControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
+                print("🎯 MinimalControlsView: Progress bar clicked - fast jumping to photo \(targetIndex)")
                 uiControlStateManager.handleGestureInteraction()
-                viewModel.goToPhoto(at: targetIndex)
+                viewModel.fastGoToPhoto(at: targetIndex)
             }
             .frame(height: 4)
         }

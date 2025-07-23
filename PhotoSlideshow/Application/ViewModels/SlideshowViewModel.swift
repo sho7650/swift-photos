@@ -29,6 +29,7 @@ public class SlideshowViewModel: ObservableObject {
     // Performance optimizations for large collections
     private let virtualLoader: VirtualImageLoader
     private let backgroundPreloader: BackgroundPreloader
+    private let targetImageLoader: TargetImageLoader
     private let performanceSettingsManager: PerformanceSettingsManager
     private let slideshowSettingsManager: SlideshowSettingsManager
     
@@ -39,6 +40,7 @@ public class SlideshowViewModel: ObservableObject {
         self.slideshowSettingsManager = slideshowSettings ?? SlideshowSettingsManager()
         self.virtualLoader = VirtualImageLoader(settings: self.performanceSettingsManager.settings)
         self.backgroundPreloader = BackgroundPreloader(settings: self.performanceSettingsManager.settings)
+        self.targetImageLoader = TargetImageLoader()
         
         print("🚀 SlideshowViewModel: Initialized with settings - window: \(self.performanceSettingsManager.settings.memoryWindowSize), threshold: \(self.performanceSettingsManager.settings.largeCollectionThreshold)")
         
@@ -267,6 +269,82 @@ public class SlideshowViewModel: ObservableObject {
                     loadCurrentImage()
                 }
             }
+        } catch {
+            self.error = error as? SlideshowError ?? SlideshowError.invalidIndex(index)
+        }
+    }
+    
+    /// プログレスバー専用高速ナビゲーション - 即座表示＋バックグラウンドキャッシュ再構成
+    public func fastGoToPhoto(at index: Int) {
+        guard var currentSlideshow = slideshow else { return }
+        
+        print("🚀 SlideshowViewModel: Fast jump to photo \(index)")
+        let startTime = Date()
+        
+        do {
+            // 1. まずインデックスを即座に更新
+            try currentSlideshow.setCurrentIndex(index)
+            slideshow = currentSlideshow
+            refreshCounter += 1
+            
+            guard let targetPhoto = currentSlideshow.currentPhoto else {
+                print("❌ fastGoToPhoto: No photo at index \(index)")
+                return
+            }
+            
+            // 2. ターゲット画像を最優先で即座ロード
+            Task {
+                // 既存のロードタスクをキャンセル
+                await virtualLoader.cancelAllForProgressJump()
+                await backgroundPreloader.cancelAllPreloads()
+                
+                // ターゲット画像を緊急ロード
+                await targetImageLoader.handleProgressBarJump(to: targetPhoto) { [weak self] result in
+                    let jumpTime = Date().timeIntervalSince(startTime)
+                    print("🎯 fastGoToPhoto: Target image loaded in \(String(format: "%.2f", jumpTime * 1000))ms")
+                    
+                    switch result {
+                    case .success(let image):
+                        // 即座にUIを更新
+                        var loadedPhoto = targetPhoto
+                        loadedPhoto.updateLoadState(.loaded(image))
+                        self?.updatePhotoInSlideshow(loadedPhoto)
+                        self?.currentPhoto = loadedPhoto
+                        
+                        print("✅ fastGoToPhoto: UI updated immediately")
+                        
+                    case .failure(let error):
+                        print("❌ fastGoToPhoto: Failed to load target image: \(error)")
+                        self?.error = error as? SlideshowError ?? SlideshowError.fileNotFound(targetPhoto.imageURL.url)
+                    }
+                }
+                
+                // 3. バックグラウンドでキャッシュウィンドウを再構成（並行実行）
+                let largeCollectionThreshold = self.performanceSettingsManager.settings.largeCollectionThreshold
+                Task.detached(priority: .background) { [weak self] in
+                    guard let self = self else { return }
+                    
+                    if currentSlideshow.photos.count > largeCollectionThreshold {
+                        print("🗄️ fastGoToPhoto: Starting background cache reconstruction")
+                        
+                        // 非同期でキャッシュウィンドウを再構成
+                        await self.virtualLoader.loadImageWindowAsync(
+                            around: index,
+                            photos: currentSlideshow.photos
+                        )
+                        
+                        // バックグラウンドプリローダーの優先度を更新
+                        await self.backgroundPreloader.updatePriorities(
+                            photos: currentSlideshow.photos,
+                            newIndex: index
+                        )
+                        
+                        let totalTime = Date().timeIntervalSince(startTime)
+                        print("🗄️ fastGoToPhoto: Background reconstruction completed in \(String(format: "%.2f", totalTime * 1000))ms total")
+                    }
+                }
+            }
+            
         } catch {
             self.error = error as? SlideshowError ?? SlideshowError.invalidIndex(index)
         }
