@@ -6,6 +6,7 @@ public class KeyboardHandler: ObservableObject {
     public weak var viewModel: SlideshowViewModel?
     public weak var performanceSettings: PerformanceSettingsManager?
     public var onOpenSettings: (() -> Void)?
+    public var onOpenFolder: (() -> Void)?
     
     /// Callback for UI control state manager to be notified of keyboard interactions
     public var onKeyboardInteraction: (() -> Void)?
@@ -48,6 +49,14 @@ public class KeyboardHandler: ObservableObject {
         case 43: // ',' key
             if event.modifierFlags.contains(.command) {
                 onOpenSettings?()
+                handled = true
+            }
+            
+        // Open Folder shortcut (Cmd+O)
+        case 31: // 'O' key
+            if event.modifierFlags.contains(.command) {
+                print("🎮 KeyboardHandler: Open folder shortcut pressed")
+                onOpenFolder?()
                 handled = true
             }
             

@@ -4,6 +4,7 @@ import AppKit
 @MainActor
 public class SecureFileAccess {
     private var securityScopedBookmarks: [URL: Data] = [:]
+    private var activeScopedAccess: [URL: Bool] = [:]
     
     public init() {}
     
@@ -172,9 +173,74 @@ public class SecureFileAccess {
         url.stopAccessingSecurityScopedResource()
     }
     
+    /// Add a security bookmark for a URL that was obtained from external sources (like recent files)
+    public func addSecurityBookmark(for url: URL, bookmarkData: Data) {
+        print("📁 Adding external security bookmark for: \(url.path)")
+        securityScopedBookmarks[url] = bookmarkData
+    }
+    
+    /// Create slideshow with proper security handling for external URLs
+    public func prepareForAccess(url: URL, bookmarkData: Data? = nil) throws {
+        print("📁 Preparing access for URL: \(url.path)")
+        
+        if let bookmark = bookmarkData {
+            // Store the bookmark for later validation
+            securityScopedBookmarks[url] = bookmark
+            print("📁 Stored external security bookmark")
+        }
+        
+        // Try to start security scoped access if needed and not already active
+        if activeScopedAccess[url] != true {
+            let accessStarted = url.startAccessingSecurityScopedResource()
+            if accessStarted {
+                activeScopedAccess[url] = true
+                print("📁 Security scoped access started and will be maintained")
+            } else {
+                print("📁 Security scoped access not required")
+            }
+        } else {
+            print("📁 Security scoped access already active")
+        }
+        
+        // Validate that we can actually access the folder
+        try validateFileAccess(for: url)
+    }
+    
+    /// Check if a URL or its parent folder has active security scoped access
+    public func hasActiveAccess(for url: URL) -> Bool {
+        // Check if the exact URL has active access
+        if activeScopedAccess[url] == true {
+            return true
+        }
+        
+        // Check if any parent directory has active access (for files within secured folders)
+        var currentURL = url.deletingLastPathComponent()
+        while currentURL.path != "/" {
+            if activeScopedAccess[currentURL] == true {
+                print("📁 Found active security access for parent folder: \(currentURL.path)")
+                return true
+            }
+            currentURL = currentURL.deletingLastPathComponent()
+        }
+        
+        return false
+    }
+    
+    /// Release security scoped access for a specific URL
+    public func releaseAccess(for url: URL) {
+        if activeScopedAccess[url] == true {
+            url.stopAccessingSecurityScopedResource()
+            activeScopedAccess.removeValue(forKey: url)
+            print("📁 Released security scoped access for: \(url.path)")
+        }
+    }
+    
     deinit {
-        for url in securityScopedBookmarks.keys {
+        // Release all active security scoped access
+        for url in activeScopedAccess.keys {
             url.stopAccessingSecurityScopedResource()
         }
+        activeScopedAccess.removeAll()
+        securityScopedBookmarks.removeAll()
     }
 }
