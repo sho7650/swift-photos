@@ -6,6 +6,7 @@ public struct ImageDisplayViewWithObserver: View {
     @StateObject private var transitionSettings = TransitionSettingsManager()
     @State private var transitionManager: ImageTransitionManager?
     @State private var currentPhotoID: UUID?
+    @State private var showImage = true
     
     public init(viewModel: SlideshowViewModel) {
         self.viewModel = viewModel
@@ -45,19 +46,20 @@ public struct ImageDisplayViewWithObserver: View {
                                 )
                             
                             // Image with transition effects
-                            Image(nsImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(
-                                    width: imageDisplaySize.width,
-                                    height: imageDisplaySize.height
-                                )
-                                .position(
-                                    x: imagePosition.x,
-                                    y: imagePosition.y
-                                )
-                                .transition(getTransitionEffect())
-                                .animation(getTransitionAnimation(), value: viewModel.refreshCounter)
+                            if showImage {
+                                Image(nsImage: image)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(
+                                        width: imageDisplaySize.width,
+                                        height: imageDisplaySize.height
+                                    )
+                                    .position(
+                                        x: imagePosition.x,
+                                        y: imagePosition.y
+                                    )
+                                    .transition(getTransitionEffect())
+                            }
                         }
                         .id(viewModel.refreshCounter)  // Apply the id for refresh
                     
@@ -95,10 +97,12 @@ public struct ImageDisplayViewWithObserver: View {
         }
         .onAppear {
             initializeTransitionManager()
+            setupTransitionNotifications()
         }
         .onChange(of: viewModel.currentPhoto?.id) { newPhotoID in
             handlePhotoChange(newPhotoID: newPhotoID)
         }
+        .animation(getTransitionAnimation(), value: showImage)
     }
     
     /// Calculate the actual display size of the image, accounting for aspect ratio
@@ -147,6 +151,22 @@ public struct ImageDisplayViewWithObserver: View {
             transitionManager = ImageTransitionManager(transitionSettings: transitionSettings)
             print("🎬 ImageDisplayViewWithObserver: Initialized transition manager")
         }
+        
+        // Initialize showImage state
+        showImage = true
+        currentPhotoID = viewModel.currentPhoto?.id
+    }
+    
+    /// Setup transition settings notifications
+    private func setupTransitionNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: .transitionSettingsChanged,
+            object: nil,
+            queue: .main
+        ) { [weak transitionSettings] _ in
+            print("🎬 ImageDisplayViewWithObserver: Transition settings changed")
+            print("🎬 ImageDisplayViewWithObserver: New settings - enabled: \(transitionSettings?.settings.isEnabled ?? false), effect: \(transitionSettings?.settings.effectType.displayName ?? "unknown")")
+        }
     }
     
     /// Handle photo change with transitions
@@ -154,17 +174,21 @@ public struct ImageDisplayViewWithObserver: View {
         guard let newID = newPhotoID, newID != currentPhotoID else { return }
         
         print("🎬 ImageDisplayViewWithObserver: Photo changed from \(currentPhotoID?.uuidString ?? "nil") to \(newID.uuidString)")
+        print("🎬 ImageDisplayViewWithObserver: Transition enabled: \(transitionSettings.settings.isEnabled)")
+        print("🎬 ImageDisplayViewWithObserver: Effect type: \(transitionSettings.settings.effectType.displayName)")
+        
         currentPhotoID = newID
         
         // Trigger transition if enabled
         if transitionSettings.settings.isEnabled {
-            Task { @MainActor in
-                await transitionManager?.executeTransition {
-                    // Transition content is handled by SwiftUI animation
-                } completion: {
-                    print("🎬 ImageDisplayViewWithObserver: Transition completed")
-                }
+            // Hide current image, then show new one with transition
+            showImage = false
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                showImage = true
             }
+        } else {
+            showImage = true
         }
     }
     

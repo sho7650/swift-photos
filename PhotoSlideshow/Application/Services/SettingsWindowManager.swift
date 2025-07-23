@@ -26,10 +26,10 @@ public class SettingsWindowManager: ObservableObject {
         let hostingController = NSHostingController(rootView: settingsView)
         
         // Force the hosting controller to have proper size
-        hostingController.preferredContentSize = NSSize(width: 700, height: 600)
+        hostingController.preferredContentSize = NSSize(width: 800, height: 700)
         
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 700, height: 600),
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 700),
             styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
@@ -40,11 +40,11 @@ public class SettingsWindowManager: ObservableObject {
         window.isReleasedWhenClosed = false
         
         // Set window properties before centering
-        window.minSize = NSSize(width: 600, height: 500)
-        window.maxSize = NSSize(width: 1000, height: 800)
+        window.minSize = NSSize(width: 700, height: 600)
+        window.maxSize = NSSize(width: 1200, height: 900)
         
         // Force window size
-        window.setContentSize(NSSize(width: 700, height: 600))
+        window.setContentSize(NSSize(width: 800, height: 700))
         window.center()
         
         print("⚙️ SettingsWindowManager: Created window with size: \(window.frame.size)")

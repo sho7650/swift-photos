@@ -606,202 +606,24 @@ private struct TransitionSettingsView: View {
             Text("Configure smooth transition effects between photos during slideshow.")
                 .foregroundColor(.secondary)
             
-            VStack(alignment: .leading, spacing: 12) {
-                // Enable/Disable Toggle
-                Toggle("Enable Transition Effects", isOn: Binding(
-                    get: { settings.settings.isEnabled },
-                    set: { isEnabled in
-                        let newSettings = TransitionSettings(
-                            effectType: settings.settings.effectType,
-                            duration: settings.settings.duration,
-                            easing: settings.settings.easing,
-                            intensity: settings.settings.intensity,
-                            isEnabled: isEnabled
-                        )
-                        settings.updateSettings(newSettings)
-                    }
-                ))
-                .toggleStyle(SwitchToggleStyle())
-                
-                if settings.settings.isEnabled {
-                    Divider()
-                    
-                    // Presets
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Presets")
-                            .fontWeight(.medium)
-                        
-                        HStack(spacing: 12) {
-                            Button("Simple Fade") { settings.applyPreset(.simpleFade) }
-                                .buttonStyle(.bordered)
-                            Button("Elegant Slide") { settings.applyPreset(.elegantSlide) }
-                                .buttonStyle(.bordered)
-                            Button("Dynamic Zoom") { settings.applyPreset(.dynamicZoom) }
-                                .buttonStyle(.bordered)
-                        }
-                        
-                        HStack {
-                            Button("Smooth Crossfade") { settings.applyPreset(.smoothCrossfade) }
-                                .buttonStyle(.bordered)
-                            Button("Cinematic Push") { settings.applyPreset(.cinematicPush) }
-                                .buttonStyle(.bordered)
-                        }
-                    }
-                    
-                    Divider()
-                    
-                    // Effect Type Selection
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Effect Type")
-                            .fontWeight(.medium)
-                        
-                        Picker("Effect Type", selection: Binding(
-                            get: { settings.settings.effectType },
-                            set: { effectType in
-                                let newSettings = TransitionSettings(
-                                    effectType: effectType,
-                                    duration: settings.settings.duration,
-                                    easing: settings.settings.easing,
-                                    intensity: settings.settings.intensity,
-                                    isEnabled: settings.settings.isEnabled
-                                )
-                                settings.updateSettings(newSettings)
-                            }
-                        )) {
-                            ForEach(TransitionSettings.TransitionEffectType.allCases, id: \.self) { effectType in
-                                HStack {
-                                    Image(systemName: effectType.icon)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(effectType.displayName)
-                                        Text(effectType.description)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                                .tag(effectType)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                    }
-                    
-                    // Duration Slider
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("Duration")
-                            Spacer()
-                            Text(String(format: "%.1f seconds", settings.settings.duration))
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Slider(
-                            value: Binding(
-                                get: { settings.settings.duration },
-                                set: { duration in
-                                    let newSettings = TransitionSettings(
-                                        effectType: settings.settings.effectType,
-                                        duration: duration,
-                                        easing: settings.settings.easing,
-                                        intensity: settings.settings.intensity,
-                                        isEnabled: settings.settings.isEnabled
-                                    )
-                                    settings.updateSettings(newSettings)
-                                }
-                            ),
-                            in: 0.1...3.0
-                        )
-                    }
-                    
-                    // Easing Function
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Animation Easing")
-                            .fontWeight(.medium)
-                        
-                        Picker("Easing", selection: Binding(
-                            get: { settings.settings.easing },
-                            set: { easing in
-                                let newSettings = TransitionSettings(
-                                    effectType: settings.settings.effectType,
-                                    duration: settings.settings.duration,
-                                    easing: easing,
-                                    intensity: settings.settings.intensity,
-                                    isEnabled: settings.settings.isEnabled
-                                )
-                                settings.updateSettings(newSettings)
-                            }
-                        )) {
-                            ForEach(TransitionSettings.EasingFunction.allCases, id: \.self) { easing in
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(easing.displayName)
-                                    Text(easing.description)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                .tag(easing)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                    }
-                    
-                    // Intensity Slider
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("Effect Intensity")
-                            Spacer()
-                            Text(String(format: "%.0f%%", settings.settings.intensity * 100))
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Slider(
-                            value: Binding(
-                                get: { settings.settings.intensity },
-                                set: { intensity in
-                                    let newSettings = TransitionSettings(
-                                        effectType: settings.settings.effectType,
-                                        duration: settings.settings.duration,
-                                        easing: settings.settings.easing,
-                                        intensity: intensity,
-                                        isEnabled: settings.settings.isEnabled
-                                    )
-                                    settings.updateSettings(newSettings)
-                                }
-                            ),
-                            in: 0.0...1.0
-                        )
-                    }
-                    
-                    Divider()
-                    
-                    // Preview
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Preview")
-                            .fontWeight(.medium)
-                        
-                        HStack {
-                            TransitionPreview(
-                                effectType: settings.settings.effectType,
-                                duration: settings.settings.duration,
-                                easing: settings.settings.easing
-                            )
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Current Settings:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("• \(settings.settings.effectType.displayName)")
-                                    .font(.caption)
-                                Text("• \(String(format: "%.1f", settings.settings.duration))s duration")
-                                    .font(.caption)
-                                Text("• \(settings.settings.easing.displayName) easing")
-                                    .font(.caption)
-                                Text("• \(String(format: "%.0f", settings.settings.intensity * 100))% intensity")
-                                    .font(.caption)
-                            }
-                            .foregroundColor(.secondary)
-                            
-                            Spacer()
-                        }
-                    }
+            Toggle("Enable Transition Effects", isOn: Binding(
+                get: { settings.settings.isEnabled },
+                set: { isEnabled in
+                    let newSettings = TransitionSettings(
+                        effectType: settings.settings.effectType,
+                        duration: settings.settings.duration,
+                        easing: settings.settings.easing,
+                        intensity: settings.settings.intensity,
+                        isEnabled: isEnabled
+                    )
+                    settings.updateSettings(newSettings)
                 }
+            ))
+            .toggleStyle(SwitchToggleStyle())
+            
+            if settings.settings.isEnabled {
+                Text("Effect: \(settings.settings.effectType.displayName)")
+                Text("Duration: \(String(format: "%.1f", settings.settings.duration)) seconds")
             }
         }
     }
