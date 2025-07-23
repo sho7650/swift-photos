@@ -18,12 +18,16 @@ struct ContentView: View {
     @State private var keyboardHandler: KeyboardHandler?
     @State private var isInitialized = false
     @StateObject private var performanceSettings = PerformanceSettingsManager()
+    @StateObject private var blurSettings = BlurSettingsManager()
+    @StateObject private var slideshowSettings = SlideshowSettingsManager()
+    @StateObject private var settingsWindowManager = SettingsWindowManager()
     
     var body: some View {
         Group {
             if isInitialized, let viewModel = viewModel, let keyboardHandler = keyboardHandler {
                 ZStack {
-                    ImageDisplayViewWithObserver(viewModel: viewModel)
+                    // Main content
+                    ImageDisplayViewWithObserver(viewModel: viewModel, blurSettings: blurSettings)
                         .ignoresSafeArea()
                     
                     if showControls {
@@ -85,11 +89,20 @@ struct ContentView: View {
                 let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
                 
                 // Create view model and handler
-                let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess, performanceSettings: performanceSettings)
+                let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings)
                 let createdKeyboardHandler = KeyboardHandler()
                 
-                // Setup connection
+                // Setup connections
                 createdKeyboardHandler.viewModel = createdViewModel
+                createdKeyboardHandler.blurSettings = blurSettings
+                createdKeyboardHandler.performanceSettings = performanceSettings
+                createdKeyboardHandler.onOpenSettings = {
+                    settingsWindowManager.openSettingsWindow(
+                        performanceSettings: performanceSettings,
+                        blurSettings: blurSettings,
+                        slideshowSettings: slideshowSettings
+                    )
+                }
                 
                 // Set state
                 self.viewModel = createdViewModel

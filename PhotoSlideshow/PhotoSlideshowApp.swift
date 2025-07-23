@@ -12,6 +12,8 @@ private let logger = Logger(subsystem: "com.example.PhotoSlideshow", category: "
 
 @main
 struct PhotoSlideshowApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     init() {
         NSLog("🚀 PhotoSlideshowApp: Application started")
         logger.info("🚀 PhotoSlideshowApp: Application started via Logger")
@@ -27,5 +29,6 @@ struct PhotoSlideshowApp: App {
                     logger.info("🚀 PhotoSlideshowApp: WindowGroup appeared via Logger")
                 }
         }
+        .windowStyle(.hiddenTitleBar)
     }
 }

@@ -4,6 +4,13 @@ import AppKit
 @MainActor
 public class KeyboardHandler: ObservableObject {
     public weak var viewModel: SlideshowViewModel?
+    public weak var blurSettings: BlurSettingsManager?
+    public weak var performanceSettings: PerformanceSettingsManager?
+    public var onOpenSettings: (() -> Void)?
+    
+    // Debug functionality
+    private let blurTestManager = BlurTestWindowManager()
+    public var onOpenBlurTest: (() -> Void)?
     
     public init() {}
     
@@ -32,6 +39,65 @@ public class KeyboardHandler: ObservableObject {
                 viewModel.stop()
             }
             return true
+            
+        // Blur controls
+        case 11: // 'B' key - toggle blur
+            if let blurSettings = blurSettings {
+                let currentSettings = blurSettings.settings
+                let newSettings = BlurSettings(
+                    isEnabled: !currentSettings.isEnabled,
+                    intensity: currentSettings.intensity,
+                    style: currentSettings.style,
+                    backgroundOpacity: currentSettings.backgroundOpacity
+                )
+                blurSettings.updateSettings(newSettings)
+            }
+            return true
+            
+        case 69: // '+' key - increase blur intensity
+            if let blurSettings = blurSettings {
+                let currentSettings = blurSettings.settings
+                let newIntensity = min(1.0, currentSettings.intensity + 0.1)
+                let newSettings = BlurSettings(
+                    isEnabled: currentSettings.isEnabled,
+                    intensity: newIntensity,
+                    style: currentSettings.style,
+                    backgroundOpacity: currentSettings.backgroundOpacity
+                )
+                blurSettings.updateSettings(newSettings)
+            }
+            return true
+            
+        case 78: // '-' key - decrease blur intensity
+            if let blurSettings = blurSettings {
+                let currentSettings = blurSettings.settings
+                let newIntensity = max(0.0, currentSettings.intensity - 0.1)
+                let newSettings = BlurSettings(
+                    isEnabled: currentSettings.isEnabled,
+                    intensity: newIntensity,
+                    style: currentSettings.style,
+                    backgroundOpacity: currentSettings.backgroundOpacity
+                )
+                blurSettings.updateSettings(newSettings)
+            }
+            return true
+            
+        // Settings shortcut (Cmd+,)
+        case 43: // ',' key
+            if event.modifierFlags.contains(.command) {
+                onOpenSettings?()
+                return true
+            }
+            return false
+            
+        // Debug: Blur test window (Cmd+T)
+        case 17: // 'T' key  
+            if event.modifierFlags.contains(.command) {
+                print("🔍 DEBUG: Opening blur test window")
+                blurTestManager.openTestWindow()
+                return true
+            }
+            return false
             
         default:
             return false

@@ -3,7 +3,6 @@ import AppKit
 
 public struct ControlsView: View {
     @ObservedObject var viewModel: SlideshowViewModel
-    @State private var showSettings = false
     
     public init(viewModel: SlideshowViewModel) {
         self.viewModel = viewModel
@@ -11,20 +10,6 @@ public struct ControlsView: View {
     
     public var body: some View {
         VStack {
-            HStack {
-                Spacer()
-                
-                Button(action: { showSettings.toggle() }) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                        .padding(8)
-                        .background(Circle().fill(.ultraThinMaterial))
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-            .padding()
-            
             Spacer()
             
             if let slideshow = viewModel.slideshow, !slideshow.isEmpty {
@@ -32,9 +17,6 @@ public struct ControlsView: View {
             } else {
                 welcomeControls
             }
-        }
-        .sheet(isPresented: $showSettings) {
-            SettingsView(viewModel: viewModel)
         }
     }
     
@@ -160,55 +142,3 @@ public struct ControlsView: View {
     }
 }
 
-private struct SettingsView: View {
-    @ObservedObject var viewModel: SlideshowViewModel
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section("Playback") {
-                    if let slideshow = viewModel.slideshow {
-                        Picker("Interval", selection: Binding(
-                            get: { slideshow.interval },
-                            set: viewModel.setInterval
-                        )) {
-                            ForEach(SlideshowInterval.presets, id: \.seconds) { interval in
-                                Text(interval.displayString)
-                                    .tag(interval)
-                            }
-                        }
-                        
-                        Picker("Mode", selection: Binding(
-                            get: { slideshow.mode },
-                            set: viewModel.setMode
-                        )) {
-                            ForEach(Slideshow.SlideshowMode.allCases, id: \.self) { mode in
-                                Text(mode.displayName)
-                                    .tag(mode)
-                            }
-                        }
-                    }
-                }
-                
-                Section("Actions") {
-                    Button("Select New Folder") {
-                        Task {
-                            await viewModel.selectFolder()
-                        }
-                    }
-                    .disabled(viewModel.isLoading)
-                }
-            }
-            .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-        .frame(minWidth: 400, minHeight: 300)
-    }
-}

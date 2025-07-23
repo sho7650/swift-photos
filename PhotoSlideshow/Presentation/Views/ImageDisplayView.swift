@@ -238,12 +238,27 @@ struct DirectNSImageViewWrapper: NSViewRepresentable {
     func makeNSView(context: Context) -> NSImageView {
         let imageView = NSImageView()
         imageView.imageScaling = .scaleProportionallyUpOrDown
+        imageView.imageAlignment = .alignCenter
         imageView.image = nsImage
+        imageView.wantsLayer = true
+        
+        // Ensure transparent background
+        imageView.layer?.backgroundColor = NSColor.clear.cgColor
+        imageView.layer?.isOpaque = false
+        
+        // Add shadow for better visibility against blur
+        imageView.shadow = NSShadow()
+        imageView.shadow?.shadowOffset = NSSize(width: 0, height: -2)
+        imageView.shadow?.shadowBlurRadius = 8
+        imageView.shadow?.shadowColor = NSColor.black.withAlphaComponent(0.3)
+        
+        print("🖼️ DirectNSImageViewWrapper: Created with image size: \(nsImage.size)")
         return imageView
     }
     
     func updateNSView(_ nsView: NSImageView, context: Context) {
         nsView.image = nsImage
+        print("🖼️ DirectNSImageViewWrapper: Updated with image size: \(nsImage.size)")
     }
 }
 

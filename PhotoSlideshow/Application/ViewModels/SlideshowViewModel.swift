@@ -30,11 +30,13 @@ public class SlideshowViewModel: ObservableObject {
     private let virtualLoader: VirtualImageLoader
     private let backgroundPreloader: BackgroundPreloader
     private let performanceSettingsManager: PerformanceSettingsManager
+    private let slideshowSettingsManager: SlideshowSettingsManager
     
-    public init(domainService: SlideshowDomainService, fileAccess: SecureFileAccess, performanceSettings: PerformanceSettingsManager? = nil) {
+    public init(domainService: SlideshowDomainService, fileAccess: SecureFileAccess, performanceSettings: PerformanceSettingsManager? = nil, slideshowSettings: SlideshowSettingsManager? = nil) {
         self.domainService = domainService
         self.fileAccess = fileAccess
         self.performanceSettingsManager = performanceSettings ?? PerformanceSettingsManager()
+        self.slideshowSettingsManager = slideshowSettings ?? SlideshowSettingsManager()
         self.virtualLoader = VirtualImageLoader(settings: self.performanceSettingsManager.settings)
         self.backgroundPreloader = BackgroundPreloader(settings: self.performanceSettingsManager.settings)
         
@@ -44,6 +46,17 @@ public class SlideshowViewModel: ObservableObject {
         Task {
             await self.virtualLoader.setImageLoadedCallback { [weak self] photoId, image in
                 self?.handleVirtualImageLoaded(photoId: photoId, image: image)
+            }
+        }
+        
+        // Listen for slideshow mode changes
+        NotificationCenter.default.addObserver(
+            forName: .slideshowModeChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            if let randomOrder = notification.object as? Bool {
+                self?.updateSlideshowMode(randomOrder: randomOrder)
             }
         }
     }
@@ -82,10 +95,16 @@ public class SlideshowViewModel: ObservableObject {
         print("🚀 Creating slideshow from folder: \(folderURL.path)")
         do {
             print("🚀 Calling domainService.createSlideshow...")
+            
+            // Apply slideshow settings
+            let mode: Slideshow.SlideshowMode = slideshowSettingsManager.settings.randomOrder ? .random : .sequential
+            print("🎬 Applying slideshow settings - randomOrder: \(slideshowSettingsManager.settings.randomOrder), mode: \(mode), autoStart: \(slideshowSettingsManager.settings.autoStart)")
+            
+            let customInterval = try SlideshowInterval(slideshowSettingsManager.settings.slideDuration)
             let newSlideshow = try await domainService.createSlideshow(
                 from: folderURL,
-                interval: .default,
-                mode: .sequential
+                interval: customInterval,
+                mode: mode
             )
             
             print("🚀 Created slideshow with \(newSlideshow.photos.count) photos")
@@ -124,6 +143,12 @@ public class SlideshowViewModel: ObservableObject {
                 print("⚠️ Slideshow is empty - no photos found")
             }
             
+            // Auto-start slideshow if enabled in settings
+            if !newSlideshow.isEmpty && slideshowSettingsManager.settings.autoStart {
+                print("🎬 Auto-starting slideshow per settings")
+                play()
+            }
+            
         } catch let slideshowError as SlideshowError {
             print("❌ SlideshowError in createSlideshow: \(slideshowError.localizedDescription)")
             error = slideshowError
@@ -160,7 +185,9 @@ public class SlideshowViewModel: ObservableObject {
     public func nextPhoto() {
         guard var currentSlideshow = slideshow else { return }
         
+        print("🎬 NextPhoto: Current slideshow mode: \(currentSlideshow.mode), current index: \(currentSlideshow.currentIndex)")
         currentSlideshow.nextPhoto()
+        print("🎬 NextPhoto: After nextPhoto() - new index: \(currentSlideshow.currentIndex)")
         slideshow = currentSlideshow
         currentPhoto = currentSlideshow.currentPhoto  // UPDATE @Published property
         refreshCounter += 1
@@ -249,12 +276,31 @@ public class SlideshowViewModel: ObservableObject {
         slideshow = currentSlideshow
     }
     
+    /// Update slideshow mode based on settings change
+    private func updateSlideshowMode(randomOrder: Bool) {
+        guard var currentSlideshow = slideshow else { 
+            print("🎬 updateSlideshowMode: No slideshow to update")
+            return 
+        }
+        
+        let newMode: Slideshow.SlideshowMode = randomOrder ? .random : .sequential
+        print("🎬 updateSlideshowMode: Updating slideshow mode to \(newMode)")
+        
+        currentSlideshow.setMode(newMode)
+        slideshow = currentSlideshow
+        
+        print("🎬 updateSlideshowMode: Slideshow mode updated successfully")
+    }
+    
     private func startTimer() {
         stopTimer()
         
-        guard let interval = slideshow?.interval else { return }
+        // Use settings from SlideshowSettingsManager
+        let interval = slideshowSettingsManager.settings.slideDuration
         
-        timer = Timer.scheduledTimer(withTimeInterval: interval.timeInterval, repeats: true) { [weak self] _ in
+        print("🔄 StartTimer: Using interval \(interval) seconds from settings")
+        
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.nextPhoto()
             }
@@ -462,6 +508,9 @@ public class SlideshowViewModel: ObservableObject {
     deinit {
         timer?.invalidate()
         timer = nil
+        
+        // Remove notification observer
+        NotificationCenter.default.removeObserver(self)
         
         // Clean up async resources
         Task { [virtualLoader, backgroundPreloader] in
