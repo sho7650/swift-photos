@@ -240,17 +240,15 @@ public class SlideshowViewModel: ObservableObject {
     }
     
     private func startTimer() {
-        print("🚨 startTimer: TIMER DISABLED FOR DEBUG")
         stopTimer()
         
-        // TEMPORARILY DISABLED FOR DEBUG
-        // guard let interval = slideshow?.interval else { return }
-        // 
-        // timer = Timer.scheduledTimer(withTimeInterval: interval.timeInterval, repeats: true) { [weak self] _ in
-        //     Task { @MainActor in
-        //         self?.nextPhoto()
-        //     }
-        // }
+        guard let interval = slideshow?.interval else { return }
+        
+        timer = Timer.scheduledTimer(withTimeInterval: interval.timeInterval, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.nextPhoto()
+            }
+        }
     }
     
     private func stopTimer() {
@@ -335,7 +333,6 @@ public class SlideshowViewModel: ObservableObject {
         
         // CRITICAL: Use MainActor.run to ensure proper UI thread execution
         Task { @MainActor in
-            print("🔄 updatePhotoInSlideshow: Running on MainActor")
             
             guard var currentSlideshow = self.slideshow else { 
                 print("❌ updatePhotoInSlideshow: No slideshow available")
@@ -367,15 +364,8 @@ public class SlideshowViewModel: ObservableObject {
                         print("🔄 updatePhotoInSlideshow: Setting currentPhoto @Published property...")
                         self.currentPhoto = currentSlideshow.currentPhoto
                         
-                        // CRITICAL: Check if slideshow is auto-playing and stop it for debugging
+                        // Keep slideshow running if it was playing
                         print("🔄 updatePhotoInSlideshow: Slideshow state: \(currentSlideshow.state)")
-                        if currentSlideshow.isPlaying {
-                            print("🚨 updatePhotoInSlideshow: SLIDESHOW IS AUTO-PLAYING! Stopping it for debug...")
-                            var debugSlideshow = currentSlideshow
-                            debugSlideshow.stop()
-                            self.slideshow = debugSlideshow
-                            self.stopTimer()
-                        }
                         
                         print("✅ updatePhotoInSlideshow: Updated CURRENT photo (refreshCounter: \(self.refreshCounter), currentIndex: \(self.slideshow?.currentIndex ?? -1))")
                         print("✅ updatePhotoInSlideshow: Current photo after update: \(self.slideshow?.currentPhoto?.fileName ?? "nil") - \(self.slideshow?.currentPhoto?.loadState.description ?? "no state")")

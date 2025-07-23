@@ -1,4 +1,5 @@
 import Foundation
+import CoreGraphics
 
 /// Performance settings for image loading and caching
 public struct PerformanceSettings: Codable, Equatable {

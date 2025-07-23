@@ -2,7 +2,7 @@ import Foundation
 import AppKit
 
 // Make NSImage Sendable for Swift concurrency
-extension NSImage: @unchecked Sendable {}
+extension NSImage: @retroactive @unchecked Sendable {}
 
 /// Background preloader that loads images with priority-based queuing for unlimited collections
 actor BackgroundPreloader {
