@@ -1,0 +1,421 @@
+import SwiftUI
+import AppKit
+
+/// Expandable detailed information overlay with photo metadata and enhanced controls
+public struct DetailedInfoOverlay: View {
+    @ObservedObject var viewModel: SlideshowViewModel
+    @ObservedObject var uiControlStateManager: UIControlStateManager
+    @ObservedObject var uiControlSettings: UIControlSettingsManager
+    
+    @State private var isExpanded = false
+    @State private var showMetadata = false
+    
+    public init(
+        viewModel: SlideshowViewModel,
+        uiControlStateManager: UIControlStateManager,
+        uiControlSettings: UIControlSettingsManager
+    ) {
+        self.viewModel = viewModel
+        self.uiControlStateManager = uiControlStateManager
+        self.uiControlSettings = uiControlSettings
+    }
+    
+    public var body: some View {
+        VStack {
+            Spacer()
+            
+            if let slideshow = viewModel.slideshow,
+               !slideshow.isEmpty,
+               uiControlStateManager.isDetailedInfoVisible {
+                detailedInfoPanel(slideshow: slideshow)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiControlStateManager.isDetailedInfoVisible)
+    }
+    
+    private func detailedInfoPanel(slideshow: Slideshow) -> some View {
+        VStack(spacing: 0) {
+            // Header with close button and expand toggle
+            headerSection(slideshow: slideshow)
+            
+            // Main content area
+            if isExpanded {
+                expandedContent(slideshow: slideshow)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .bottom).combined(with: .opacity)
+                    ))
+            }
+        }
+        .background(
+            BlurredDetailedBackground(
+                intensity: uiControlSettings.settings.backgroundBlurIntensity,
+                opacity: uiControlSettings.settings.backgroundOpacity
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 20)
+        .padding(.bottom, uiControlSettings.settings.bottomOffset)
+        .onTapGesture {
+            uiControlStateManager.handleGestureInteraction()
+        }
+        .animation(.easeInOut(duration: 0.3), value: isExpanded)
+    }
+    
+    private func headerSection(slideshow: Slideshow) -> some View {
+        VStack(spacing: 8) {
+            // Top control bar
+            HStack {
+                // Expand/Collapse button
+                Button(action: toggleExpanded) {
+                    Image(systemName: isExpanded ? "chevron.down.circle.fill" : "chevron.up.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Spacer()
+                
+                // Photo counter
+                Text("\(slideshow.currentIndex + 1) of \(slideshow.count)")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                // Close button
+                Button(action: {
+                    uiControlStateManager.toggleDetailedInfo()
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .shortcutTooltip("Close Info", shortcut: "I")
+            }
+            
+            // Photo title
+            if let currentPhoto = slideshow.currentPhoto {
+                Text(currentPhoto.fileName)
+                    .font(.title3)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+            }
+            
+            // Full-width progress bar
+            DetailedProgressBar(
+                progress: slideshow.progress,
+                currentIndex: slideshow.currentIndex,
+                totalCount: slideshow.count
+            ) { targetIndex in
+                print("🎯 DetailedInfoOverlay: Progress bar clicked - jumping to photo \(targetIndex)")
+                uiControlStateManager.handleGestureInteraction()
+                viewModel.goToPhoto(at: targetIndex)
+            }
+            .frame(height: 8)
+        }
+        .padding(16)
+    }
+    
+    private func expandedContent(slideshow: Slideshow) -> some View {
+        VStack(spacing: 12) {
+            Divider()
+                .background(Color.secondary.opacity(0.3))
+            
+            // Photo metadata section
+            if let currentPhoto = slideshow.currentPhoto {
+                photoMetadataSection(photo: currentPhoto)
+            }
+            
+            // Slideshow controls section
+            slideshowControlsSection(slideshow: slideshow)
+            
+            // Quick actions section
+            quickActionsSection()
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
+    }
+    
+    private func photoMetadataSection(photo: Photo) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Section header
+            HStack {
+                Text("Photo Information")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Button(action: { showMetadata.toggle() }) {
+                    Image(systemName: showMetadata ? "eye.slash" : "eye")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            
+            if showMetadata, let metadata = photo.metadata {
+                VStack(alignment: .leading, spacing: 4) {
+                    metadataRow("Dimensions", metadata.dimensionsString)
+                    metadataRow("File Size", metadata.fileSizeString)
+                    
+                    if let colorSpace = metadata.colorSpace {
+                        metadataRow("Color Space", colorSpace)
+                    }
+                    
+                    if let creationDate = metadata.creationDate {
+                        metadataRow("Created", DateFormatter.shortDateTime.string(from: creationDate))
+                    }
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+            }
+        }
+        .padding(.vertical, 8)
+        .animation(.easeInOut(duration: 0.2), value: showMetadata)
+    }
+    
+    private func metadataRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .foregroundColor(.primary)
+        }
+    }
+    
+    private func slideshowControlsSection(slideshow: Slideshow) -> some View {
+        VStack(spacing: 8) {
+            Text("Slideshow Controls")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            HStack(spacing: 20) {
+                // Previous photo
+                DetailedControlButton(
+                    systemName: "backward.fill",
+                    label: "Previous",
+                    action: {
+                        uiControlStateManager.handleGestureInteraction()
+                        viewModel.previousPhoto()
+                    }
+                )
+                
+                // Play/Pause
+                DetailedControlButton(
+                    systemName: slideshow.isPlaying ? "pause.fill" : "play.fill",
+                    label: slideshow.isPlaying ? "Pause" : "Play",
+                    action: {
+                        uiControlStateManager.handleGestureInteraction()
+                        if slideshow.isPlaying {
+                            viewModel.pause()
+                        } else {
+                            viewModel.play()
+                        }
+                    }
+                )
+                
+                // Next photo
+                DetailedControlButton(
+                    systemName: "forward.fill",
+                    label: "Next",
+                    action: {
+                        uiControlStateManager.handleGestureInteraction()
+                        viewModel.nextPhoto()
+                    }
+                )
+            }
+        }
+        .padding(.vertical, 8)
+    }
+    
+    private func quickActionsSection() -> some View {
+        VStack(spacing: 8) {
+            Text("Quick Actions")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            HStack(spacing: 16) {
+                // Reveal in Finder (if possible)
+                DetailedControlButton(
+                    systemName: "folder",
+                    label: "Folder",
+                    action: {
+                        uiControlStateManager.handleGestureInteraction()
+                        // TODO: Implement reveal in finder
+                        print("📁 Reveal in Finder action")
+                    }
+                )
+                
+                // Settings
+                DetailedControlButton(
+                    systemName: "gear",
+                    label: "Settings",
+                    action: {
+                        uiControlStateManager.handleGestureInteraction()
+                        // TODO: Open settings window
+                        print("⚙️ Open settings action")
+                    }
+                )
+                
+                // Info toggle
+                DetailedControlButton(
+                    systemName: showMetadata ? "info.circle.fill" : "info.circle",
+                    label: "Info",
+                    action: {
+                        uiControlStateManager.handleGestureInteraction()
+                        showMetadata.toggle()
+                    }
+                )
+            }
+        }
+        .padding(.vertical, 8)
+    }
+    
+    private func toggleExpanded() {
+        uiControlStateManager.handleGestureInteraction()
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isExpanded.toggle()
+        }
+    }
+}
+
+/// Detailed control button with icon and label
+private struct DetailedControlButton: View {
+    let systemName: String
+    let label: String
+    let action: () -> Void
+    
+    @State private var isPressed = false
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: systemName)
+                    .font(.title3)
+                    .foregroundColor(.primary)
+                
+                Text(label)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            .opacity(isPressed ? 0.6 : 1.0)
+            .scaleEffect(isPressed ? 0.9 : 1.0)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+            withAnimation(.easeInOut(duration: 0.1)) {
+                isPressed = pressing
+            }
+        }, perform: {})
+    }
+}
+
+/// Enhanced progress bar for detailed view
+private struct DetailedProgressBar: View {
+    let progress: Double
+    let currentIndex: Int
+    let totalCount: Int
+    let onJumpToIndex: (Int) -> Void
+    
+    @State private var isHovering = false
+    @State private var hoveredIndex: Int?
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                // Background track
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.3))
+                    .frame(height: 8)
+                    .cornerRadius(4)
+                
+                // Progress fill
+                Rectangle()
+                    .fill(Color.accentColor)
+                    .frame(width: geometry.size.width * progress, height: 8)
+                    .cornerRadius(4)
+                    .animation(.easeInOut(duration: 0.2), value: progress)
+                
+                // Hover preview
+                if isHovering, let hoveredIndex = hoveredIndex {
+                    let hoveredProgress = Double(hoveredIndex) / Double(max(1, totalCount - 1))
+                    Rectangle()
+                        .fill(Color.white.opacity(0.4))
+                        .frame(width: 2, height: 12)
+                        .position(x: geometry.size.width * hoveredProgress, y: 6)
+                        .transition(.opacity)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { location in
+                handleTap(at: location, in: geometry)
+            }
+            .onHover { hovering in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isHovering = hovering
+                }
+            }
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        updateHoveredIndex(at: value.location, in: geometry)
+                    }
+            )
+        }
+    }
+    
+    private func handleTap(at location: CGPoint, in geometry: GeometryProxy) {
+        let relativeX = location.x / geometry.size.width
+        let clampedProgress = max(0, min(1, relativeX))
+        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
+        let validIndex = max(0, min(totalCount - 1, targetIndex))
+        
+        if validIndex != currentIndex {
+            onJumpToIndex(validIndex)
+        }
+    }
+    
+    private func updateHoveredIndex(at location: CGPoint, in geometry: GeometryProxy) {
+        let relativeX = location.x / geometry.size.width
+        let clampedProgress = max(0, min(1, relativeX))
+        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
+        hoveredIndex = max(0, min(totalCount - 1, targetIndex))
+    }
+}
+
+/// Enhanced blurred background for detailed info
+private struct BlurredDetailedBackground: View {
+    let intensity: Double
+    let opacity: Double
+    
+    var body: some View {
+        ZStack {
+            // Base material with stronger blur
+            Rectangle()
+                .fill(.regularMaterial)
+                .opacity(intensity)
+            
+            // Additional tinted layer
+            Rectangle()
+                .fill(Color.black.opacity(opacity * 1.2))
+        }
+    }
+}
+
+// MARK: - Extensions
+
+private extension DateFormatter {
+    static let shortDateTime: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
+}

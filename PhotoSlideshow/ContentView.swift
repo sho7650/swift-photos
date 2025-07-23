@@ -12,38 +12,53 @@ import os.log
 private let logger = Logger(subsystem: "com.example.PhotoSlideshow", category: "ContentView")
 
 struct ContentView: View {
-    @State private var showControls = true
-    @State private var controlsTimer: Timer?
     @State private var viewModel: SlideshowViewModel?
     @State private var keyboardHandler: KeyboardHandler?
+    @State private var uiControlStateManager: UIControlStateManager?
     @State private var isInitialized = false
     @StateObject private var performanceSettings = PerformanceSettingsManager()
     @StateObject private var slideshowSettings = SlideshowSettingsManager()
     @StateObject private var sortSettings = SortSettingsManager()
     @StateObject private var transitionSettings = TransitionSettingsManager()
+    @StateObject private var uiControlSettings = UIControlSettingsManager()
     @StateObject private var settingsWindowManager = SettingsWindowManager()
     
     var body: some View {
         Group {
-            if isInitialized, let viewModel = viewModel, let keyboardHandler = keyboardHandler {
+            if isInitialized, 
+               let viewModel = viewModel, 
+               let keyboardHandler = keyboardHandler,
+               let uiControlStateManager = uiControlStateManager {
                 ZStack {
                     // Main content
                     ImageDisplayViewWithObserver(viewModel: viewModel)
                         .environmentObject(transitionSettings)
                         .ignoresSafeArea()
                     
-                    if showControls {
-                        ControlsView(viewModel: viewModel)
-                    }
+                    // Minimal controls overlay (always present in ZStack, visibility controlled internally)
+                    MinimalControlsView(
+                        viewModel: viewModel,
+                        uiControlStateManager: uiControlStateManager,
+                        uiControlSettings: uiControlSettings
+                    )
+                    .shortcutTooltip("Hide/Show Controls", shortcut: "H")
+                    
+                    // Detailed info overlay (shown when toggled)
+                    DetailedInfoOverlay(
+                        viewModel: viewModel,
+                        uiControlStateManager: uiControlStateManager,
+                        uiControlSettings: uiControlSettings
+                    )
                 }
                 .keyboardHandler(keyboardHandler)
                 .onHover { hovering in
                     if hovering {
-                        showControlsTemporarily()
+                        uiControlStateManager.handleMouseInteraction(at: NSEvent.mouseLocation)
                     }
+                    uiControlStateManager.updateMouseInWindow(hovering)
                 }
                 .onTapGesture {
-                    showControlsTemporarily()
+                    uiControlStateManager.handleGestureInteraction()
                 }
                 .alert("Error", isPresented: .constant(viewModel.error != nil)) {
                     Button("OK") {
@@ -90,11 +105,12 @@ struct ContentView: View {
                 let repository = FileSystemPhotoRepository(fileAccess: fileAccess, imageLoader: imageLoader, sortSettings: sortSettings)
                 let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
                 
-                // Create view model and handler
+                // Create view model and UI managers
                 let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings)
                 let createdKeyboardHandler = KeyboardHandler()
+                let createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: createdViewModel)
                 
-                // Setup connections
+                // Setup keyboard handler connections
                 createdKeyboardHandler.viewModel = createdViewModel
                 createdKeyboardHandler.performanceSettings = performanceSettings
                 createdKeyboardHandler.onOpenSettings = {
@@ -106,32 +122,31 @@ struct ContentView: View {
                     )
                 }
                 
+                // Setup UI control state manager callbacks
+                createdKeyboardHandler.onKeyboardInteraction = {
+                    createdUIControlStateManager.handleKeyboardInteraction()
+                }
+                createdKeyboardHandler.onToggleDetailedInfo = {
+                    createdUIControlStateManager.toggleDetailedInfo()
+                }
+                createdKeyboardHandler.onToggleControlsVisibility = {
+                    if createdUIControlStateManager.isControlsVisible {
+                        createdUIControlStateManager.hideControls(force: true)
+                    } else {
+                        createdUIControlStateManager.showControls()
+                    }
+                }
+                
                 // Set state
                 self.viewModel = createdViewModel
                 self.keyboardHandler = createdKeyboardHandler
+                self.uiControlStateManager = createdUIControlStateManager
                 self.isInitialized = true
                 
                 print("🏗️ ContentView: Initialization completed successfully")
                 
             } catch {
                 print("❌ ContentView: Initialization failed: \(error)")
-            }
-        }
-    }
-    
-    private func showControlsTemporarily() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            showControls = true
-        }
-        
-        controlsTimer?.invalidate()
-        controlsTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
-            Task { @MainActor in
-                if self.viewModel?.slideshow?.isPlaying == true {
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        showControls = false
-                    }
-                }
             }
         }
     }

@@ -7,53 +7,84 @@ public class KeyboardHandler: ObservableObject {
     public weak var performanceSettings: PerformanceSettingsManager?
     public var onOpenSettings: (() -> Void)?
     
+    /// Callback for UI control state manager to be notified of keyboard interactions
+    public var onKeyboardInteraction: (() -> Void)?
+    
+    /// Callback for UI control actions (toggle info, show/hide controls)
+    public var onToggleDetailedInfo: (() -> Void)?
+    public var onToggleControlsVisibility: (() -> Void)?
+    
     public init() {}
     
     public func handleKeyEvent(_ event: NSEvent) -> Bool {
         guard let viewModel = viewModel else { return false }
         
+        var handled = false
+        
         switch event.keyCode {
-        case 49:
+        case 49: // Space key - Play/Pause
             if viewModel.slideshow?.isPlaying == true {
                 viewModel.pause()
             } else {
                 viewModel.play()
             }
-            return true
+            handled = true
             
-        case 124, 125:
+        case 124, 125: // Right arrow, Down arrow - Next photo
             viewModel.nextPhoto()
-            return true
+            handled = true
             
-        case 123, 126:
+        case 123, 126: // Left arrow, Up arrow - Previous photo
             viewModel.previousPhoto()
-            return true
+            handled = true
             
-        case 53:
+        case 53: // Escape - Stop/Pause
             if viewModel.slideshow?.isPlaying == true {
                 viewModel.stop()
             }
-            return true
+            handled = true
             
         // Settings shortcut (Cmd+,)
         case 43: // ',' key
             if event.modifierFlags.contains(.command) {
                 onOpenSettings?()
-                return true
+                handled = true
             }
-            return false
+            
+        // Toggle detailed info (I key)
+        case 34: // 'I' key
+            if !event.modifierFlags.contains(.command) {
+                print("🎮 KeyboardHandler: Toggle detailed info shortcut pressed")
+                onToggleDetailedInfo?()
+                handled = true
+            }
+            
+        // Toggle controls visibility (H key)
+        case 4: // 'H' key
+            if !event.modifierFlags.contains(.command) {
+                print("🎮 KeyboardHandler: Toggle controls visibility shortcut pressed")
+                onToggleControlsVisibility?()
+                handled = true
+            }
             
         // Reserved for future debug functionality
         case 17: // 'T' key  
             if event.modifierFlags.contains(.command) {
                 print("🔍 DEBUG: Debug shortcut pressed")
-                return true
+                handled = true
             }
-            return false
             
         default:
-            return false
+            break
         }
+        
+        // Notify UI control state manager of any keyboard interaction
+        if handled {
+            print("🎮 KeyboardHandler: Keyboard interaction detected, notifying UI state manager")
+            onKeyboardInteraction?()
+        }
+        
+        return handled
     }
 }
 
