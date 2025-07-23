@@ -4,14 +4,12 @@ import AppKit
 /// Standalone settings window for PhotoSlideshow
 public struct SettingsWindow: View {
     @ObservedObject var performanceSettings: PerformanceSettingsManager
-    @ObservedObject var blurSettings: BlurSettingsManager
     @ObservedObject var slideshowSettings: SlideshowSettingsManager
     
     @State private var selectedTab: SettingsTab = .performance
     
-    public init(performanceSettings: PerformanceSettingsManager, blurSettings: BlurSettingsManager, slideshowSettings: SlideshowSettingsManager) {
+    public init(performanceSettings: PerformanceSettingsManager, slideshowSettings: SlideshowSettingsManager) {
         self.performanceSettings = performanceSettings
-        self.blurSettings = blurSettings
         self.slideshowSettings = slideshowSettings
     }
     
@@ -39,8 +37,6 @@ public struct SettingsWindow: View {
                     switch selectedTab {
                     case .performance:
                         PerformanceSettingsView(settings: performanceSettings)
-                    case .blur:
-                        BlurSettingsView(settings: blurSettings)
                     case .slideshow:
                         SlideshowSettingsView(settings: slideshowSettings)
                     case .keyboard:
@@ -73,7 +69,6 @@ public struct SettingsWindow: View {
     
     private func resetToDefaults() {
         performanceSettings.resetToDefault()
-        blurSettings.resetToDefault()
         slideshowSettings.resetToDefault()
     }
 }
@@ -81,7 +76,6 @@ public struct SettingsWindow: View {
 /// Settings tabs
 private enum SettingsTab: CaseIterable {
     case performance
-    case blur
     case slideshow
     case keyboard
     
@@ -89,8 +83,6 @@ private enum SettingsTab: CaseIterable {
         switch self {
         case .performance:
             return "Performance"
-        case .blur:
-            return "Visual Effects"
         case .slideshow:
             return "Slideshow"
         case .keyboard:
@@ -341,117 +333,6 @@ private struct PerformanceSettingsView: View {
     }
 }
 
-/// Blur settings view
-private struct BlurSettingsView: View {
-    @ObservedObject var settings: BlurSettingsManager
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Visual Effects")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text("Configure background blur effects for a more immersive viewing experience.")
-                .foregroundColor(.secondary)
-            
-            // Enable/Disable
-            Toggle("Enable Background Blur", isOn: Binding(
-                get: { settings.settings.isEnabled },
-                set: { newValue in
-                    let newSettings = BlurSettings(
-                        isEnabled: newValue,
-                        intensity: settings.settings.intensity,
-                        style: settings.settings.style,
-                        backgroundOpacity: settings.settings.backgroundOpacity
-                    )
-                    settings.updateSettings(newSettings)
-                }
-            ))
-            
-            if settings.settings.isEnabled {
-                VStack(alignment: .leading, spacing: 12) {
-                    // Presets
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Presets")
-                            .fontWeight(.medium)
-                        
-                        HStack(spacing: 12) {
-                            Button("Subtle") { settings.applyPreset(.subtle) }
-                                .buttonStyle(.bordered)
-                            Button("Medium") { settings.applyPreset(.medium) }
-                                .buttonStyle(.bordered)
-                            Button("Strong") { settings.applyPreset(.strong) }
-                                .buttonStyle(.bordered)
-                        }
-                    }
-                    
-                    Divider()
-                    
-                    // Manual controls
-                    SettingSlider(
-                        title: "Blur Intensity",
-                        value: Binding(
-                            get: { settings.settings.intensity },
-                            set: { newValue in
-                                let newSettings = BlurSettings(
-                                    isEnabled: settings.settings.isEnabled,
-                                    intensity: newValue,
-                                    style: settings.settings.style,
-                                    backgroundOpacity: settings.settings.backgroundOpacity
-                                )
-                                settings.updateSettings(newSettings)
-                            }
-                        ),
-                        range: 0.0...1.0,
-                        format: "%.1f"
-                    )
-                    
-                    SettingSlider(
-                        title: "Background Opacity",
-                        value: Binding(
-                            get: { settings.settings.backgroundOpacity },
-                            set: { newValue in
-                                let newSettings = BlurSettings(
-                                    isEnabled: settings.settings.isEnabled,
-                                    intensity: settings.settings.intensity,
-                                    style: settings.settings.style,
-                                    backgroundOpacity: newValue
-                                )
-                                settings.updateSettings(newSettings)
-                            }
-                        ),
-                        range: 0.0...1.0,
-                        format: "%.1f"
-                    )
-                    
-                    // Blur style
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Blur Style")
-                            .fontWeight(.medium)
-                        
-                        Picker("Blur Style", selection: Binding(
-                            get: { settings.settings.style },
-                            set: { newValue in
-                                let newSettings = BlurSettings(
-                                    isEnabled: settings.settings.isEnabled,
-                                    intensity: settings.settings.intensity,
-                                    style: newValue,
-                                    backgroundOpacity: settings.settings.backgroundOpacity
-                                )
-                                settings.updateSettings(newSettings)
-                            }
-                        )) {
-                            ForEach(BlurSettings.BlurStyle.allCases, id: \.self) { style in
-                                Text(style.displayName).tag(style)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                    }
-                }
-            }
-        }
-    }
-}
 
 /// Keyboard shortcuts view
 private struct KeyboardShortcutsView: View {
@@ -469,14 +350,6 @@ private struct KeyboardShortcutsView: View {
                 ShortcutRow(key: "→ ↓", description: "Next photo")
                 ShortcutRow(key: "← ↑", description: "Previous photo")
                 ShortcutRow(key: "Esc", description: "Stop slideshow")
-                
-                Divider()
-                
-                Text("Blur Controls")
-                    .fontWeight(.medium)
-                ShortcutRow(key: "B", description: "Toggle background blur")
-                ShortcutRow(key: "+", description: "Increase blur intensity")
-                ShortcutRow(key: "-", description: "Decrease blur intensity")
                 
                 Divider()
                 
@@ -564,7 +437,6 @@ private struct ShortcutRow: View {
 #Preview {
     SettingsWindow(
         performanceSettings: PerformanceSettingsManager(),
-        blurSettings: BlurSettingsManager(),
         slideshowSettings: SlideshowSettingsManager()
     )
 }

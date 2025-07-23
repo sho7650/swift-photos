@@ -1,0 +1,48 @@
+{
+  "source": "/Users/sho/working/swift/work/PhotoSlideshow/PhotoSlideshow/Debug/BlurTestView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Blur Effect Test",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 13
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading test image...",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "Original",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 20
+        }
+      },
+      {
+        "comment": "",
+        "key": "Blurred (Intensity: %@)",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "Blur Intensity",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 41
+        }
+      }
+    ]
+  },
+  "version": 1
+}

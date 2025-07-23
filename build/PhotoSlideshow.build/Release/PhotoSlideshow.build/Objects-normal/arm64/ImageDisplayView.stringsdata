@@ -1,0 +1,40 @@
+{
+  "source": "/Users/sho/working/swift/work/PhotoSlideshow/PhotoSlideshow/Presentation/Views/ImageDisplayView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "✅ SHOULD DISPLAY: %@ | Refresh: %lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading...",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 98
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error Loading Image",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 174
+        }
+      },
+      {
+        "comment": "",
+        "key": "Select a folder to start slideshow",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 191
+        }
+      }
+    ]
+  },
+  "version": 1
+}

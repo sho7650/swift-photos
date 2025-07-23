@@ -8,7 +8,6 @@ public class SettingsWindowManager: ObservableObject {
     
     public func openSettingsWindow(
         performanceSettings: PerformanceSettingsManager,
-        blurSettings: BlurSettingsManager,
         slideshowSettings: SlideshowSettingsManager
     ) {
         // Close existing window if open
@@ -17,7 +16,6 @@ public class SettingsWindowManager: ObservableObject {
         // Create new window
         let settingsView = SettingsWindow(
             performanceSettings: performanceSettings,
-            blurSettings: blurSettings,
             slideshowSettings: slideshowSettings
         )
         

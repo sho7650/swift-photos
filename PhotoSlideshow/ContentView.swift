@@ -18,7 +18,6 @@ struct ContentView: View {
     @State private var keyboardHandler: KeyboardHandler?
     @State private var isInitialized = false
     @StateObject private var performanceSettings = PerformanceSettingsManager()
-    @StateObject private var blurSettings = BlurSettingsManager()
     @StateObject private var slideshowSettings = SlideshowSettingsManager()
     @StateObject private var settingsWindowManager = SettingsWindowManager()
     
@@ -27,7 +26,7 @@ struct ContentView: View {
             if isInitialized, let viewModel = viewModel, let keyboardHandler = keyboardHandler {
                 ZStack {
                     // Main content
-                    ImageDisplayViewWithObserver(viewModel: viewModel, blurSettings: blurSettings)
+                    ImageDisplayViewWithObserver(viewModel: viewModel)
                         .ignoresSafeArea()
                     
                     if showControls {
@@ -94,12 +93,10 @@ struct ContentView: View {
                 
                 // Setup connections
                 createdKeyboardHandler.viewModel = createdViewModel
-                createdKeyboardHandler.blurSettings = blurSettings
                 createdKeyboardHandler.performanceSettings = performanceSettings
                 createdKeyboardHandler.onOpenSettings = {
                     settingsWindowManager.openSettingsWindow(
                         performanceSettings: performanceSettings,
-                        blurSettings: blurSettings,
                         slideshowSettings: slideshowSettings
                     )
                 }

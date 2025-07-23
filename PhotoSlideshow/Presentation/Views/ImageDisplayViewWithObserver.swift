@@ -3,23 +3,16 @@ import AppKit
 
 public struct ImageDisplayViewWithObserver: View {
     @ObservedObject var viewModel: SlideshowViewModel
-    @ObservedObject var blurSettings: BlurSettingsManager
     
-    public init(viewModel: SlideshowViewModel, blurSettings: BlurSettingsManager) {
+    public init(viewModel: SlideshowViewModel) {
         self.viewModel = viewModel
-        self.blurSettings = blurSettings
     }
     
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background layer with blur/transparency effect
-                if let photo = viewModel.currentPhoto,
-                   case .loaded(let image) = photo.loadState {
-                    BackgroundBlurView(image: image, settings: blurSettings.settings)
-                } else {
-                    Color.black.ignoresSafeArea()
-                }
+                // Always use solid black background - no transparency
+                Color.black.ignoresSafeArea()
                 
                 // Main content layer
                 if let photo = viewModel.currentPhoto {

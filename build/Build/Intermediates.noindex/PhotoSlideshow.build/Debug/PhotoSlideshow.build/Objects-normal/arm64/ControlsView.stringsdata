@@ -1,0 +1,112 @@
+{
+  "source": "/Users/sho/working/swift/work/PhotoSlideshow/PhotoSlideshow/Presentation/Views/ControlsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Select Folder",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading images...",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 132
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 138
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ • %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 154
+        }
+      },
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 203
+        }
+      },
+      {
+        "comment": "",
+        "key": "Playback",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 170
+        }
+      },
+      {
+        "comment": "",
+        "key": "Actions",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 194
+        }
+      },
+      {
+        "comment": "",
+        "key": "Interval",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 172
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mode",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 182
+        }
+      },
+      {
+        "comment": "",
+        "key": "Select New Folder",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 195
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 206
+        }
+      }
+    ]
+  },
+  "version": 1
+}
