@@ -106,9 +106,16 @@ public struct ControlsView: View {
     
     private func progressBar(slideshow: Slideshow) -> some View {
         VStack(spacing: 8) {
-            ProgressView(value: slideshow.progress)
-                .progressViewStyle(LinearProgressViewStyle())
-                .frame(height: 4)
+            // Interactive progress bar with click-to-jump functionality
+            InteractiveProgressBar(
+                progress: slideshow.progress,
+                currentIndex: slideshow.currentIndex,
+                totalCount: slideshow.count
+            ) { targetIndex in
+                print("🎯 ControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
+                viewModel.goToPhoto(at: targetIndex)
+            }
+            .frame(height: 8)  // DOUBLED: from 4 to 8 for better clickability
             
             HStack {
                 Text("\(slideshow.currentIndex + 1)")
@@ -138,6 +145,67 @@ public struct ControlsView: View {
                         .foregroundColor(.secondary)
                 }
             }
+        }
+    }
+}
+
+/// Interactive progress bar that supports click-to-jump navigation
+struct InteractiveProgressBar: View {
+    let progress: Double
+    let currentIndex: Int
+    let totalCount: Int
+    let onJumpToIndex: (Int) -> Void
+    
+    @State private var isHovering = false
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                // Background track
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: 8)  // DOUBLED: from 4 to 8
+                    .cornerRadius(4)   // DOUBLED: from 2 to 4
+                
+                // Progress fill
+                Rectangle()
+                    .fill(Color.accentColor)
+                    .frame(width: geometry.size.width * progress, height: 8)  // DOUBLED: from 4 to 8
+                    .cornerRadius(4)   // DOUBLED: from 2 to 4
+                    .animation(.easeInOut(duration: 0.2), value: progress)
+                
+                // Hover indicator
+                if isHovering {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.3))
+                        .frame(height: 8)  // DOUBLED: from 4 to 8
+                        .cornerRadius(4)   // DOUBLED: from 2 to 4
+                        .transition(.opacity)
+                }
+            }
+            .contentShape(Rectangle()) // Make entire area clickable
+            .onTapGesture { location in
+                handleTap(at: location, in: geometry)
+            }
+            .onHover { hovering in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isHovering = hovering
+                }
+            }
+        }
+    }
+    
+    private func handleTap(at location: CGPoint, in geometry: GeometryProxy) {
+        let relativeX = location.x / geometry.size.width
+        let clampedProgress = max(0, min(1, relativeX))
+        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
+        let validIndex = max(0, min(totalCount - 1, targetIndex))
+        
+        print("🎯 InteractiveProgressBar: Tap at \(location.x)/\(geometry.size.width) (\(clampedProgress*100)%) -> index \(validIndex)")
+        
+        // Only jump if clicking on a different photo
+        if validIndex != currentIndex {
+            onJumpToIndex(validIndex)
         }
     }
 }
