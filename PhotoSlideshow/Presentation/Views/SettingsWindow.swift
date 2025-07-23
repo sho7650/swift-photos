@@ -597,34 +597,206 @@ private struct SortSettingsView: View {
 private struct TransitionSettingsView: View {
     @ObservedObject var settings: TransitionSettingsManager
     
+    private func createTransitionSettings(
+        effectType: TransitionSettings.TransitionEffectType? = nil,
+        duration: Double? = nil,
+        easing: TransitionSettings.EasingFunction? = nil,
+        intensity: Double? = nil,
+        isEnabled: Bool? = nil
+    ) -> TransitionSettings {
+        return TransitionSettings(
+            effectType: effectType ?? settings.settings.effectType,
+            duration: duration ?? settings.settings.duration,
+            easing: easing ?? settings.settings.easing,
+            intensity: intensity ?? settings.settings.intensity,
+            isEnabled: isEnabled ?? settings.settings.isEnabled
+        )
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Transition Effects")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text("Configure smooth transition effects between photos during slideshow.")
-                .foregroundColor(.secondary)
-            
-            Toggle("Enable Transition Effects", isOn: Binding(
-                get: { settings.settings.isEnabled },
-                set: { isEnabled in
-                    let newSettings = TransitionSettings(
-                        effectType: settings.settings.effectType,
-                        duration: settings.settings.duration,
-                        easing: settings.settings.easing,
-                        intensity: settings.settings.intensity,
-                        isEnabled: isEnabled
-                    )
-                    settings.updateSettings(newSettings)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Transition Effects")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                Text("Configure smooth transition effects between photos during slideshow.")
+                    .foregroundColor(.secondary)
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    // Main Enable/Disable Toggle
+                    Toggle("Enable Transition Effects", isOn: Binding(
+                        get: { settings.settings.isEnabled },
+                        set: { isEnabled in
+                            settings.updateSettings(createTransitionSettings(isEnabled: isEnabled))
+                        }
+                    ))
+                    .toggleStyle(SwitchToggleStyle())
+                    
+                    if settings.settings.isEnabled {
+                        Divider()
+                        
+                        // Presets Section
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Presets")
+                                .fontWeight(.medium)
+                            
+                            HStack(spacing: 12) {
+                                Button("Simple Fade") { 
+                                    settings.applyPreset(.simpleFade) 
+                                }
+                                .buttonStyle(.bordered)
+                                
+                                Button("Elegant Slide") { 
+                                    settings.applyPreset(.elegantSlide) 
+                                }
+                                .buttonStyle(.bordered)
+                                
+                                Button("Dynamic Zoom") { 
+                                    settings.applyPreset(.dynamicZoom) 
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                            
+                            HStack(spacing: 12) {
+                                Button("Smooth Crossfade") { 
+                                    settings.applyPreset(.smoothCrossfade) 
+                                }
+                                .buttonStyle(.bordered)
+                                
+                                Button("Cinematic Push") { 
+                                    settings.applyPreset(.cinematicPush) 
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                        }
+                        
+                        Divider()
+                        
+                        // Effect Type Selection
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Effect Type")
+                                .fontWeight(.medium)
+                            
+                            Picker("Effect Type", selection: Binding(
+                                get: { settings.settings.effectType },
+                                set: { effectType in
+                                    settings.updateSettings(createTransitionSettings(effectType: effectType))
+                                }
+                            )) {
+                                ForEach(TransitionSettings.TransitionEffectType.allCases, id: \.self) { effectType in
+                                    HStack {
+                                        Image(systemName: effectType.icon)
+                                        Text(effectType.displayName)
+                                    }
+                                    .tag(effectType)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                        }
+                        
+                        // Duration Slider
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Duration")
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Text(String(format: "%.1f seconds", settings.settings.duration))
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Slider(
+                                value: Binding(
+                                    get: { settings.settings.duration },
+                                    set: { duration in
+                                        settings.updateSettings(createTransitionSettings(duration: duration))
+                                    }
+                                ),
+                                in: 0.1...3.0
+                            )
+                        }
+                        
+                        // Easing Function Selection
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Animation Easing")
+                                .fontWeight(.medium)
+                            
+                            Picker("Easing", selection: Binding(
+                                get: { settings.settings.easing },
+                                set: { easing in
+                                    settings.updateSettings(createTransitionSettings(easing: easing))
+                                }
+                            )) {
+                                ForEach(TransitionSettings.EasingFunction.allCases, id: \.self) { easing in
+                                    Text(easing.displayName)
+                                        .tag(easing)
+                                }
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                        }
+                        
+                        // Intensity Slider
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Effect Intensity")
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Text(String(format: "%.0f%%", settings.settings.intensity * 100))
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Slider(
+                                value: Binding(
+                                    get: { settings.settings.intensity },
+                                    set: { intensity in
+                                        settings.updateSettings(createTransitionSettings(intensity: intensity))
+                                    }
+                                ),
+                                in: 0.0...1.0
+                            )
+                        }
+                        
+                        Divider()
+                        
+                        // Current Settings Summary
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Current Settings")
+                                .fontWeight(.medium)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Image(systemName: settings.settings.effectType.icon)
+                                        .foregroundColor(.blue)
+                                    Text("Effect: \(settings.settings.effectType.displayName)")
+                                }
+                                .font(.caption)
+                                
+                                Text("Duration: \(String(format: "%.1f", settings.settings.duration)) seconds")
+                                    .font(.caption)
+                                
+                                Text("Easing: \(settings.settings.easing.displayName)")
+                                    .font(.caption)
+                                
+                                Text("Intensity: \(String(format: "%.0f", settings.settings.intensity * 100))%")
+                                    .font(.caption)
+                            }
+                            .foregroundColor(.secondary)
+                        }
+                        
+                        // Performance Note
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("💡 Performance Tip")
+                                .fontWeight(.medium)
+                                .foregroundColor(.blue)
+                            
+                            Text("Smooth transitions enhance user experience. Lower intensity and shorter duration improve performance on slower systems.")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
-            ))
-            .toggleStyle(SwitchToggleStyle())
-            
-            if settings.settings.isEnabled {
-                Text("Effect: \(settings.settings.effectType.displayName)")
-                Text("Duration: \(String(format: "%.1f", settings.settings.duration)) seconds")
             }
+            .padding()
         }
     }
 }
