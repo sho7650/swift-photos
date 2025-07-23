@@ -26,9 +26,19 @@ public class SlideshowViewModel: ObservableObject {
     private let fileAccess: SecureFileAccess
     private var timer: Timer?
     
-    public init(domainService: SlideshowDomainService, fileAccess: SecureFileAccess) {
+    // Performance optimizations for large collections
+    private let virtualLoader: VirtualImageLoader
+    private let backgroundPreloader: BackgroundPreloader
+    private let performanceSettingsManager: PerformanceSettingsManager
+    
+    public init(domainService: SlideshowDomainService, fileAccess: SecureFileAccess, performanceSettings: PerformanceSettingsManager? = nil) {
         self.domainService = domainService
         self.fileAccess = fileAccess
+        self.performanceSettingsManager = performanceSettings ?? PerformanceSettingsManager()
+        self.virtualLoader = VirtualImageLoader(settings: self.performanceSettingsManager.settings)
+        self.backgroundPreloader = BackgroundPreloader(settings: self.performanceSettingsManager.settings)
+        
+        print("🚀 SlideshowViewModel: Initialized with settings - window: \(self.performanceSettingsManager.settings.memoryWindowSize), threshold: \(self.performanceSettingsManager.settings.largeCollectionThreshold)")
     }
     
     
@@ -77,10 +87,29 @@ public class SlideshowViewModel: ObservableObject {
             if !newSlideshow.isEmpty {
                 print("🚀 Loading current image...")
                 print("🚀 Current photo at creation: \(newSlideshow.currentPhoto?.fileName ?? "nil")")
-                loadCurrentImage()
                 
-                // TEMPORARILY DISABLE PRELOADING TO TEST DISPLAY
-                print("🚀 PRELOADING DISABLED FOR DEBUG - currentIndex should stay 0")
+                // Auto-recommend settings for collection size
+                let recommendedSettings = performanceSettingsManager.recommendedSettings(for: newSlideshow.photos.count)
+                if recommendedSettings != performanceSettingsManager.settings {
+                    print("🚀 Auto-applying recommended settings for \(newSlideshow.photos.count) photos")
+                    performanceSettingsManager.updateSettings(recommendedSettings)
+                    await updatePerformanceComponents()
+                }
+                
+                // Check if this is a large collection
+                if newSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+                    print("🚀 Large collection detected (\(newSlideshow.photos.count) photos) - using virtual loading")
+                    await loadCurrentImageVirtual()
+                    
+                    // Schedule background preloading with smart windowing
+                    await backgroundPreloader.schedulePreload(
+                        photos: newSlideshow.photos,
+                        currentIndex: newSlideshow.currentIndex
+                    )
+                } else {
+                    print("🚀 Small collection (\(newSlideshow.photos.count) photos) - using standard loading")
+                    loadCurrentImage()
+                }
             } else {
                 print("⚠️ Slideshow is empty - no photos found")
             }
@@ -127,10 +156,18 @@ public class SlideshowViewModel: ObservableObject {
         refreshCounter += 1
         
         // Load the new current image
-        loadCurrentImage()
-        
-        // TEMPORARILY DISABLE PRELOADING TO TEST DISPLAY
-        print("🚀 nextPhoto: PRELOADING DISABLED FOR DEBUG")
+        Task {
+            if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+                await loadCurrentImageVirtual()
+                // Update preloader priorities
+                await backgroundPreloader.updatePriorities(
+                    photos: currentSlideshow.photos,
+                    newIndex: currentSlideshow.currentIndex
+                )
+            } else {
+                loadCurrentImage()
+            }
+        }
     }
     
     public func previousPhoto() {
@@ -142,10 +179,18 @@ public class SlideshowViewModel: ObservableObject {
         refreshCounter += 1
         
         // Load the new current image
-        loadCurrentImage()
-        
-        // TEMPORARILY DISABLE PRELOADING TO TEST DISPLAY
-        print("🚀 previousPhoto: PRELOADING DISABLED FOR DEBUG")
+        Task {
+            if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+                await loadCurrentImageVirtual()
+                // Update preloader priorities
+                await backgroundPreloader.updatePriorities(
+                    photos: currentSlideshow.photos,
+                    newIndex: currentSlideshow.currentIndex
+                )
+            } else {
+                loadCurrentImage()
+            }
+        }
     }
     
     public func goToPhoto(at index: Int) {
@@ -158,10 +203,18 @@ public class SlideshowViewModel: ObservableObject {
             refreshCounter += 1
             
             // Load the new current image
-            loadCurrentImage()
-            
-            // TEMPORARILY DISABLE PRELOADING TO TEST DISPLAY
-            print("🚀 goToPhoto: PRELOADING DISABLED FOR DEBUG")
+            Task {
+                if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+                    await loadCurrentImageVirtual()
+                    // Update preloader priorities for jump navigation
+                    await backgroundPreloader.updatePriorities(
+                        photos: currentSlideshow.photos,
+                        newIndex: currentSlideshow.currentIndex
+                    )
+                } else {
+                    loadCurrentImage()
+                }
+            }
         } catch {
             self.error = error as? SlideshowError ?? SlideshowError.invalidIndex(index)
         }
@@ -203,6 +256,46 @@ public class SlideshowViewModel: ObservableObject {
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
+    }
+    
+    private func loadCurrentImageVirtual() async {
+        guard let currentSlideshow = slideshow else {
+            print("🖼️ loadCurrentImageVirtual: No slideshow available")
+            return
+        }
+        
+        guard let photo = currentSlideshow.currentPhoto else {
+            print("🖼️ loadCurrentImageVirtual: No current photo available")
+            return
+        }
+        
+        print("🖼️ loadCurrentImageVirtual: Loading image window around index \(currentSlideshow.currentIndex)")
+        
+        // Load images in a window around current index
+        await virtualLoader.loadImageWindow(
+            around: currentSlideshow.currentIndex,
+            photos: currentSlideshow.photos
+        )
+        
+        // Check if current image is ready
+        if await virtualLoader.getImage(for: photo.id) != nil {
+            print("🖼️ loadCurrentImageVirtual: Image loaded from virtual cache")
+            
+            // Create a loaded photo and update in slideshow
+            Task {
+                do {
+                    // Get metadata from domain service if needed
+                    let loadedPhoto = try await domainService.loadImage(for: photo)
+                    updatePhotoInSlideshow(loadedPhoto)
+                } catch {
+                    print("❌ loadCurrentImageVirtual: Failed to create loaded photo: \(error)")
+                }
+            }
+        } else if !(await virtualLoader.isLoading(photoId: photo.id)) {
+            print("🖼️ loadCurrentImageVirtual: Loading current image directly")
+            // Fallback to direct loading if not in cache
+            loadCurrentImage()
+        }
     }
     
     private func loadCurrentImage() {
@@ -311,8 +404,35 @@ public class SlideshowViewModel: ObservableObject {
         error = nil
     }
     
+    /// Update performance settings and propagate to components
+    public func updatePerformanceSettings(_ newSettings: PerformanceSettings) async {
+        performanceSettingsManager.updateSettings(newSettings)
+        await updatePerformanceComponents()
+        
+        print("🚀 SlideshowViewModel: Performance settings updated")
+    }
+    
+    /// Get current performance statistics
+    public func getPerformanceStatistics() async -> (virtualLoader: (hits: Int, misses: Int, hitRate: Double, loadedCount: Int, memoryUsageMB: Int), preloader: (total: Int, successful: Int, failed: Int, successRate: Double, activeLoads: Int)) {
+        let virtualStats = await virtualLoader.getCacheStatistics()
+        let preloaderStats = await backgroundPreloader.getStatistics()
+        return (virtualLoader: virtualStats, preloader: preloaderStats)
+    }
+    
+    /// Update performance components with current settings
+    private func updatePerformanceComponents() async {
+        await virtualLoader.updateSettings(performanceSettingsManager.settings)
+        await backgroundPreloader.updateSettings(performanceSettingsManager.settings)
+    }
+    
     deinit {
         timer?.invalidate()
         timer = nil
+        
+        // Clean up async resources
+        Task { [virtualLoader, backgroundPreloader] in
+            await virtualLoader.clearCache()
+            await backgroundPreloader.cancelAllPreloads()
+        }
     }
 }

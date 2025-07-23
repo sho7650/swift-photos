@@ -49,6 +49,11 @@ public struct Photo: Identifiable, Equatable {
             return false
         }
         
+        public var isNotLoaded: Bool {
+            if case .notLoaded = self { return true }
+            return false
+        }
+        
         public var image: NSImage? {
             if case .loaded(let image) = self { return image }
             return nil

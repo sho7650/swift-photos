@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var viewModel: SlideshowViewModel?
     @State private var keyboardHandler: KeyboardHandler?
     @State private var isInitialized = false
+    @StateObject private var performanceSettings = PerformanceSettingsManager()
     
     var body: some View {
         Group {
@@ -84,7 +85,7 @@ struct ContentView: View {
                 let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
                 
                 // Create view model and handler
-                let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess)
+                let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess, performanceSettings: performanceSettings)
                 let createdKeyboardHandler = KeyboardHandler()
                 
                 // Setup connection

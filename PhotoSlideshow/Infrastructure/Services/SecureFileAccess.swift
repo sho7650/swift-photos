@@ -109,12 +109,8 @@ public class SecureFileAccess {
         let sortedURLs = imageURLs.sorted { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
         print("📁 Found \(sortedURLs.count) image files total, processed \(processedCount) files")
         
-        // Limit to prevent memory issues
-        let maxImages = 1000
-        if sortedURLs.count > maxImages {
-            print("⚠️ Limiting to first \(maxImages) images to prevent memory issues")
-            return Array(sortedURLs.prefix(maxImages))
-        }
+        // No limits - support unlimited collections with virtual loading
+        print("📁 Found \(sortedURLs.count) image files - no artificial limits applied")
         
         return sortedURLs
     }
