@@ -32,12 +32,14 @@ public class SlideshowViewModel: ObservableObject {
     private let targetImageLoader: TargetImageLoader
     private let performanceSettingsManager: PerformanceSettingsManager
     private let slideshowSettingsManager: SlideshowSettingsManager
+    private let sortSettingsManager: SortSettingsManager?
     
-    public init(domainService: SlideshowDomainService, fileAccess: SecureFileAccess, performanceSettings: PerformanceSettingsManager? = nil, slideshowSettings: SlideshowSettingsManager? = nil) {
+    public init(domainService: SlideshowDomainService, fileAccess: SecureFileAccess, performanceSettings: PerformanceSettingsManager? = nil, slideshowSettings: SlideshowSettingsManager? = nil, sortSettings: SortSettingsManager? = nil) {
         self.domainService = domainService
         self.fileAccess = fileAccess
         self.performanceSettingsManager = performanceSettings ?? PerformanceSettingsManager()
         self.slideshowSettingsManager = slideshowSettings ?? SlideshowSettingsManager()
+        self.sortSettingsManager = sortSettings
         self.virtualLoader = VirtualImageLoader(settings: self.performanceSettingsManager.settings)
         self.backgroundPreloader = BackgroundPreloader(settings: self.performanceSettingsManager.settings)
         self.targetImageLoader = TargetImageLoader()
@@ -94,6 +96,13 @@ public class SlideshowViewModel: ObservableObject {
             
             print("🚀 Selected folder: \(folderURL.path)")
             selectedFolderURL = folderURL
+            
+            // Generate new random seed if sort order is random
+            if let sortSettings = sortSettingsManager, sortSettings.settings.order == .random {
+                print("🎲 Generating new random seed for folder selection")
+                sortSettings.regenerateRandomSeed()
+            }
+            
             await createSlideshow(from: folderURL)
             
         } catch let slideshowError as SlideshowError {

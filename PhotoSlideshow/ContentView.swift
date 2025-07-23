@@ -105,7 +105,7 @@ struct ContentView: View {
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
             // Create view model and UI managers
-            let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings)
+            let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: fileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings, sortSettings: sortSettings)
             let createdKeyboardHandler = KeyboardHandler()
             let createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: createdViewModel)
             
