@@ -9,7 +9,8 @@ public class SettingsWindowManager: ObservableObject {
     public func openSettingsWindow(
         performanceSettings: PerformanceSettingsManager,
         slideshowSettings: SlideshowSettingsManager,
-        sortSettings: SortSettingsManager
+        sortSettings: SortSettingsManager,
+        transitionSettings: TransitionSettingsManager
     ) {
         // Close existing window if open
         closeSettingsWindow()
@@ -18,7 +19,8 @@ public class SettingsWindowManager: ObservableObject {
         let settingsView = SettingsWindow(
             performanceSettings: performanceSettings,
             slideshowSettings: slideshowSettings,
-            sortSettings: sortSettings
+            sortSettings: sortSettings,
+            transitionSettings: transitionSettings
         )
         
         let hostingController = NSHostingController(rootView: settingsView)

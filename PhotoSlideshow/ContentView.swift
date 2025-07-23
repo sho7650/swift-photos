@@ -20,6 +20,7 @@ struct ContentView: View {
     @StateObject private var performanceSettings = PerformanceSettingsManager()
     @StateObject private var slideshowSettings = SlideshowSettingsManager()
     @StateObject private var sortSettings = SortSettingsManager()
+    @StateObject private var transitionSettings = TransitionSettingsManager()
     @StateObject private var settingsWindowManager = SettingsWindowManager()
     
     var body: some View {
@@ -99,7 +100,8 @@ struct ContentView: View {
                     settingsWindowManager.openSettingsWindow(
                         performanceSettings: performanceSettings,
                         slideshowSettings: slideshowSettings,
-                        sortSettings: sortSettings
+                        sortSettings: sortSettings,
+                        transitionSettings: transitionSettings
                     )
                 }
                 

@@ -3,6 +3,9 @@ import AppKit
 
 public struct ImageDisplayViewWithObserver: View {
     @ObservedObject var viewModel: SlideshowViewModel
+    @StateObject private var transitionSettings = TransitionSettingsManager()
+    @State private var transitionManager: ImageTransitionManager?
+    @State private var currentPhotoID: UUID?
     
     public init(viewModel: SlideshowViewModel) {
         self.viewModel = viewModel
@@ -14,7 +17,7 @@ public struct ImageDisplayViewWithObserver: View {
                 // Always use solid black background - no transparency
                 Color.black.ignoresSafeArea()
                 
-                // Main content layer
+                // Main content layer with transition effects
                 if let photo = viewModel.currentPhoto {
                     switch photo.loadState {
                     case .loaded(let image):
@@ -41,7 +44,7 @@ public struct ImageDisplayViewWithObserver: View {
                                     y: imagePosition.y
                                 )
                             
-                            // Image - positioned exactly over black background
+                            // Image with transition effects
                             Image(nsImage: image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
@@ -53,6 +56,8 @@ public struct ImageDisplayViewWithObserver: View {
                                     x: imagePosition.x,
                                     y: imagePosition.y
                                 )
+                                .transition(getTransitionEffect())
+                                .animation(getTransitionAnimation(), value: viewModel.refreshCounter)
                         }
                         .id(viewModel.refreshCounter)  // Apply the id for refresh
                     
@@ -87,6 +92,12 @@ public struct ImageDisplayViewWithObserver: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+        }
+        .onAppear {
+            initializeTransitionManager()
+        }
+        .onChange(of: viewModel.currentPhoto?.id) { newPhotoID in
+            handlePhotoChange(newPhotoID: newPhotoID)
         }
     }
     
@@ -126,5 +137,52 @@ public struct ImageDisplayViewWithObserver: View {
         let position = CGPoint(x: centerX, y: centerY)
         print("🖼️ ImageDisplayViewWithObserver: Calculated position: \(position) for image size: \(imageSize) in container: \(containerSize)")
         return position
+    }
+    
+    // MARK: - Transition Effects
+    
+    /// Initialize transition manager
+    private func initializeTransitionManager() {
+        if transitionManager == nil {
+            transitionManager = ImageTransitionManager(transitionSettings: transitionSettings)
+            print("🎬 ImageDisplayViewWithObserver: Initialized transition manager")
+        }
+    }
+    
+    /// Handle photo change with transitions
+    private func handlePhotoChange(newPhotoID: UUID?) {
+        guard let newID = newPhotoID, newID != currentPhotoID else { return }
+        
+        print("🎬 ImageDisplayViewWithObserver: Photo changed from \(currentPhotoID?.uuidString ?? "nil") to \(newID.uuidString)")
+        currentPhotoID = newID
+        
+        // Trigger transition if enabled
+        if transitionSettings.settings.isEnabled {
+            Task { @MainActor in
+                await transitionManager?.executeTransition {
+                    // Transition content is handled by SwiftUI animation
+                } completion: {
+                    print("🎬 ImageDisplayViewWithObserver: Transition completed")
+                }
+            }
+        }
+    }
+    
+    /// Get transition effect for current settings
+    private func getTransitionEffect() -> AnyTransition {
+        guard transitionSettings.settings.isEnabled else {
+            return .identity
+        }
+        
+        return transitionManager?.getTransitionModifier(for: transitionSettings.settings.effectType) ?? .identity
+    }
+    
+    /// Get transition animation for current settings
+    private func getTransitionAnimation() -> Animation? {
+        guard transitionSettings.settings.isEnabled else {
+            return nil
+        }
+        
+        return transitionManager?.getAnimation()
     }
 }
