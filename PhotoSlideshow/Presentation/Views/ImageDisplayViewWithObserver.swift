@@ -3,7 +3,7 @@ import AppKit
 
 public struct ImageDisplayViewWithObserver: View {
     @ObservedObject var viewModel: SlideshowViewModel
-    @StateObject private var transitionSettings = TransitionSettingsManager()
+    @EnvironmentObject var transitionSettings: TransitionSettingsManager
     @State private var transitionManager: ImageTransitionManager?
     @State private var currentPhotoID: UUID?
     @State private var showImage = true
@@ -166,6 +166,20 @@ public struct ImageDisplayViewWithObserver: View {
         ) { [weak transitionSettings] _ in
             print("🎬 ImageDisplayViewWithObserver: Transition settings changed")
             print("🎬 ImageDisplayViewWithObserver: New settings - enabled: \(transitionSettings?.settings.isEnabled ?? false), effect: \(transitionSettings?.settings.effectType.displayName ?? "unknown")")
+            
+            // Force update the transition manager with new settings
+            if let settings = transitionSettings {
+                self.transitionManager = ImageTransitionManager(transitionSettings: settings)
+                print("🎬 ImageDisplayViewWithObserver: Recreated transition manager with new settings")
+                
+                // Trigger a brief visual feedback to show the effect immediately
+                if settings.settings.isEnabled && self.viewModel.currentPhoto != nil {
+                    self.showImage = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        self.showImage = true
+                    }
+                }
+            }
         }
     }
     

@@ -29,6 +29,7 @@ struct ContentView: View {
                 ZStack {
                     // Main content
                     ImageDisplayViewWithObserver(viewModel: viewModel)
+                        .environmentObject(transitionSettings)
                         .ignoresSafeArea()
                     
                     if showControls {
