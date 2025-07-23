@@ -234,31 +234,39 @@ public struct ImageDisplayView: View {
 /// Simple NSImageView wrapper to bypass SwiftUI Image conversion
 struct DirectNSImageViewWrapper: NSViewRepresentable {
     let nsImage: NSImage
+    let targetSize: CGSize?
+    
+    init(nsImage: NSImage, targetSize: CGSize? = nil) {
+        self.nsImage = nsImage
+        self.targetSize = targetSize
+    }
     
     func makeNSView(context: Context) -> NSImageView {
         let imageView = NSImageView()
-        imageView.imageScaling = .scaleProportionallyUpOrDown
+        imageView.imageScaling = .scaleProportionallyDown  // Changed to scaleProportionallyDown for better control
         imageView.imageAlignment = .alignCenter
         imageView.image = nsImage
         imageView.wantsLayer = true
         
-        // Ensure transparent background
+        // Simple opacity settings without problematic configurations
+        imageView.alphaValue = 1.0
         imageView.layer?.backgroundColor = NSColor.clear.cgColor
-        imageView.layer?.isOpaque = false
+        imageView.layer?.masksToBounds = true
         
-        // Add shadow for better visibility against blur
-        imageView.shadow = NSShadow()
-        imageView.shadow?.shadowOffset = NSSize(width: 0, height: -2)
-        imageView.shadow?.shadowBlurRadius = 8
-        imageView.shadow?.shadowColor = NSColor.black.withAlphaComponent(0.3)
-        
-        print("🖼️ DirectNSImageViewWrapper: Created with image size: \(nsImage.size)")
+        print("🖼️ DirectNSImageViewWrapper: Created - image size: \(nsImage.size), target: \(targetSize?.debugDescription ?? "nil")")
         return imageView
     }
     
     func updateNSView(_ nsView: NSImageView, context: Context) {
         nsView.image = nsImage
-        print("🖼️ DirectNSImageViewWrapper: Updated with image size: \(nsImage.size)")
+        nsView.alphaValue = 1.0
+        
+        // Apply target size constraints if provided
+        if let targetSize = targetSize {
+            nsView.frame.size = targetSize
+        }
+        
+        print("🖼️ DirectNSImageViewWrapper: Updated - image size: \(nsImage.size), target: \(targetSize?.debugDescription ?? "nil")")
     }
 }
 
