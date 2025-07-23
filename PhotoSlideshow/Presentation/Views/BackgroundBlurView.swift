@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-/// Modern background blur view using SwiftUI Material - following Xcode 16/Swift 6 best practices
+/// Terminal-style background blur view inspired by iTerm/Wezterm
 public struct BackgroundBlurView: View {
     let image: NSImage
     let settings: BlurSettings
@@ -14,19 +14,28 @@ public struct BackgroundBlurView: View {
     public var body: some View {
         ZStack {
             if settings.isEnabled {
-                // Primary SwiftUI Material blur - following best practices
+                // TERMINAL-STYLE: Layer 1 - Base image with blur
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .blur(radius: settings.intensity * 30)  // Strong gaussian blur
+                    .ignoresSafeArea()
+                    .opacity(0.4)  // Subtle background image
+                
+                // TERMINAL-STYLE: Layer 2 - Dark overlay for better contrast
+                Color.black
+                    .opacity(0.3 + (1.0 - settings.backgroundOpacity) * 0.3)  // Dynamic darkness
+                    .ignoresSafeArea()
+                
+                // TERMINAL-STYLE: Layer 3 - NSVisualEffectView for system blur
+                TerminalStyleVisualEffectView(settings: settings)
+                    .ignoresSafeArea()
+                
+                // TERMINAL-STYLE: Layer 4 - Additional material for depth
                 Rectangle()
-                    .fill(getMaterial(for: settings))
+                    .fill(getTerminalMaterial(for: settings))
                     .ignoresSafeArea()
-                
-                // Flexible transparency overlay for fine-grained control
-                FlexibleTransparencyOverlay(settings: settings)
-                    .ignoresSafeArea()
-                
-                // Optional NSVisualEffectView for enhanced effect
-                OptimizedVisualEffectView(settings: settings)
-                    .ignoresSafeArea()
-                    .opacity(Double(0.5 + (max(settings.intensity, 0.1) * 0.5)))  // CORRECTED: Higher intensity = higher opacity (0.5-1.0)
+                    .opacity(0.3)  // Subtle material overlay
                 
             } else {
                 // Solid black background
@@ -42,33 +51,28 @@ public struct BackgroundBlurView: View {
             }
         }
         .onAppear {
-            print("🎨 BackgroundBlurView: Material blur \(settings.isEnabled ? "enabled" : "disabled")")
+            print("🎨 BackgroundBlurView: Terminal-style blur \(settings.isEnabled ? "enabled" : "disabled")")
         }
     }
     
-    /// Get appropriate SwiftUI Material based on settings - higher intensity = stronger blur
-    private func getMaterial(for settings: BlurSettings) -> Material {
-        // CORRECTED: Higher intensity values produce stronger blur effects
-        let effectiveIntensity = max(settings.intensity, 0.1)  // Minimum 0.1 for visibility
-        print("🔍 BackgroundBlurView: Selecting Material for intensity: \(settings.intensity) → effective: \(effectiveIntensity)")
+    /// Get terminal-style material - always use strongest available
+    private func getTerminalMaterial(for settings: BlurSettings) -> Material {
+        // TERMINAL-STYLE: Always use thick materials for terminal effect
+        let effectiveIntensity = max(settings.intensity, 0.3)
         
         let material: Material
         
-        // Progressive Material selection: higher intensity = stronger material
+        // Terminal apps typically use very strong blur
         switch effectiveIntensity {
-        case 0.0...0.2:
-            material = .thinMaterial           // Light blur for low intensity
-        case 0.2...0.4:
-            material = .regularMaterial       // Medium blur for medium-low intensity
-        case 0.4...0.6:
-            material = .thickMaterial         // Strong blur for medium-high intensity
-        case 0.6...0.8:
-            material = .ultraThickMaterial    // Very strong blur for high intensity
+        case 0.0...0.5:
+            material = .thickMaterial         // Minimum terminal blur
+        case 0.5...0.8:
+            material = .ultraThickMaterial    // Standard terminal blur  
         default:
-            material = .ultraThickMaterial    // Maximum blur for maximum intensity
+            material = .ultraThickMaterial    // Maximum terminal blur
         }
         
-        print("🎨 BackgroundBlurView: CORRECTED Material selection: \(material) (intensity: \(effectiveIntensity) = stronger blur)")
+        print("🎨 BackgroundBlurView: Terminal material: \(material) (intensity: \(effectiveIntensity))")
         return material
     }
     
@@ -76,25 +80,26 @@ public struct BackgroundBlurView: View {
         print("🔍 BackgroundBlurView: Configuring window for blur - enabled: \(isEnabled)")
         
         if isEnabled {
-            // Enable transparency for blur effect
+            // TERMINAL-STYLE BLUR: Enhanced configuration based on iTerm/Wezterm
             window.isOpaque = false
-            window.backgroundColor = NSColor.clear
-            window.hasShadow = false
+            // CRITICAL: Use 0.01 alpha instead of clear to avoid performance issues
+            window.backgroundColor = NSColor.black.withAlphaComponent(0.01)
+            window.hasShadow = true  // Changed to true for depth
             
-            // Best practices for blur window configuration
+            // Terminal-style window configuration
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
             window.styleMask.insert(.fullSizeContentView)
             
-            // Performance optimizations
+            // Enhanced performance and behavior
             window.collectionBehavior = [.fullScreenAuxiliary, .canJoinAllSpaces]
             window.level = NSWindow.Level.normal
             
-            // Enhanced: Window-level transparency control
-            let windowAlpha = calculateWindowAlpha(for: settings)
+            // Calculate appropriate alpha for terminal-style transparency
+            let windowAlpha = calculateTerminalStyleAlpha(for: settings)
             window.alphaValue = windowAlpha
             
-            print("✅ BackgroundBlurView: Window configured for Material blur (alpha: \(windowAlpha))")
+            print("✅ BackgroundBlurView: Terminal-style blur configured (alpha: \(windowAlpha))")
         } else {
             // Disable transparency for normal black background
             window.isOpaque = true
@@ -113,167 +118,128 @@ public struct BackgroundBlurView: View {
         window.display()
     }
     
-    /// Calculate window-level alpha for enhanced transparency control
-    private func calculateWindowAlpha(for settings: BlurSettings) -> CGFloat {
-        // CORRECTED: Lower backgroundOpacity = more transparent (lower alpha)
-        let transparentAlpha = 1.0 - settings.backgroundOpacity  // Invert: 0.0 = opaque, 1.0 = transparent
-        let baseAlpha = 0.3 + (transparentAlpha * 0.7)  // Range: 0.3 (opaque) to 1.0 (transparent)
-        let intensityModifier = 1.0 - (settings.intensity * 0.1)   // Slight reduction for high blur intensity
+    /// Calculate terminal-style window alpha for enhanced transparency
+    private func calculateTerminalStyleAlpha(for settings: BlurSettings) -> CGFloat {
+        // TERMINAL-STYLE: More aggressive transparency like iTerm/Wezterm
+        let transparentAlpha = 1.0 - settings.backgroundOpacity
         
-        let finalAlpha = baseAlpha * intensityModifier
+        // Terminal apps typically use 0.8-0.95 alpha range
+        let baseAlpha = 0.8 + (settings.backgroundOpacity * 0.15)  // Range: 0.8 to 0.95
         
-        print("🎯 BackgroundBlurView: CORRECTED Window alpha: \(finalAlpha) (backgroundOpacity: \(settings.backgroundOpacity) → transparency: \(transparentAlpha))")
-        return CGFloat(max(min(finalAlpha, 1.0), 0.2))  // Range: 0.2 to 1.0
+        // Blur intensity slightly affects transparency
+        let intensityBoost = settings.intensity * 0.05  // Slight boost for higher blur
+        
+        let finalAlpha = min(baseAlpha + intensityBoost, 0.98)  // Cap at 0.98
+        
+        print("🎯 BackgroundBlurView: Terminal-style alpha: \(finalAlpha) (opacity: \(settings.backgroundOpacity))")
+        return CGFloat(finalAlpha)
     }
 }
 
-/// Optimized NSVisualEffectView following best practices
-private struct OptimizedVisualEffectView: NSViewRepresentable {
+/// Terminal-style NSVisualEffectView inspired by iTerm/Wezterm
+private struct TerminalStyleVisualEffectView: NSViewRepresentable {
     let settings: BlurSettings
     
     func makeNSView(context: Context) -> NSVisualEffectView {
-        print("🔧 OptimizedVisualEffectView: Creating optimized NSVisualEffectView")
+        print("🔧 TerminalStyleVisualEffectView: Creating terminal-style blur")
         
         let visualEffectView = NSVisualEffectView()
         
-        // AGGRESSIVE: Configuration for maximum blur visibility
-        visualEffectView.material = getOptimizedMaterial(for: settings)
-        visualEffectView.blendingMode = .behindWindow  // Blur through to desktop for stronger effect
+        // TERMINAL-STYLE: Configuration based on terminal apps
+        visualEffectView.material = getTerminalMaterial(for: settings)
+        visualEffectView.blendingMode = .behindWindow  // Key for terminal transparency
         visualEffectView.state = .active
+        
+        // Terminal-style appearance
+        visualEffectView.appearance = NSAppearance(named: .vibrantDark)
         
         // Performance optimization
         visualEffectView.wantsLayer = true
         visualEffectView.layer?.shouldRasterize = true
         visualEffectView.layer?.rasterizationScale = NSScreen.main?.backingScaleFactor ?? 2.0
         
-        // Controlled opacity
-        let opacity = calculateOptimizedOpacity(for: settings)
+        // Terminal-style opacity
+        let opacity = calculateTerminalOpacity(for: settings)
         visualEffectView.alphaValue = opacity
         
         visualEffectView.autoresizingMask = [.width, .height]
         
-        print("✅ OptimizedVisualEffectView: Created with material: \(visualEffectView.material), alpha: \(opacity)")
+        print("✅ TerminalStyleVisualEffectView: Created with material: \(visualEffectView.material), alpha: \(opacity)")
         return visualEffectView
     }
     
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
-        print("🔄 OptimizedVisualEffectView: Updating view")
+        print("🔄 TerminalStyleVisualEffectView: Updating view")
         
         // Update only if changed - performance optimization
-        let newMaterial = getOptimizedMaterial(for: settings)
+        let newMaterial = getTerminalMaterial(for: settings)
         if nsView.material != newMaterial {
             nsView.material = newMaterial
         }
         
-        let newOpacity = calculateOptimizedOpacity(for: settings)
+        let newOpacity = calculateTerminalOpacity(for: settings)
         if abs(nsView.alphaValue - newOpacity) > 0.01 {
             nsView.alphaValue = newOpacity
         }
         
         nsView.state = .active
         
-        print("🔄 OptimizedVisualEffectView: Updated to material: \(newMaterial), alpha: \(newOpacity)")
+        print("🔄 TerminalStyleVisualEffectView: Updated to material: \(newMaterial), alpha: \(newOpacity)")
     }
     
-    private func getOptimizedMaterial(for settings: BlurSettings) -> NSVisualEffectView.Material {
-        // CORRECTED: Higher intensity = stronger materials progressively
-        let effectiveIntensity = max(settings.intensity, 0.1)  // Minimum intensity
+    private func getTerminalMaterial(for settings: BlurSettings) -> NSVisualEffectView.Material {
+        // TERMINAL-STYLE: Use materials that match terminal apps
+        let effectiveIntensity = max(settings.intensity, 0.3)
         
         switch settings.style {
         case .gaussian:
+            // iTerm default style
             switch effectiveIntensity {
-            case 0.0...0.25:
-                return .sidebar           // Light material for low intensity
-            case 0.25...0.5:
-                return .menu              // Medium material for medium intensity
-            case 0.5...0.75:
-                return .hudWindow         // Strong material for high intensity
+            case 0.0...0.4:
+                return .hudWindow         // Minimum terminal blur
+            case 0.4...0.7:
+                return .fullScreenUI      // Standard terminal blur
             default:
-                return .fullScreenUI      // Strongest material for maximum intensity
+                return .underWindowBackground  // Maximum terminal blur
             }
         case .motion:
+            // Dynamic blur style
             switch effectiveIntensity {
-            case 0.0...0.3:
-                return .popover           // Light material for low intensity
-            case 0.3...0.6:
-                return .menu              // Medium material for medium intensity
+            case 0.0...0.5:
+                return .hudWindow
             default:
-                return .hudWindow         // Strong material for high intensity
+                return .fullScreenUI
             }
         case .zoom:
+            // Wezterm-like style
             switch effectiveIntensity {
-            case 0.0...0.2:
-                return .sidebar           // Light material for low intensity
-            case 0.2...0.5:
-                return .menu              // Medium material for medium intensity
-            case 0.5...0.8:
-                return .hudWindow         // Strong material for high intensity
+            case 0.0...0.3:
+                return .hudWindow
+            case 0.3...0.6:
+                return .fullScreenUI
             default:
-                return .fullScreenUI      // Strongest material for maximum intensity
+                return .underWindowBackground
             }
         }
     }
     
-    private func calculateOptimizedOpacity(for settings: BlurSettings) -> CGFloat {
-        // CORRECTED: Higher intensity = higher opacity, lower backgroundOpacity = more transparent
-        let effectiveIntensity = max(settings.intensity, 0.1)  // Minimum intensity
-        let baseOpacity = 0.3 + (effectiveIntensity * 0.6)  // Range: 0.3 to 0.9 based on intensity
+    private func calculateTerminalOpacity(for settings: BlurSettings) -> CGFloat {
+        // TERMINAL-STYLE: High opacity for terminal effect
+        let effectiveIntensity = max(settings.intensity, 0.3)
         
-        // CORRECTED: Lower backgroundOpacity = more transparent (multiply by backgroundOpacity)
-        let transparencyFactor = settings.backgroundOpacity  // 0.0 = fully transparent, 1.0 = opaque
+        // Terminal apps use high opacity visual effects
+        let baseOpacity = 0.7 + (effectiveIntensity * 0.25)  // Range: 0.7 to 0.95
         
-        let finalOpacity = baseOpacity * transparencyFactor
+        // Slight adjustment based on background opacity
+        let opacityBoost = (1.0 - settings.backgroundOpacity) * 0.1
         
-        print("🎯 OptimizedVisualEffectView: CORRECTED opacity: \(finalOpacity) (base: \(baseOpacity), intensity: \(effectiveIntensity), transparency factor: \(transparencyFactor))")
-        return CGFloat(max(min(finalOpacity, 0.9), 0.1))  // Range: 0.1 to 0.9
+        let finalOpacity = min(baseOpacity + opacityBoost, 0.95)
+        
+        print("🎯 TerminalStyleVisualEffectView: Terminal opacity: \(finalOpacity)")
+        return CGFloat(finalOpacity)
     }
 }
 
-/// Flexible transparency overlay for fine-grained opacity control
-private struct FlexibleTransparencyOverlay: View {
-    let settings: BlurSettings
-    
-    var body: some View {
-        Rectangle()
-            .fill(.clear)
-            .background(createTransparencyOverlay())
-    }
-    
-    private func createTransparencyOverlay() -> some View {
-        let transparencyLevel = calculateTransparencyLevel()
-        let overlayColor = getOverlayColor()
-        
-        print("🌟 FlexibleTransparencyOverlay: Transparency level: \(transparencyLevel), color: \(overlayColor)")
-        
-        return Rectangle()
-            .fill(overlayColor)
-            .opacity(transparencyLevel)
-    }
-    
-    private func calculateTransparencyLevel() -> Double {
-        // CORRECTED: Lower backgroundOpacity = more transparent overlay
-        let transparency = 1.0 - settings.backgroundOpacity  // Invert: low backgroundOpacity = high transparency
-        let baseTransparency = transparency * 0.5  // Scale down overlay influence
-        let intensityModifier = 1.0 - (settings.intensity * 0.3)  // Reduce overlay as blur increases
-        
-        let finalTransparency = baseTransparency * intensityModifier
-        
-        print("🎯 FlexibleTransparencyOverlay: CORRECTED transparency: \(finalTransparency) (backgroundOpacity: \(settings.backgroundOpacity) → transparency: \(transparency), modifier: \(intensityModifier))")
-        return max(min(finalTransparency, 0.4), 0.0)  // Range: 0.0 to 0.4
-    }
-    
-    private func getOverlayColor() -> Color {
-        // ENHANCED: Even more subtle colors to not interfere with blur
-        switch settings.style {
-        case .gaussian:
-            return Color.black.opacity(0.15)  // Reduced from 0.3
-        case .motion:
-            return Color.gray.opacity(0.1)    // Reduced from 0.2
-        case .zoom:
-            return Color.white.opacity(0.05)  // Reduced from 0.1
-        }
-    }
-}
 
 #Preview {
     if let sampleImage = NSImage(systemSymbolName: "photo", accessibilityDescription: nil) {
