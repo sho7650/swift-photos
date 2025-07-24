@@ -9,6 +9,7 @@ public class SlideshowViewModel: ObservableObject {
     @Published public var error: SlideshowError?
     @Published public var selectedFolderURL: URL?
     @Published public var refreshCounter: Int = 0
+    @Published public var swipeProgress: Double = 0.0  // For smooth swipe transitions
     
     @Published public var currentPhoto: Photo? = nil {
         didSet {
