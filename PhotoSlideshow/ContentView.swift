@@ -119,7 +119,9 @@ struct ContentView: View {
                     performanceSettings: performanceSettings,
                     slideshowSettings: slideshowSettings,
                     sortSettings: sortSettings,
-                    transitionSettings: transitionSettings
+                    transitionSettings: transitionSettings,
+                    uiControlSettings: uiControlSettings,
+                    recentFilesManager: recentFilesManager
                 )
             }
             createdKeyboardHandler.onOpenFolder = {

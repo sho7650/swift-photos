@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-/// Manager for the standalone settings window
+/// Manager for the standalone settings window with modern sidebar-based design
 @MainActor
 public class SettingsWindowManager: ObservableObject {
     private var settingsWindow: NSWindow?
@@ -10,27 +10,31 @@ public class SettingsWindowManager: ObservableObject {
         performanceSettings: PerformanceSettingsManager,
         slideshowSettings: SlideshowSettingsManager,
         sortSettings: SortSettingsManager,
-        transitionSettings: TransitionSettingsManager
+        transitionSettings: TransitionSettingsManager,
+        uiControlSettings: UIControlSettingsManager? = nil,
+        recentFilesManager: RecentFilesManager? = nil
     ) {
         // Close existing window if open
         closeSettingsWindow()
         
-        // Create new window
-        let settingsView = SettingsWindow(
+        // Create new modern sidebar-based settings window
+        let settingsView = SidebarSettingsWindow(
             performanceSettings: performanceSettings,
             slideshowSettings: slideshowSettings,
             sortSettings: sortSettings,
-            transitionSettings: transitionSettings
+            transitionSettings: transitionSettings,
+            uiControlSettings: uiControlSettings ?? UIControlSettingsManager()
         )
+        .environmentObject(recentFilesManager ?? RecentFilesManager())
         
         let hostingController = NSHostingController(rootView: settingsView)
         
-        // Force the hosting controller to have proper size
-        hostingController.preferredContentSize = NSSize(width: 800, height: 700)
+        // Set optimal size for sidebar layout
+        hostingController.preferredContentSize = NSSize(width: 900, height: 650)
         
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 800, height: 700),
-            styleMask: [.titled, .closable, .resizable],
+            contentRect: NSRect(x: 0, y: 0, width: 900, height: 650),
+            styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
@@ -39,21 +43,26 @@ public class SettingsWindowManager: ObservableObject {
         window.contentViewController = hostingController
         window.isReleasedWhenClosed = false
         
-        // Set window properties before centering
-        window.minSize = NSSize(width: 700, height: 600)
-        window.maxSize = NSSize(width: 1200, height: 900)
+        // Set window properties optimized for sidebar design
+        window.minSize = NSSize(width: 720, height: 520)
+        window.maxSize = NSSize(width: 1400, height: 1000)
         
-        // Force window size
-        window.setContentSize(NSSize(width: 800, height: 700))
+        // Modern window appearance
+        window.titlebarAppearsTransparent = false
+        window.backgroundColor = NSColor.windowBackgroundColor
+        
+        // Force window size and center
+        window.setContentSize(NSSize(width: 900, height: 650))
         window.center()
         
-        print("⚙️ SettingsWindowManager: Created window with size: \(window.frame.size)")
+        print("⚙️ SettingsWindowManager: Created modern sidebar settings window with size: \(window.frame.size)")
         
         self.settingsWindow = window
         window.makeKeyAndOrderFront(nil)
         
-        print("⚙️ SettingsWindowManager: Opened settings window")
+        print("⚙️ SettingsWindowManager: Opened modern settings window")
     }
+    
     
     public func closeSettingsWindow() {
         settingsWindow?.close()
