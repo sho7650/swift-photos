@@ -33,6 +33,9 @@ public class UIControlStateManager: ObservableObject {
     private var interactionClearTimer: Timer?
     private weak var slideshowViewModel: SlideshowViewModel?
     
+    // Enhanced mouse tracking
+    private var mouseTracker: MouseTracker?
+    
     // MARK: - Callbacks
     
     /// Callback for keyboard interaction events
@@ -53,6 +56,7 @@ public class UIControlStateManager: ObservableObject {
         
         setupNotificationObservers()
         setupMouseTracking()
+        setupEnhancedMouseTracker()
         startHideTimer()
         
         print("🎮 UIControlStateManager: Initialized with controls visible: \(isControlsVisible)")
@@ -66,6 +70,10 @@ public class UIControlStateManager: ObservableObject {
         
         if let monitor = globalMouseMonitor {
             NSEvent.removeMonitor(monitor)
+        }
+        
+        Task { @MainActor in
+            mouseTracker?.stopTracking()
         }
         
         NotificationCenter.default.removeObserver(self)
@@ -216,6 +224,14 @@ public class UIControlStateManager: ObservableObject {
                 self?.handleGlobalMouseEvent(event)
             }
         }
+        
+        // Start enhanced mouse tracker
+        do {
+            try mouseTracker?.startTracking()
+        } catch {
+            print("🎮 UIControlStateManager: Failed to start enhanced mouse tracking: \(error)")
+        }
+        
         print("🎮 UIControlStateManager: Mouse monitoring enabled")
     }
     
@@ -225,7 +241,31 @@ public class UIControlStateManager: ObservableObject {
             globalMouseMonitor = nil
             print("🎮 UIControlStateManager: Mouse monitoring disabled")
         }
+        
+        // Also disable enhanced mouse tracker when not needed
+        Task { @MainActor in
+            mouseTracker?.stopTracking()
+        }
     }
+    
+    private func setupEnhancedMouseTracker() {
+        // Create mouse tracker with configuration based on UI settings
+        let config = MouseTrackingConfiguration(
+            sensitivity: uiControlSettings.settings.mouseSensitivity / 10.0, // Convert to 0.1-10.0 range
+            velocitySmoothing: 0.8,
+            accelerationThreshold: 100.0,
+            samplingRate: 60.0,
+            enableZoneDetection: false, // Not needed for basic UI controls
+            enableVelocityTracking: true,
+            historyDuration: 1.0
+        )
+        
+        mouseTracker = MouseTracker(configuration: config)
+        mouseTracker?.delegate = self
+        
+        print("🎮 UIControlStateManager: Enhanced mouse tracker configured")
+    }
+    
     
     private func handleGlobalMouseEvent(_ event: NSEvent) {
         let mouseLocation = NSEvent.mouseLocation
@@ -328,6 +368,9 @@ public class UIControlStateManager: ObservableObject {
             }
         }
         
+        // Update mouse tracking configuration
+        updateMouseTrackerConfiguration()
+        
         // Update mouse monitoring based on new settings
         if isControlsVisible {
             enableMouseMonitoring()
@@ -342,4 +385,90 @@ public class UIControlStateManager: ObservableObject {
         }
     }
     
+    private func updateMouseTrackerConfiguration() {
+        guard let mouseTracker = mouseTracker else { return }
+        
+        let newConfig = MouseTrackingConfiguration(
+            sensitivity: uiControlSettings.settings.mouseSensitivity / 10.0, // Convert to 0.1-10.0 range
+            velocitySmoothing: 0.8,
+            accelerationThreshold: 100.0,
+            samplingRate: 60.0,
+            enableZoneDetection: false, // Not needed for basic UI controls
+            enableVelocityTracking: true,
+            historyDuration: 1.0
+        )
+        
+        mouseTracker.configuration = newConfig
+        print("🎮 UIControlStateManager: Mouse tracker configuration updated")
+    }
+}
+
+// MARK: - MouseTrackingDelegate
+
+extension UIControlStateManager: MouseTrackingDelegate {
+    public func mouseTrackingDidStart(_ tracker: MouseTracker) {
+        print("🎮 UIControlStateManager: Enhanced mouse tracking started")
+    }
+    
+    public func mouseTrackingDidStop(_ tracker: MouseTracker) {
+        print("🎮 UIControlStateManager: Enhanced mouse tracking stopped")
+    }
+    
+    public func mouseTracker(_ tracker: MouseTracker, didUpdatePosition position: CGPoint, velocity: CGVector) {
+        // Update position with enhanced tracking
+        mousePosition = position
+        
+        // Only process if controls need to be shown or are visible (optimization from previous work)
+        let shouldShowControls = uiControlSettings.settings.showOnMouseMovement && !isControlsVisible
+        let shouldProcessInteraction = isControlsVisible || shouldShowControls
+        
+        if shouldProcessInteraction {
+            recordInteraction()
+            
+            if shouldShowControls {
+                showControls()
+            }
+            
+            onMouseInteraction?()
+        }
+    }
+    
+    public func mouseTracker(_ tracker: MouseTracker, didDetectHighVelocity velocity: CGVector) {
+        // Handle high-velocity mouse movements for more responsive UI
+        let speed = sqrt(velocity.dx * velocity.dx + velocity.dy * velocity.dy)
+        
+        if speed > 50.0 && !isControlsVisible { // Use fixed threshold since velocity is already processed
+            // Fast mouse movement detected - show controls immediately
+            if uiControlSettings.settings.showOnMouseMovement {
+                print("🎮 UIControlStateManager: Fast mouse movement detected - showing controls")
+                showControls()
+            }
+        }
+    }
+    
+    // MARK: - Optional delegate methods (not used for basic UI controls)
+    
+    public func mouseTracker(_ tracker: MouseTracker, didEnterZone zone: MouseTrackingZone) {
+        // Zone detection not currently used for UI controls
+    }
+    
+    public func mouseTracker(_ tracker: MouseTracker, didExitZone zone: MouseTrackingZone) {
+        // Zone detection not currently used for UI controls
+    }
+    
+    public func mouseTracker(_ tracker: MouseTracker, didAddZone zone: MouseTrackingZone) {
+        // Zone management not currently used for UI controls
+    }
+    
+    public func mouseTracker(_ tracker: MouseTracker, didRemoveZoneWithId id: UUID) {
+        // Zone management not currently used for UI controls
+    }
+    
+    public func mouseTrackerDidClearAllZones(_ tracker: MouseTracker) {
+        // Zone management not currently used for UI controls
+    }
+    
+    public func mouseTracker(_ tracker: MouseTracker, didUpdateConfiguration configuration: MouseTrackingConfiguration) {
+        print("🎮 UIControlStateManager: Enhanced mouse tracker configuration updated")
+    }
 }
