@@ -8,18 +8,13 @@
 import SwiftUI
 import os.log
 
-private let logger = Logger(subsystem: "com.example.SwiftPhotos", category: "App")
-
 @main
 struct SwiftPhotosApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var recentFilesManager = RecentFilesManager()
     
     init() {
-        NSLog("🚀 SwiftPhotosApp: Application started")
-        logger.info("🚀 SwiftPhotosApp: Application started via Logger")
-        print("🚀 SwiftPhotosApp: Application started via print")
-        fflush(stdout)
+        ProductionLogger.lifecycle("SwiftPhotosApp: Application started")
     }
     
     var body: some Scene {
@@ -27,8 +22,7 @@ struct SwiftPhotosApp: App {
             ContentView()
                 .environmentObject(recentFilesManager)
                 .onAppear {
-                    NSLog("🚀 SwiftPhotosApp: WindowGroup appeared")
-                    logger.info("🚀 SwiftPhotosApp: WindowGroup appeared via Logger")
+                    ProductionLogger.lifecycle("SwiftPhotosApp: WindowGroup appeared")
                 }
         }
         .windowStyle(.hiddenTitleBar)

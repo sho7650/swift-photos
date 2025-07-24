@@ -7,9 +7,6 @@
 
 import SwiftUI
 import AppKit
-import os.log
-
-private let logger = Logger(subsystem: "com.example.SwiftPhotos", category: "ContentView")
 
 struct ContentView: View {
     @State private var viewModel: SlideshowViewModel?
@@ -81,8 +78,7 @@ struct ContentView: View {
                         .padding()
                 }
                 .onAppear {
-                    NSLog("📱 Swift Photos DEBUG: ContentView loading screen appeared")
-                    logger.info("📱 ContentView: Loading screen appeared")
+                    ProductionLogger.lifecycle("ContentView loading screen appeared")
                 }
             }
         }
@@ -95,14 +91,14 @@ struct ContentView: View {
     }
     
     private func initializeApp() {
-        print("📱 Swift Photos DEBUG: initializeApp() called")
-        print("🏗️ ContentView: Starting initialization...")
+        ProductionLogger.lifecycle("initializeApp() called")
+        ProductionLogger.lifecycle("Starting initialization")
         
         // Add small delay to ensure UI is ready
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
             
-            print("📱 Swift Photos DEBUG: Creating dependencies...")
+            ProductionLogger.debug("Creating dependencies")
             // Create dependencies safely using persistent SecureFileAccess
             let imageLoader = ImageLoader()
             let imageCache = ImageCache()
@@ -156,17 +152,17 @@ struct ContentView: View {
             self.uiControlStateManager = createdUIControlStateManager
             self.isInitialized = true
             
-            print("🏗️ ContentView: Initialization completed successfully")
+            ProductionLogger.lifecycle("Initialization completed successfully")
         }
     }
     
     // MARK: - Folder Selection Integration
     
     private func handleTraditionalFolderSelection() async {
-        print("📁 ContentView: Handling traditional folder selection (Cmd+O)")
+        ProductionLogger.userAction("Handling traditional folder selection (Cmd+O)")
         
         guard let viewModel = viewModel else {
-            print("❌ ContentView: No view model available")
+            ProductionLogger.error("No view model available")
             return
         }
         
@@ -179,7 +175,7 @@ struct ContentView: View {
         // If a new folder was selected, add it to recent files
         if let newFolderURL = viewModel.selectedFolderURL,
            newFolderURL != previousFolderURL {
-            print("📁 ContentView: New folder selected via traditional method: \(newFolderURL.path)")
+            ProductionLogger.userAction("New folder selected via traditional method: \(newFolderURL.path)")
             
             do {
                 // Create security bookmark for the folder
@@ -191,10 +187,10 @@ struct ContentView: View {
                 
                 // Add to recent files
                 await recentFilesManager.addRecentFile(url: newFolderURL, securityBookmark: bookmarkData)
-                print("📁 ContentView: Added traditional folder selection to recent files")
+                ProductionLogger.debug("Added traditional folder selection to recent files")
                 
             } catch {
-                print("❌ ContentView: Failed to create security bookmark for traditional folder selection: \(error)")
+                ProductionLogger.error("Failed to create security bookmark for traditional folder selection: \(error)")
             }
         }
     }
@@ -202,7 +198,7 @@ struct ContentView: View {
     // MARK: - File Menu Integration
     
     private func setupMenuNotificationObserver() {
-        print("📁 ContentView: Setting up menu notification observer")
+        ProductionLogger.debug("Setting up menu notification observer")
         
         // Listen for folder selection from File menu
         NotificationCenter.default.addObserver(
@@ -211,7 +207,7 @@ struct ContentView: View {
             queue: .main
         ) { notification in
             if let folderURL = notification.object as? URL {
-                print("📁 ContentView: Received folder selection from menu: \(folderURL.path)")
+                ProductionLogger.userAction("Received folder selection from menu: \(folderURL.path)")
                 Task { @MainActor in
                     await self.handleFolderSelectedFromMenu(url: folderURL)
                 }
@@ -220,10 +216,10 @@ struct ContentView: View {
     }
     
     private func handleFolderSelectedFromMenu(url: URL) async {
-        print("📁 ContentView: Handling folder selection from menu: \(url.path)")
+        ProductionLogger.userAction("Handling folder selection from menu: \(url.path)")
         
         guard let viewModel = viewModel else {
-            print("❌ ContentView: No view model available")
+            ProductionLogger.error("No view model available")
             return
         }
         
@@ -232,7 +228,7 @@ struct ContentView: View {
         
         // Generate new random seed if sort order is random
         if sortSettings.settings.order == .random {
-            print("🎲 ContentView: Generating new random seed for menu folder selection")
+            ProductionLogger.debug("Generating new random seed for menu folder selection")
             sortSettings.regenerateRandomSeed()
         }
         
@@ -249,12 +245,12 @@ struct ContentView: View {
                 }
             }
             
-            print("📁 ContentView: Security scoped access \(needsSecurityAccess ? "enabled" : "not required") for: \(url.path)")
+            ProductionLogger.debug("Security scoped access \(needsSecurityAccess ? "enabled" : "not required") for: \(url.path)")
             
             // Use private method access through viewModel
             try await createSlideshowForMenuSelection(from: url)
         } catch {
-            print("❌ ContentView: Failed to create slideshow from menu selection: \(error)")
+            ProductionLogger.error("Failed to create slideshow from menu selection: \(error)")
             viewModel.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
         }
         
@@ -262,10 +258,10 @@ struct ContentView: View {
     }
     
     private func createSlideshowForMenuSelection(from folderURL: URL) async throws {
-        print("📁 ContentView: Creating slideshow from menu selection: \(folderURL.path)")
+        ProductionLogger.userAction("Creating slideshow from menu selection: \(folderURL.path)")
         
         guard let viewModel = viewModel else { 
-            print("❌ ContentView: No view model available")
+            ProductionLogger.error("No view model available")
             return 
         }
         
@@ -273,10 +269,10 @@ struct ContentView: View {
             // Use the persistent secure file access instance
             // Prepare access for the folder with security bookmark if available
             if let recentFile = recentFilesManager.recentFiles.first(where: { $0.url == folderURL }) {
-                print("📁 ContentView: Preparing access using security bookmark from recent files")
+                ProductionLogger.debug("Preparing access using security bookmark from recent files")
                 try secureFileAccess.prepareForAccess(url: folderURL, bookmarkData: recentFile.securityBookmark)
             } else {
-                print("📁 ContentView: Preparing access without security bookmark (direct access)")
+                ProductionLogger.debug("Preparing access without security bookmark (direct access)")
                 try secureFileAccess.prepareForAccess(url: folderURL)
             }
             
@@ -289,45 +285,45 @@ struct ContentView: View {
             let mode: Slideshow.SlideshowMode = .sequential
             let customInterval = try SlideshowInterval(slideshowSettings.settings.slideDuration)
             
-            print("📁 ContentView: Creating slideshow with domain service...")
+            ProductionLogger.debug("Creating slideshow with domain service")
             let newSlideshow = try await domainService.createSlideshow(
                 from: folderURL,
                 interval: customInterval,
                 mode: mode
             )
             
-            print("📁 ContentView: Created slideshow with \(newSlideshow.photos.count) photos")
+            ProductionLogger.info("Created slideshow with \(newSlideshow.photos.count) photos")
             viewModel.slideshow = newSlideshow
             
             if !newSlideshow.isEmpty {
                 // Auto-recommend settings for collection size
                 let recommendedSettings = performanceSettings.recommendedSettings(for: newSlideshow.photos.count)
                 if recommendedSettings != performanceSettings.settings {
-                    print("📁 ContentView: Auto-applying recommended settings for \(newSlideshow.photos.count) photos")
+                    ProductionLogger.info("Auto-applying recommended settings for \(newSlideshow.photos.count) photos")
                     performanceSettings.updateSettings(recommendedSettings)
                 }
                 
                 // Load current image
                 if newSlideshow.photos.count > performanceSettings.settings.largeCollectionThreshold {
-                    print("📁 ContentView: Large collection detected - using virtual loading")
+                    ProductionLogger.performance("Large collection detected - using virtual loading")
                     // Use viewModel's internal loading mechanisms
                     viewModel.currentPhoto = newSlideshow.currentPhoto
                     viewModel.refreshCounter += 1
                 } else {
-                    print("📁 ContentView: Small collection - loading current image")
+                    ProductionLogger.debug("Small collection - loading current image")
                     viewModel.currentPhoto = newSlideshow.currentPhoto
                     viewModel.refreshCounter += 1
                 }
                 
                 // Auto-start slideshow if enabled
                 if slideshowSettings.settings.autoStart {
-                    print("📁 ContentView: Auto-starting slideshow per settings")
+                    ProductionLogger.debug("Auto-starting slideshow per settings")
                     viewModel.play()
                 }
             }
             
         } catch {
-            print("❌ ContentView: Failed to create slideshow: \(error)")
+            ProductionLogger.error("Failed to create slideshow: \(error)")
             throw error
         }
     }
