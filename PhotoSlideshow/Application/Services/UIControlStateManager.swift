@@ -25,12 +25,12 @@ public class UIControlStateManager: ObservableObject {
     // MARK: - Private Properties
     
     private let uiControlSettings: UIControlSettingsManager
-    private var hideTimer: Timer?
+    private var hideTimer: AdaptiveTimer?
     private var mouseTrackingArea: NSTrackingArea?
     private var globalMouseMonitor: Any?
     private var lastInteractionTime: Date = Date()
-    private var minimumVisibilityTimer: Timer?
-    private var interactionClearTimer: Timer?
+    private var minimumVisibilityTimer: AdaptiveTimer?
+    private var interactionClearTimer: AdaptiveTimer?
     private weak var slideshowViewModel: SlideshowViewModel?
     
     // Enhanced mouse tracking
@@ -63,10 +63,12 @@ public class UIControlStateManager: ObservableObject {
     }
     
     deinit {
-        // Cleanup non-MainActor resources directly
-        hideTimer?.invalidate()
-        minimumVisibilityTimer?.invalidate()
-        interactionClearTimer?.invalidate()
+        // Cleanup adaptive timers (must be done with Task for @MainActor isolation)
+        Task { @MainActor [weak hideTimer, weak minimumVisibilityTimer, weak interactionClearTimer] in
+            hideTimer?.stop()
+            minimumVisibilityTimer?.stop()
+            interactionClearTimer?.stop()
+        }
         
         if let monitor = globalMouseMonitor {
             NSEvent.removeMonitor(monitor)
@@ -112,7 +114,7 @@ public class UIControlStateManager: ObservableObject {
         guard isControlsVisible else { return }
         
         // Don't hide if we're within minimum visibility duration (unless forced)
-        if !force && minimumVisibilityTimer?.isValid == true {
+        if !force && minimumVisibilityTimer?.isRunning == true {
             print("🎮 UIControlStateManager: Hide blocked - within minimum visibility duration")
             return
         }
@@ -276,19 +278,32 @@ public class UIControlStateManager: ObservableObject {
         lastInteractionTime = Date()
         hasRecentInteraction = true
         
+        // Update timer context based on new interaction
+        updateTimerContext()
+        
         // Use a more efficient timer for clearing the interaction flag
         scheduleInteractionFlagClear()
     }
     
     private func scheduleInteractionFlagClear() {
         // Cancel any existing interaction clear timer to avoid accumulation
-        interactionClearTimer?.invalidate()
+        interactionClearTimer?.stop()
         
-        interactionClearTimer = Timer.scheduledTimer(withTimeInterval: uiControlSettings.settings.minimumVisibilityDuration, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                self?.hasRecentInteraction = false
-                self?.interactionClearTimer = nil
-            }
+        let config = TimerConfiguration(
+            baseDuration: uiControlSettings.settings.minimumVisibilityDuration,
+            learningEnabled: false,
+            coalescingEnabled: true
+        )
+        
+        interactionClearTimer = AdaptiveTimer(configuration: config)
+        interactionClearTimer?.delegate = self
+        
+        do {
+            try interactionClearTimer?.start(with: config)
+        } catch {
+            print("🎮 UIControlStateManager: Failed to start interaction clear timer: \(error)")
+            // Fallback: clear flag immediately
+            hasRecentInteraction = false
         }
     }
     
@@ -313,27 +328,32 @@ public class UIControlStateManager: ObservableObject {
             return
         }
         
-        hideTimer = Timer.scheduledTimer(withTimeInterval: hideDelay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                self?.hideControls()
-            }
+        let config = TimerConfiguration.autoHide(duration: hideDelay)
+        hideTimer = AdaptiveTimer(configuration: config)
+        hideTimer?.delegate = self
+        hideTimer?.adaptationEnabled = true // Enable context-aware adaptation
+        
+        do {
+            try hideTimer?.start(with: config)
+            print("🎮 UIControlStateManager: Adaptive hide timer set for \(hideDelay)s")
+        } catch {
+            print("🎮 UIControlStateManager: Failed to start hide timer: \(error)")
         }
-        print("🎮 UIControlStateManager: Hide timer set for \(hideDelay)s")
     }
     
     private func stopHideTimer() {
-        hideTimer?.invalidate()
+        hideTimer?.stop()
         hideTimer = nil
     }
     
     private func stopAllTimers() {
-        hideTimer?.invalidate()
+        hideTimer?.stop()
         hideTimer = nil
-        minimumVisibilityTimer?.invalidate()
+        minimumVisibilityTimer?.stop()
         minimumVisibilityTimer = nil
-        interactionClearTimer?.invalidate()
+        interactionClearTimer?.stop()
         interactionClearTimer = nil
-        print("🎮 UIControlStateManager: All timers stopped")
+        print("🎮 UIControlStateManager: All adaptive timers stopped")
     }
     
     private func getCurrentHideDelay() -> Double {
@@ -349,12 +369,24 @@ public class UIControlStateManager: ObservableObject {
     }
     
     private func ensureMinimumVisibility() {
-        minimumVisibilityTimer?.invalidate()
-        minimumVisibilityTimer = Timer.scheduledTimer(
-            withTimeInterval: uiControlSettings.settings.minimumVisibilityDuration,
-            repeats: false
-        ) { _ in
-            // Timer completion handled automatically
+        minimumVisibilityTimer?.stop()
+        
+        let config = TimerConfiguration(
+            baseDuration: uiControlSettings.settings.minimumVisibilityDuration,
+            learningEnabled: false,
+            coalescingEnabled: false,
+            backgroundOptimization: true
+        )
+        
+        minimumVisibilityTimer = AdaptiveTimer(configuration: config)
+        minimumVisibilityTimer?.delegate = self
+        minimumVisibilityTimer?.adaptationEnabled = false // Keep minimum visibility consistent
+        
+        do {
+            try minimumVisibilityTimer?.start(with: config)
+            print("🎮 UIControlStateManager: Minimum visibility timer set for \(config.baseDuration)s")
+        } catch {
+            print("🎮 UIControlStateManager: Failed to start minimum visibility timer: \(error)")
         }
     }
     
@@ -370,6 +402,9 @@ public class UIControlStateManager: ObservableObject {
         
         // Update mouse tracking configuration
         updateMouseTrackerConfiguration()
+        
+        // Update timer context with new settings
+        updateTimerContext()
         
         // Update mouse monitoring based on new settings
         if isControlsVisible {
@@ -400,6 +435,71 @@ public class UIControlStateManager: ObservableObject {
         
         mouseTracker.configuration = newConfig
         print("🎮 UIControlStateManager: Mouse tracker configuration updated")
+    }
+    
+    // MARK: - Context-Aware Timer Adaptation
+    
+    private func updateTimerContext() {
+        let context = createCurrentTimingContext()
+        
+        // Update hide timer with current context for adaptive behavior
+        if hideTimer?.isRunning == true {
+            hideTimer?.adaptTiming(based: context)
+        }
+    }
+    
+    private func createCurrentTimingContext() -> TimingContext {
+        // Determine user activity level based on recent interactions
+        let userActivity: UserActivityLevel
+        if hasRecentInteraction {
+            userActivity = .active
+        } else if lastInteractionTime.timeIntervalSinceNow > -30 {
+            userActivity = .moderate
+        } else if lastInteractionTime.timeIntervalSinceNow > -120 {
+            userActivity = .light
+        } else {
+            userActivity = .idle
+        }
+        
+        // Determine app state based on slideshow status
+        let appState: AppState
+        if let slideshow = slideshowViewModel?.slideshow {
+            if slideshow.isPlaying {
+                appState = .slideshow
+            } else {
+                appState = .foreground
+            }
+        } else {
+            appState = .foreground
+        }
+        
+        // Create interaction count based on recent activity
+        let interactionCount = hasRecentInteraction ? 1 : 0
+        
+        // Add custom factors based on UI control settings
+        var customFactors: [String: Double] = [:]
+        
+        // Adjust based on mouse sensitivity (higher sensitivity = more responsive user)
+        customFactors["mouseSensitivity"] = uiControlSettings.settings.mouseSensitivity / 50.0 // Normalize to ~1.0
+        
+        // Adjust based on whether mouse tracking is enabled
+        customFactors["showOnMouseMovement"] = uiControlSettings.settings.showOnMouseMovement ? 0.8 : 1.0
+        
+        // Create empty interactions array but with the correct count for context
+        let mockInteractions = Array(repeating: Interaction(
+            type: .mouseMove,
+            data: InteractionData(),
+            source: .mouse
+        ), count: interactionCount)
+        
+        return TimingContext(
+            userActivity: userActivity,
+            appState: appState,
+            systemLoad: .normal, // Could be enhanced with actual system monitoring
+            batteryLevel: nil,   // Could be enhanced with battery level detection
+            recentInteractions: mockInteractions,
+            customFactors: customFactors
+        )
     }
 }
 
@@ -470,5 +570,63 @@ extension UIControlStateManager: MouseTrackingDelegate {
     
     public func mouseTracker(_ tracker: MouseTracker, didUpdateConfiguration configuration: MouseTrackingConfiguration) {
         print("🎮 UIControlStateManager: Enhanced mouse tracker configuration updated")
+    }
+}
+
+// MARK: - AdaptiveTimerDelegate
+
+extension UIControlStateManager: AdaptiveTimerDelegate {
+    public func timerDidFire(_ timer: AdaptiveTimerProviding) {
+        // Determine which timer fired and handle appropriately
+        if timer === hideTimer {
+            print("🎮 UIControlStateManager: Hide timer fired - hiding controls")
+            hideControls()
+            hideTimer = nil
+        } else if timer === interactionClearTimer {
+            print("🎮 UIControlStateManager: Interaction clear timer fired")
+            hasRecentInteraction = false
+            interactionClearTimer = nil
+        } else if timer === minimumVisibilityTimer {
+            print("🎮 UIControlStateManager: Minimum visibility timer completed")
+            minimumVisibilityTimer = nil
+        }
+    }
+    
+    public func timerDidAdapt(_ timer: AdaptiveTimerProviding, newDuration: TimeInterval, reason: AdaptationReason) {
+        if timer === hideTimer {
+            print("🎮 UIControlStateManager: Hide timer adapted to \(String(format: "%.1f", newDuration))s (reason: \(reason.rawValue))")
+        }
+    }
+    
+    public func timerWasPaused(_ timer: AdaptiveTimerProviding) {
+        if timer === hideTimer {
+            print("🎮 UIControlStateManager: Hide timer paused")
+        }
+    }
+    
+    public func timerWasResumed(_ timer: AdaptiveTimerProviding) {
+        if timer === hideTimer {
+            print("🎮 UIControlStateManager: Hide timer resumed")
+        }
+    }
+    
+    public func timerWasStopped(_ timer: AdaptiveTimerProviding) {
+        if timer === hideTimer {
+            print("🎮 UIControlStateManager: Hide timer stopped")
+        }
+    }
+    
+    public func timerDidEncounterError(_ timer: AdaptiveTimerProviding, error: TimerError) {
+        print("🎮 UIControlStateManager: Timer error - \(error.localizedDescription)")
+        
+        // Handle timer errors gracefully
+        if timer === hideTimer {
+            print("🎮 UIControlStateManager: Hide timer error - controls will remain visible")
+            hideTimer = nil
+        } else if timer === interactionClearTimer {
+            // Fallback: clear interaction flag immediately
+            hasRecentInteraction = false
+            interactionClearTimer = nil
+        }
     }
 }
