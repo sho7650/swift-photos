@@ -30,6 +30,7 @@ public class UIControlStateManager: ObservableObject {
     private var globalMouseMonitor: Any?
     private var lastInteractionTime: Date = Date()
     private var minimumVisibilityTimer: Timer?
+    private var interactionClearTimer: Timer?
     private weak var slideshowViewModel: SlideshowViewModel?
     
     // MARK: - Callbacks
@@ -58,9 +59,10 @@ public class UIControlStateManager: ObservableObject {
     }
     
     deinit {
-        // Cleanup non-MainActor resources
+        // Cleanup non-MainActor resources directly
         hideTimer?.invalidate()
         minimumVisibilityTimer?.invalidate()
+        interactionClearTimer?.invalidate()
         
         if let monitor = globalMouseMonitor {
             NSEvent.removeMonitor(monitor)
@@ -84,6 +86,9 @@ public class UIControlStateManager: ObservableObject {
         withAnimation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration)) {
             isControlsVisible = true
         }
+        
+        // Enable mouse monitoring when controls become visible
+        enableMouseMonitoring()
         
         recordInteraction()
         
@@ -118,7 +123,13 @@ public class UIControlStateManager: ObservableObject {
             isControlsVisible = false
         }
         
+        // Disable mouse monitoring when controls are hidden (unless show on mouse movement is enabled)
+        if !uiControlSettings.settings.showOnMouseMovement {
+            disableMouseMonitoring()
+        }
+        
         stopHideTimer()
+        stopAllTimers() // Clean up all active timers when controls are hidden
     }
     
     /// Toggle detailed info visibility
@@ -141,13 +152,20 @@ public class UIControlStateManager: ObservableObject {
     /// Record mouse interaction
     public func handleMouseInteraction(at position: CGPoint) {
         mousePosition = position
-        recordInteraction()
         
-        if uiControlSettings.settings.showOnMouseMovement {
-            showControls()
+        // Only record interaction and process if controls need to be shown or are visible
+        let shouldShowControls = uiControlSettings.settings.showOnMouseMovement && !isControlsVisible
+        let shouldProcessInteraction = isControlsVisible || shouldShowControls
+        
+        if shouldProcessInteraction {
+            recordInteraction()
+            
+            if shouldShowControls {
+                showControls()
+            }
+            
+            onMouseInteraction?()
         }
-        
-        onMouseInteraction?()
     }
     
     /// Record gesture interaction
@@ -162,8 +180,8 @@ public class UIControlStateManager: ObservableObject {
     public func updateMouseInWindow(_ inWindow: Bool) {
         isMouseInWindow = inWindow
         
-        if !inWindow {
-            // Mouse left window - start faster hide timer if playing
+        if !inWindow && isControlsVisible {
+            // Mouse left window - start faster hide timer if playing (only if controls are visible)
             if slideshowViewModel?.slideshow?.isPlaying == true {
                 resetHideTimer(withDelay: uiControlSettings.settings.playingAutoHideDelay)
             }
@@ -185,11 +203,27 @@ public class UIControlStateManager: ObservableObject {
     }
     
     private func setupMouseTracking() {
-        // Set up global mouse monitoring
+        // Start with mouse monitoring enabled (controls are initially visible)
+        enableMouseMonitoring()
+    }
+    
+    private func enableMouseMonitoring() {
+        guard globalMouseMonitor == nil else { return }
+        
+        // Set up global mouse monitoring only when needed
         globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged]) { [weak self] event in
             Task { @MainActor in
                 self?.handleGlobalMouseEvent(event)
             }
+        }
+        print("🎮 UIControlStateManager: Mouse monitoring enabled")
+    }
+    
+    private func disableMouseMonitoring() {
+        if let monitor = globalMouseMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalMouseMonitor = nil
+            print("🎮 UIControlStateManager: Mouse monitoring disabled")
         }
     }
     
@@ -202,11 +236,18 @@ public class UIControlStateManager: ObservableObject {
         lastInteractionTime = Date()
         hasRecentInteraction = true
         
-        // Clear recent interaction flag after a delay
-        Task {
-            try? await Task.sleep(nanoseconds: UInt64(uiControlSettings.settings.minimumVisibilityDuration * 1_000_000_000))
-            await MainActor.run {
-                self.hasRecentInteraction = false
+        // Use a more efficient timer for clearing the interaction flag
+        scheduleInteractionFlagClear()
+    }
+    
+    private func scheduleInteractionFlagClear() {
+        // Cancel any existing interaction clear timer to avoid accumulation
+        interactionClearTimer?.invalidate()
+        
+        interactionClearTimer = Timer.scheduledTimer(withTimeInterval: uiControlSettings.settings.minimumVisibilityDuration, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                self?.hasRecentInteraction = false
+                self?.interactionClearTimer = nil
             }
         }
     }
@@ -216,20 +257,43 @@ public class UIControlStateManager: ObservableObject {
     }
     
     private func resetHideTimer(withDelay delay: Double? = nil) {
+        // Only create hide timer if controls are visible
+        guard isControlsVisible else {
+            print("🎮 UIControlStateManager: Skipping hide timer - controls already hidden")
+            return
+        }
+        
         stopHideTimer()
         
         let hideDelay = delay ?? getCurrentHideDelay()
+        
+        // Avoid creating timer for very long delays (effectively "never hide")
+        guard hideDelay < 100.0 else {
+            print("🎮 UIControlStateManager: Skipping hide timer - delay too long (\(hideDelay)s)")
+            return
+        }
         
         hideTimer = Timer.scheduledTimer(withTimeInterval: hideDelay, repeats: false) { [weak self] _ in
             Task { @MainActor in
                 self?.hideControls()
             }
         }
+        print("🎮 UIControlStateManager: Hide timer set for \(hideDelay)s")
     }
     
     private func stopHideTimer() {
         hideTimer?.invalidate()
         hideTimer = nil
+    }
+    
+    private func stopAllTimers() {
+        hideTimer?.invalidate()
+        hideTimer = nil
+        minimumVisibilityTimer?.invalidate()
+        minimumVisibilityTimer = nil
+        interactionClearTimer?.invalidate()
+        interactionClearTimer = nil
+        print("🎮 UIControlStateManager: All timers stopped")
     }
     
     private func getCurrentHideDelay() -> Double {
@@ -264,9 +328,17 @@ public class UIControlStateManager: ObservableObject {
             }
         }
         
-        // Reset timer with new delay
+        // Update mouse monitoring based on new settings
         if isControlsVisible {
+            enableMouseMonitoring()
+            // Reset timer with new delay only if controls are visible
             resetHideTimer()
+        } else if uiControlSettings.settings.showOnMouseMovement {
+            // Enable mouse monitoring even when hidden if showOnMouseMovement is enabled
+            enableMouseMonitoring()
+        } else {
+            // Disable mouse monitoring if not needed
+            disableMouseMonitoring()
         }
     }
     

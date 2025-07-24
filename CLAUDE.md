@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 Please refer to define for Architecture principles: @principles/architecture.md
-Please refer to this for coding best practices: https://developer.apple.com/documentation/xcode/improving-build-efficiency-with-good-coding-practices.
+Please refer to this for coding best practices: https://developer.apple.com/documentation/xcode/improving-build-efficiency-with-good-coding-practices and https://medium.com/@kalidoss.shanmugam/best-vs-worst-coding-practices-in-swift-20-key-examples-e70ca2c2a0f3 .
 Please refer to this for coding rules: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/
 
 ## Build & Development Commands
