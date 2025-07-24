@@ -107,7 +107,7 @@ public struct SidebarSettingsWindow: View {
                 .onSubmit {
                     updateNavigationForSearch()
                 }
-                .onChange(of: searchText) {
+                .onChange(of: searchText) { _, _ in
                     updateNavigationForSearch()
                 }
             
