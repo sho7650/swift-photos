@@ -15,9 +15,6 @@ struct ContentView: View {
     @State private var viewModel: SlideshowViewModel?
     @State private var keyboardHandler: KeyboardHandler?
     @State private var uiControlStateManager: UIControlStateManager?
-    @State private var photoZoomState: PhotoZoomState?
-    @State private var advancedGestureManager: AdvancedGestureManager?
-    @State private var gestureCoordinator: GestureCoordinator?
     @State private var isInitialized = false
     @State private var secureFileAccess = SecureFileAccess()
     @StateObject private var performanceSettings = PerformanceSettingsManager()
@@ -33,16 +30,11 @@ struct ContentView: View {
             if isInitialized, 
                let viewModel = viewModel, 
                let keyboardHandler = keyboardHandler,
-               let uiControlStateManager = uiControlStateManager,
-               let photoZoomState = photoZoomState,
-               let advancedGestureManager = advancedGestureManager,
-               let gestureCoordinator = gestureCoordinator {
+               let uiControlStateManager = uiControlStateManager {
                 ZStack {
-                    // Main content
-                    ImageDisplayViewWithObserver(
-                        viewModel: viewModel,
-                        photoZoomState: photoZoomState,
-                        advancedGestureManager: advancedGestureManager
+                    // Main content (gesture functionality removed)
+                    SimpleImageDisplayView(
+                        viewModel: viewModel
                     )
                         .environmentObject(transitionSettings)
                         .ignoresSafeArea()
@@ -69,9 +61,10 @@ struct ContentView: View {
                     }
                     uiControlStateManager.updateMouseInWindow(hovering)
                 }
-                .onTapGesture {
-                    uiControlStateManager.handleGestureInteraction()
-                }
+                // Temporarily disable tap gesture to test swipe functionality
+                // .onTapGesture {
+                //     uiControlStateManager.handleGestureInteraction()
+                // }
                 .alert("Error", isPresented: .constant(viewModel.error != nil)) {
                     Button("OK") {
                         viewModel.clearError()
@@ -121,15 +114,6 @@ struct ContentView: View {
             let createdKeyboardHandler = KeyboardHandler()
             let createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: createdViewModel)
             
-            // Create zoom components
-            let createdPhotoZoomState = PhotoZoomState()
-            let createdGestureCoordinator = GestureCoordinator()
-            let createdAdvancedGestureManager = AdvancedGestureManager(
-                slideshowViewModel: createdViewModel,
-                gestureCoordinator: createdGestureCoordinator,
-                photoZoomState: createdPhotoZoomState
-            )
-            
             // Setup keyboard handler connections
             createdKeyboardHandler.viewModel = createdViewModel
             createdKeyboardHandler.performanceSettings = performanceSettings
@@ -164,27 +148,12 @@ struct ContentView: View {
                 }
             }
             
-            // Setup zoom callbacks
-            createdKeyboardHandler.onZoomIn = {
-                createdPhotoZoomState.zoomIn(animated: true)
-            }
-            createdKeyboardHandler.onZoomOut = {
-                createdPhotoZoomState.zoomOut(animated: true)
-            }
-            createdKeyboardHandler.onResetZoom = {
-                createdPhotoZoomState.zoomToActualSize(animated: true)
-            }
-            createdKeyboardHandler.onFitToScreen = {
-                createdPhotoZoomState.resetZoom(animated: true)
-            }
+            // Zoom callbacks removed (gesture functionality removed)
             
             // Set state
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
             self.uiControlStateManager = createdUIControlStateManager
-            self.photoZoomState = createdPhotoZoomState
-            self.advancedGestureManager = createdAdvancedGestureManager
-            self.gestureCoordinator = createdGestureCoordinator
             self.isInitialized = true
             
             print("🏗️ ContentView: Initialization completed successfully")

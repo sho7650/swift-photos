@@ -122,4 +122,30 @@ class TransparencyManager: ObservableObject {
             print("✅ TransparencyManager: Blur transparency disabled for window: \(window)")
         }
     }
+    
+    // MARK: - Fullscreen Management
+    
+    func toggleFullscreen() {
+        print("🔧 TransparencyManager: Toggling fullscreen")
+        
+        guard let mainWindow = registeredWindows.first ?? NSApplication.shared.mainWindow else {
+            print("❌ TransparencyManager: No main window found for fullscreen toggle")
+            return
+        }
+        
+        if mainWindow.styleMask.contains(.fullScreen) {
+            print("🔧 TransparencyManager: Exiting fullscreen")
+            mainWindow.toggleFullScreen(nil)
+        } else {
+            print("🔧 TransparencyManager: Entering fullscreen")
+            mainWindow.toggleFullScreen(nil)
+        }
+    }
+    
+    var isFullscreen: Bool {
+        guard let mainWindow = registeredWindows.first ?? NSApplication.shared.mainWindow else {
+            return false
+        }
+        return mainWindow.styleMask.contains(.fullScreen)
+    }
 }

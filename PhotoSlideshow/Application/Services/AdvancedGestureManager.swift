@@ -333,8 +333,7 @@ public class AdvancedGestureManager: ObservableObject {
         // Only navigate if not zoomed in
         guard photoZoomState.currentZoomLevel <= 1.1 else { return }
         
-        // Reset swipe progress before navigation
-        slideshowViewModel.swipeProgress = 0.0
+        // Swipe functionality removed
         slideshowViewModel.nextPhoto()
         logger.debug("🎮 AdvancedGestureManager: Navigated to next photo via swipe")
     }
@@ -343,8 +342,7 @@ public class AdvancedGestureManager: ObservableObject {
         // Only navigate if not zoomed in
         guard photoZoomState.currentZoomLevel <= 1.1 else { return }
         
-        // Reset swipe progress before navigation
-        slideshowViewModel.swipeProgress = 0.0
+        // Swipe functionality removed
         slideshowViewModel.previousPhoto()
         logger.debug("🎮 AdvancedGestureManager: Navigated to previous photo via swipe")
     }
@@ -472,38 +470,50 @@ public struct PhotoGestureView<Content: View>: View {
     }
     
     private var dragGesture: some Gesture {
-        DragGesture(minimumDistance: 30)  // Lower threshold for more responsive swipes
+        DragGesture(minimumDistance: 10)  // Very low threshold for maximum sensitivity
             .onChanged { value in
+                // Debug output to check if gesture is detected
+                print("🌊 Drag detected: translation=\(value.translation), predictedEnd=\(value.predictedEndTranslation)")
+                
                 // Only allow swipe navigation when not heavily zoomed
-                guard gestureManager.photoZoomState.currentZoomLevel <= 1.5 else { return }
+                guard gestureManager.photoZoomState.currentZoomLevel <= 1.5 else { 
+                    print("🌊 Swipe blocked: zoom level too high (\(gestureManager.photoZoomState.currentZoomLevel))")
+                    return 
+                }
                 
                 // Provide visual feedback during swipe (horizontal only)
-                let progress = value.translation.width / 300.0  // 300 points for full transition
-                if abs(progress) > 0.1 {
-                    // Notify view model about swipe progress for visual feedback
-                    gestureManager.slideshowViewModel.swipeProgress = progress
+                let progress = value.translation.width / 150.0  // Even more sensitive feedback
+                if abs(progress) > 0.02 {
+                    // Swipe progress functionality removed
+                    print("🌊 Swipe progress: \(progress)")
                 }
             }
             .onEnded { value in
-                // Reset swipe progress
-                gestureManager.slideshowViewModel.swipeProgress = 0.0
+                print("🌊 Drag ended: translation=\(value.translation)")
+                
+                // Swipe progress functionality removed
                 
                 // Only allow swipe navigation when not heavily zoomed
-                guard gestureManager.photoZoomState.currentZoomLevel <= 1.5 else { return }
+                guard gestureManager.photoZoomState.currentZoomLevel <= 1.5 else { 
+                    print("🌊 Swipe navigation blocked: zoom level too high")
+                    return 
+                }
                 
-                // Check for horizontal swipe with lower velocity threshold for trackpad
-                let horizontalVelocity = abs(value.predictedEndTranslation.width)
-                let verticalVelocity = abs(value.predictedEndTranslation.height)
+                // Very simple and sensitive swipe detection
+                let translation = value.translation
                 
-                // Prioritize horizontal swipes for photo navigation
-                if horizontalVelocity > 50 && horizontalVelocity > verticalVelocity * 1.5 {
-                    if value.translation.width > 50 {
+                if abs(translation.width) > 15 {  // Very low threshold
+                    if translation.width > 15 {
                         // Swipe right - previous photo
+                        print("🌊 SWIPE RIGHT: Going to previous photo")
                         gestureManager.navigateToPreviousPhoto()
-                    } else if value.translation.width < -50 {
+                    } else if translation.width < -15 {
                         // Swipe left - next photo
+                        print("🌊 SWIPE LEFT: Going to next photo")
                         gestureManager.navigateToNextPhoto()
                     }
+                } else {
+                    print("🌊 Swipe distance too small: \(abs(translation.width))")
                 }
             }
     }

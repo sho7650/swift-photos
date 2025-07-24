@@ -1,38 +1,22 @@
 import SwiftUI
 import AppKit
 
-public struct ImageDisplayViewWithObserver: View {
+public struct SimpleImageDisplayView: View {
     @ObservedObject var viewModel: SlideshowViewModel
     @EnvironmentObject var transitionSettings: TransitionSettingsManager
     @State private var transitionManager: ImageTransitionManager?
     @State private var currentPhotoID: UUID?
     @State private var showImage = true
-    @State private var viewportSize: CGSize = .zero
     
-    public init(
-        viewModel: SlideshowViewModel
-    ) {
+    public init(viewModel: SlideshowViewModel) {
         self.viewModel = viewModel
     }
     
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Always use solid black background - no transparency
+                // Always use solid black background
                 Color.black.ignoresSafeArea()
-                
-                // Hidden view to track geometry changes and update viewport size
-                Color.clear
-                    .onAppear {
-                        viewportSize = geometry.size
-                        // Disable all zoom state updates - use fixed scaling
-                        print("📏 ImageDisplay: Viewport size: \(geometry.size)")
-                    }
-                    .onChange(of: geometry.size) { oldSize, newSize in
-                        viewportSize = newSize
-                        // Disable all zoom state updates - use fixed scaling
-                        print("📏 ImageDisplay: Viewport size changed: \(newSize)")
-                    }
                 
                 // Main content layer with transition effects
                 if let photo = viewModel.currentPhoto {
@@ -44,7 +28,7 @@ public struct ImageDisplayViewWithObserver: View {
                                 .fill(Color.black)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                             
-                            // Image with transition effects (simplified - no gesture conflicts)
+                            // Image with transition effects (no gesture functionality)
                             if showImage {
                                 Image(nsImage: image)
                                     .resizable()
@@ -58,26 +42,26 @@ public struct ImageDisplayViewWithObserver: View {
                                     .transition(getTransitionEffect())
                             }
                         }
-                        .id(viewModel.refreshCounter)  // Apply the id for refresh
+                        .id(viewModel.refreshCounter)
                     
-                case .loading:
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .tint(.white)
+                    case .loading:
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
                     
-                case .notLoaded:
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .tint(.white)
+                    case .notLoaded:
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
                     
-                case .failed(_):
-                    VStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.largeTitle)
-                            .foregroundColor(.red)
-                        Text("Failed to load image")
-                            .foregroundColor(.white)
-                    }
+                    case .failed(_):
+                        VStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.largeTitle)
+                                .foregroundColor(.red)
+                            Text("Failed to load image")
+                                .foregroundColor(.white)
+                        }
                     }
                 } else {
                     VStack(spacing: 16) {
@@ -98,12 +82,9 @@ public struct ImageDisplayViewWithObserver: View {
         }
         .onChange(of: viewModel.currentPhoto?.id) { oldPhotoID, newPhotoID in
             handlePhotoChange(newPhotoID: newPhotoID)
-            // Disable zoom state updates - use fixed scaling
-            print("📏 ImageDisplay: Photo changed: \(newPhotoID?.uuidString ?? "nil")")
         }
         .animation(getTransitionAnimation(), value: showImage)
     }
-    
     
     // MARK: - Transition Effects
     
@@ -148,7 +129,6 @@ public struct ImageDisplayViewWithObserver: View {
         
         currentPhotoID = newID
         
-        // Disable zoom state updates - images use fixed scaling
         print("📏 handlePhotoChange: New photo loaded: \(newID.uuidString)")
         
         // Trigger transition if enabled
@@ -181,6 +161,4 @@ public struct ImageDisplayViewWithObserver: View {
         
         return transitionManager?.getAnimation()
     }
-    
-    // Zoom functionality removed - no longer needed
 }
