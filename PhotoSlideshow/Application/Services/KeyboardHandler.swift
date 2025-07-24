@@ -15,6 +15,12 @@ public class KeyboardHandler: ObservableObject {
     public var onToggleDetailedInfo: (() -> Void)?
     public var onToggleControlsVisibility: (() -> Void)?
     
+    /// Callbacks for zoom control actions
+    public var onZoomIn: (() -> Void)?
+    public var onZoomOut: (() -> Void)?
+    public var onResetZoom: (() -> Void)?
+    public var onFitToScreen: (() -> Void)?
+    
     public init() {}
     
     public func handleKeyEvent(_ event: NSEvent) -> Bool {
@@ -73,6 +79,34 @@ public class KeyboardHandler: ObservableObject {
             if !event.modifierFlags.contains(.command) {
                 print("🎮 KeyboardHandler: Toggle controls visibility shortcut pressed")
                 onToggleControlsVisibility?()
+                handled = true
+            }
+            
+        // Zoom In (+/= key)
+        case 24: // '+' or '=' key
+            if !event.modifierFlags.contains(.command) {
+                print("🔍 KeyboardHandler: Zoom in shortcut pressed")
+                onZoomIn?()
+                handled = true
+            }
+            
+        // Zoom Out (- key)
+        case 27: // '-' key
+            if !event.modifierFlags.contains(.command) {
+                print("🔍 KeyboardHandler: Zoom out shortcut pressed")
+                onZoomOut?()
+                handled = true
+            }
+            
+        // Reset Zoom (0 key)
+        case 29: // '0' key
+            if event.modifierFlags.contains(.command) {
+                print("🔍 KeyboardHandler: Fit to screen shortcut pressed")
+                onFitToScreen?()
+                handled = true
+            } else {
+                print("🔍 KeyboardHandler: Reset zoom shortcut pressed")
+                onResetZoom?()
                 handled = true
             }
             
