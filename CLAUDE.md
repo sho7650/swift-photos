@@ -11,31 +11,31 @@ Please refer to this for coding rules: https://docs.swift.org/swift-book/documen
 
 ```bash
 # Build the project
-xcodebuild -project PhotoSlideshow.xcodeproj -scheme PhotoSlideshow build
+xcodebuild -project "Swift Photos.xcodeproj" -scheme "Swift Photos" build
 
 # Clean build
-xcodebuild -project PhotoSlideshow.xcodeproj -scheme PhotoSlideshow clean build
+xcodebuild -project "Swift Photos.xcodeproj" -scheme "Swift Photos" clean build
 
 # Build for release
-xcodebuild -project PhotoSlideshow.xcodeproj -scheme PhotoSlideshow -configuration Release build
+xcodebuild -project "Swift Photos.xcodeproj" -scheme "Swift Photos" -configuration Release build
 ```
 
 ### Testing Commands
 
 ```bash
 # Run unit tests
-xcodebuild -project PhotoSlideshow.xcodeproj -scheme PhotoSlideshow test -destination 'platform=macOS'
+xcodebuild -project "Swift Photos.xcodeproj" -scheme "Swift Photos" test -destination 'platform=macOS'
 
 # Run UI tests only
-xcodebuild -project PhotoSlideshow.xcodeproj -scheme PhotoSlideshow -only-testing:PhotoSlideshowUITests test
+xcodebuild -project "Swift Photos.xcodeproj" -scheme "Swift Photos" -only-testing:SwiftPhotosUITests test
 
 # Run specific test class
-xcodebuild -project PhotoSlideshow.xcodeproj -scheme PhotoSlideshow -only-testing:PhotoSlideshowTests/PhotoSlideshowTests test
+xcodebuild -project "Swift Photos.xcodeproj" -scheme "Swift Photos" -only-testing:SwiftPhotosTests/SwiftPhotosTests test
 ```
 
 ## Architecture Overview
 
-PhotoSlideshow is a macOS application built using **Clean Architecture** principles with SwiftUI. The architecture is designed to handle unlimited photo collections (tested up to 100k+ photos) with sophisticated image loading, caching, and transition systems.
+Swift Photos is a macOS application built using **Clean Architecture** principles with SwiftUI. The architecture is designed to handle unlimited photo collections (tested up to 100k+ photos) with sophisticated image loading, caching, and transition systems.
 
 ### Layer Structure
 
@@ -211,32 +211,32 @@ NotificationCenter.default.addObserver(forName: .transitionSettingsChanged) { _ 
 
 ## File Organization
 
-### Domain Layer (`PhotoSlideshow/Domain/`)
+### Domain Layer (`Swift Photos/Domain/`)
 
 - `Entities/`: Core business objects (Photo, Slideshow)
 - `ValueObjects/`: Immutable value types (Settings, ImageURL, etc.)
 - `Repositories/`: Abstract data access interfaces
 - `Services/`: Domain logic and business rules
 
-### Infrastructure Layer (`PhotoSlideshow/Infrastructure/`)
+### Infrastructure Layer (`Swift Photos/Infrastructure/`)
 
 - `Repositories/`: Concrete data access implementations
 - `Services/`: Technical services (file access, image loading, caching)
 - `Utils/`: Cross-cutting utilities (logging, window access)
 
-### Application Layer (`PhotoSlideshow/Application/`)
+### Application Layer (`Swift Photos/Application/`)
 
 - `ViewModels/`: Presentation logic coordinators
 - `Services/`: Application services (keyboard handling, settings management)
 
-### Presentation Layer (`PhotoSlideshow/Presentation/`)
+### Presentation Layer (`Swift Photos/Presentation/`)
 
 - `Views/`: SwiftUI view implementations
 - `Extensions/`: UI-specific extensions
 
 ## UI Control System Architecture
 
-PhotoSlideshow features a sophisticated auto-hiding UI control system with excellent code separation and extensibility.
+Swift Photos features a sophisticated auto-hiding UI control system with excellent code separation and extensibility.
 
 ### Enhanced UI Control Components
 
@@ -386,4 +386,4 @@ The current plugin-ready architecture supports:
 - Professional photography workflow integration
 - Third-party service integrations
 
-This roadmap ensures the PhotoSlideshow application remains maintainable, extensible, and aligned with modern macOS application development best practices.
+This roadmap ensures the Swift Photos application remains maintainable, extensible, and aligned with modern macOS application development best practices.
