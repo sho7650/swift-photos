@@ -41,7 +41,7 @@ public enum InteractionType: String, CaseIterable, Codable {
 }
 
 /// Gesture types supported by the interaction system
-public enum GestureType: String, CaseIterable, Codable {
+public enum GestureType: String, CaseIterable, Codable, Sendable {
     case tap = "tap"
     case doubleTap = "doubleTap"
     case longPress = "longPress"
@@ -107,7 +107,7 @@ public struct InteractionData: Codable, Equatable {
 }
 
 /// Specific data for gesture interactions
-public struct GestureData: Codable, Equatable {
+public struct GestureData: Codable, Equatable, Sendable {
     public let gestureType: GestureType
     public let phase: GesturePhase
     public let scale: Double?
@@ -133,7 +133,7 @@ public struct GestureData: Codable, Equatable {
 }
 
 /// Phases of gesture recognition
-public enum GesturePhase: String, CaseIterable, Codable {
+public enum GesturePhase: String, CaseIterable, Codable, Sendable {
     case began = "began"
     case changed = "changed"
     case ended = "ended"

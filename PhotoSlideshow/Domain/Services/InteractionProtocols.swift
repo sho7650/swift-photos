@@ -502,6 +502,108 @@ public enum TimerError: LocalizedError, Equatable {
     }
 }
 
+// MARK: - Interaction Zone Protocol
+
+/// Protocol for managing invisible interaction zones with gesture detection
+@MainActor
+public protocol InteractionZoneProviding: AnyObject {
+    /// Current interaction zones
+    var zones: [InteractionZone] { get }
+    
+    /// Gesture configuration for zone detection
+    var gestureConfiguration: GestureConfiguration { get set }
+    
+    /// Whether zone detection is enabled
+    var isEnabled: Bool { get set }
+    
+    /// Add a new interaction zone
+    func addZone(_ zone: InteractionZone)
+    
+    /// Remove a zone by ID
+    func removeZone(id: UUID)
+    
+    /// Enable a specific zone
+    func enableZone(id: UUID)
+    
+    /// Disable a specific zone
+    func disableZone(id: UUID)
+    
+    /// Update an existing zone
+    func updateZone(_ zone: InteractionZone)
+    
+    /// Clear all zones
+    func clearAllZones()
+}
+
+/// Interaction zone definition for gesture detection areas
+public struct InteractionZone: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let frame: CGRect
+    public let sensitivity: Double
+    public let name: String
+    public let isEnabled: Bool
+    public let priority: Int
+    public let allowedGestures: Set<GestureType>
+    
+    public init(
+        id: UUID = UUID(),
+        frame: CGRect,
+        sensitivity: Double = 1.0,
+        name: String = "",
+        isEnabled: Bool = true,
+        priority: Int = 0,
+        allowedGestures: Set<GestureType> = Set(GestureType.allCases)
+    ) {
+        self.id = id
+        self.frame = frame
+        self.sensitivity = max(0.1, min(10.0, sensitivity))
+        self.name = name
+        self.isEnabled = isEnabled
+        self.priority = priority
+        self.allowedGestures = allowedGestures
+    }
+    
+    /// Check if a point is within this zone
+    public func contains(_ point: CGPoint) -> Bool {
+        return isEnabled && frame.contains(point)
+    }
+    
+    /// Create a zone for common UI areas
+    public static func controlsZone(frame: CGRect) -> InteractionZone {
+        return InteractionZone(
+            frame: frame,
+            sensitivity: 1.2,
+            name: "Controls Zone",
+            allowedGestures: [.tap, .doubleTap, .longPress]
+        )
+    }
+    
+    /// Create a zone for gesture navigation
+    public static func navigationZone(frame: CGRect, allowSwipe: Bool = true) -> InteractionZone {
+        var gestures: Set<GestureType> = [.tap, .pan]
+        if allowSwipe {
+            gestures.formUnion([.swipeLeft, .swipeRight, .swipeUp, .swipeDown])
+        }
+        
+        return InteractionZone(
+            frame: frame,
+            sensitivity: 0.8,
+            name: "Navigation Zone",
+            allowedGestures: gestures
+        )
+    }
+    
+    /// Create a zone for pinch/zoom gestures
+    public static func zoomZone(frame: CGRect) -> InteractionZone {
+        return InteractionZone(
+            frame: frame,
+            sensitivity: 1.0,
+            name: "Zoom Zone",
+            allowedGestures: [.pinch, .magnify, .smartMagnify, .doubleTap]
+        )
+    }
+}
+
 // MARK: - Position Management Protocol
 
 /// Protocol for managing overlay positioning with intelligent placement
