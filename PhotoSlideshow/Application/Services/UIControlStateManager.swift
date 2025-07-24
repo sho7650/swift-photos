@@ -33,8 +33,9 @@ public class UIControlStateManager: ObservableObject {
     private var interactionClearTimer: AdaptiveTimer?
     private weak var slideshowViewModel: SlideshowViewModel?
     
-    // Enhanced mouse tracking
+    // Enhanced interaction detection
     private var mouseTracker: MouseTracker?
+    private var interactionDetector: InteractionDetector?
     
     // MARK: - Callbacks
     
@@ -57,6 +58,7 @@ public class UIControlStateManager: ObservableObject {
         setupNotificationObservers()
         setupMouseTracking()
         setupEnhancedMouseTracker()
+        setupUnifiedInteractionDetector()
         startHideTimer()
         
         print("🎮 UIControlStateManager: Initialized with controls visible: \(isControlsVisible)")
@@ -76,6 +78,7 @@ public class UIControlStateManager: ObservableObject {
         
         Task { @MainActor in
             mouseTracker?.stopTracking()
+            interactionDetector?.stopDetection()
         }
         
         NotificationCenter.default.removeObserver(self)
@@ -628,5 +631,90 @@ extension UIControlStateManager: AdaptiveTimerDelegate {
             hasRecentInteraction = false
             interactionClearTimer = nil
         }
+    }
+    
+    // MARK: - Unified Interaction Detection Setup
+    
+    private func setupUnifiedInteractionDetector() {
+        // Create configuration based on UI control settings
+        let config = InteractionConfiguration(
+            enabledTypes: [.mouseMove, .mouseClick, .keyPress, .gesture],
+            sensitivity: uiControlSettings.settings.mouseSensitivity / 50.0,
+            minimumConfidence: 0.7,
+            debounceInterval: 0.05, // Smooth but responsive
+            maxEventRate: 120.0, // High rate for responsive UI
+            enableGestures: true
+        )
+        
+        interactionDetector = InteractionDetector(configuration: config)
+        interactionDetector?.delegate = self
+        interactionDetector?.addObserver(self)
+        
+        // Start detection
+        do {
+            try interactionDetector?.startDetection()
+            print("🎮 UIControlStateManager: Unified interaction detection started")
+        } catch {
+            print("🎮 UIControlStateManager: Failed to start unified interaction detection: \(error)")
+        }
+    }
+}
+
+// MARK: - InteractionObserver
+
+extension UIControlStateManager: InteractionObserver {
+    public func interactionOccurred(_ interaction: Interaction) {
+        // Handle different types of interactions
+        switch interaction.type {
+        case .mouseMove, .mouseClick:
+            if let position = interaction.data.position {
+                handleMouseInteraction(at: position)
+            }
+        case .keyPress:
+            handleKeyboardInteraction()
+        case .gesture:
+            handleGestureInteraction()
+        default:
+            // Record general interaction
+            recordInteraction()
+        }
+    }
+    
+    public func interactionDetectionFailed(_ error: InteractionError) {
+        print("🎮 UIControlStateManager: Interaction detection failed: \(error.localizedDescription)")
+    }
+    
+    public func interactionConfigurationDidChange(_ configuration: InteractionConfiguration) {
+        print("🎮 UIControlStateManager: Interaction configuration updated")
+    }
+}
+
+// MARK: - InteractionDetectorDelegate
+
+extension UIControlStateManager: InteractionDetectorDelegate {
+    public func detectorDidDetectInteraction(_ detector: InteractionDetecting, interaction: Interaction) {
+        // This provides another layer of interaction handling if needed
+        // Currently delegated to InteractionObserver methods
+    }
+    
+    public func detectorDidEncounterError(_ detector: InteractionDetecting, error: InteractionError) {
+        print("🎮 UIControlStateManager: InteractionDetector error: \(error.localizedDescription)")
+        
+        // Try to restart detection if possible
+        if error == .systemPermissionDenied(permission: "Accessibility permissions required for global event monitoring") {
+            print("🎮 UIControlStateManager: Please grant accessibility permissions in System Preferences")
+        }
+    }
+    
+    public func detectorDidStartDetection(_ detector: InteractionDetecting) {
+        print("🎮 UIControlStateManager: InteractionDetector started successfully")
+    }
+    
+    public func detectorDidStopDetection(_ detector: InteractionDetecting) {
+        print("🎮 UIControlStateManager: InteractionDetector stopped")
+    }
+    
+    public func detectorDidUpdateConfiguration(_ detector: InteractionDetecting, configuration: InteractionConfiguration) {
+        print("🎮 UIControlStateManager: InteractionDetector configuration updated")
     }
 }

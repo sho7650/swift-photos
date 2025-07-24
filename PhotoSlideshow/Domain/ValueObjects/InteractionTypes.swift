@@ -4,7 +4,7 @@ import CoreGraphics
 // MARK: - Core Interaction Types
 
 /// Types of interactions that can be detected
-public enum InteractionType: String, CaseIterable, Codable {
+public enum InteractionType: String, CaseIterable, Codable, Sendable {
     case mouseMove = "mouseMove"
     case mouseClick = "mouseClick"
     case mouseScroll = "mouseScroll"
@@ -195,7 +195,7 @@ public struct Interaction: Codable, Equatable, Identifiable {
 }
 
 /// Source of an interaction event
-public enum InteractionSource: String, CaseIterable, Codable {
+public enum InteractionSource: String, CaseIterable, Codable, Sendable {
     case mouse = "mouse"
     case trackpad = "trackpad"
     case keyboard = "keyboard"
