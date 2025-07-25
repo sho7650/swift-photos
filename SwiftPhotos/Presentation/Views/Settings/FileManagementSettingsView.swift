@@ -37,7 +37,7 @@ struct FileManagementSettingsView: View {
                             }
                         }
                     ))
-                    .toggleStyle(SwitchToggleStyle())
+                    .toggleStyle(.switch)
                     
                     if recentFilesManager.configuration.enableRecentFiles {
                         // Maximum recent files

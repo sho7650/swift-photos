@@ -70,7 +70,7 @@ public struct ControlsView: View {
                         .font(.title)
                         .foregroundColor(.white)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
                 
                 Button(action: {
                     if slideshow.isPlaying {
@@ -83,14 +83,14 @@ public struct ControlsView: View {
                         .font(.largeTitle)
                         .foregroundColor(.white)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
                 
                 Button(action: viewModel.nextPhoto) {
                     Image(systemName: "chevron.right.circle.fill")
                         .font(.title)
                         .foregroundColor(.white)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
             }
             
             photoInfo(slideshow: slideshow)

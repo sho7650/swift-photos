@@ -516,7 +516,7 @@ public struct AdaptiveBlurView: View {
             isVisible = true
             onRender()
         }
-        .onChange(of: configuration.intensity) { _, _ in
+        .onChange(of: configuration.intensity) {
             onRender()
         }
     }

@@ -35,7 +35,7 @@ struct TransitionSettingsView: View {
                         settings.updateSettings(createTransitionSettings(isEnabled: isEnabled))
                     }
                 ))
-                .toggleStyle(SwitchToggleStyle())
+                .toggleStyle(.switch)
             }
             
             if settings.settings.isEnabled {
@@ -97,7 +97,7 @@ struct TransitionSettingsView: View {
                             .tag(effectType)
                         }
                     }
-                    .pickerStyle(MenuPickerStyle())
+                    .pickerStyle(.menu)
                 }
                 
                 // Timing Settings Section
@@ -144,7 +144,7 @@ struct TransitionSettingsView: View {
                                         .tag(easing)
                                 }
                             }
-                            .pickerStyle(SegmentedPickerStyle())
+                            .pickerStyle(.segmented)
                         }
                     }
                 }

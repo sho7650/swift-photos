@@ -136,7 +136,7 @@ struct PerformanceSettingsView: View {
                             selectedPreset = "Custom"
                         }
                     ))
-                    .toggleStyle(SwitchToggleStyle())
+                    .toggleStyle(.switch)
                     
                     SettingSlider(
                         title: "Large Collection Threshold",
@@ -245,7 +245,7 @@ private struct PresetButton: View {
             .background(isSelected ? Color.accentColor : Color.clear)
             .cornerRadius(6)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 

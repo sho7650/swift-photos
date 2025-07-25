@@ -137,7 +137,7 @@ struct InterfaceSettingsView: View {
                             settings.updateSettings(newSettings)
                         }
                     ))
-                    .toggleStyle(SwitchToggleStyle())
+                    .toggleStyle(.switch)
                 }
             }
             
@@ -168,7 +168,7 @@ struct InterfaceSettingsView: View {
                             settings.updateSettings(newSettings)
                         }
                     ))
-                    .toggleStyle(SwitchToggleStyle())
+                    .toggleStyle(.switch)
                     
                     if settings.settings.showOnMouseMovement {
                         VStack(alignment: .leading, spacing: 4) {
@@ -412,7 +412,7 @@ struct InterfaceSettingsView: View {
                             settings.updateSettings(newSettings)
                         }
                     ))
-                    .toggleStyle(SwitchToggleStyle())
+                    .toggleStyle(.switch)
                     
                     if settings.settings.showDetailedInfoByDefault {
                         VStack(alignment: .leading, spacing: 8) {

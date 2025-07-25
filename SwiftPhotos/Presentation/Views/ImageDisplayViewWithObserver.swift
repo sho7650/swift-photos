@@ -30,7 +30,7 @@ public struct ImageDisplayViewWithObserver: View {
                         // Disable all zoom state updates - use fixed scaling
                         ProductionLogger.debug("ImageDisplay: Viewport size: \(geometry.size)")
                     }
-                    .onChange(of: geometry.size) { oldSize, newSize in
+                    .onChange(of: geometry.size) { newSize in
                         viewportSize = newSize
                         // Disable all zoom state updates - use fixed scaling
                         ProductionLogger.debug("ImageDisplay: Viewport size changed: \(newSize)")
@@ -98,7 +98,7 @@ public struct ImageDisplayViewWithObserver: View {
             initializeTransitionManager()
             setupTransitionNotifications()
         }
-        .onChange(of: viewModel.currentPhoto?.id) { oldPhotoID, newPhotoID in
+        .onChange(of: viewModel.currentPhoto?.id) { newPhotoID in
             handlePhotoChange(newPhotoID: newPhotoID)
             // Disable zoom state updates - use fixed scaling
             ProductionLogger.debug("ImageDisplay: Photo changed: \(newPhotoID?.uuidString ?? "nil")")

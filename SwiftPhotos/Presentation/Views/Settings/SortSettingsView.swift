@@ -67,7 +67,7 @@ struct SortSettingsView: View {
                             .tag(order)
                         }
                     }
-                    .pickerStyle(MenuPickerStyle())
+                    .pickerStyle(.menu)
                 }
             }
             
@@ -98,7 +98,7 @@ struct SortSettingsView: View {
                                 .tag(direction)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .pickerStyle(.segmented)
                     }
                 }
             }

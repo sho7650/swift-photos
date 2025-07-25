@@ -102,12 +102,12 @@ public struct SidebarSettingsWindow: View {
                 .font(.system(size: 14))
             
             TextField("Search settings...", text: $searchText)
-                .textFieldStyle(PlainTextFieldStyle())
+                .textFieldStyle(.plain)
                 .font(.system(size: 13))
                 .onSubmit {
                     updateNavigationForSearch()
                 }
-                .onChange(of: searchText) { _, _ in
+                .onChange(of: searchText) {
                     updateNavigationForSearch()
                 }
             
@@ -117,7 +117,7 @@ public struct SidebarSettingsWindow: View {
                         .foregroundColor(.secondary)
                         .font(.system(size: 12))
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 12)
@@ -323,7 +323,7 @@ private struct CategoryRowView: View {
             )
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 
@@ -356,7 +356,7 @@ private struct QuickActionButton: View {
             .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(8)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 

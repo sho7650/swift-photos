@@ -212,7 +212,7 @@ private struct ControlButton: View {
                 .opacity(isPressed ? 0.6 : 1.0)
                 .scaleEffect(isPressed ? 0.9 : 1.0)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
             withAnimation(.easeInOut(duration: 0.1)) {
                 isPressed = pressing

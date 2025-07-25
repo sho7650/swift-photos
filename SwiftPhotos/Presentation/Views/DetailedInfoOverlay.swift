@@ -73,7 +73,7 @@ public struct DetailedInfoOverlay: View {
                         .font(.title2)
                         .foregroundColor(.secondary)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
                 
                 Spacer()
                 
@@ -92,7 +92,7 @@ public struct DetailedInfoOverlay: View {
                         .font(.title2)
                         .foregroundColor(.secondary)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
                 .shortcutTooltip("Close Info", shortcut: "I")
             }
             
@@ -156,7 +156,7 @@ public struct DetailedInfoOverlay: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
             }
             
             if showMetadata, let metadata = photo.metadata {
@@ -308,7 +308,7 @@ private struct DetailedControlButton: View {
             .opacity(isPressed ? 0.6 : 1.0)
             .scaleEffect(isPressed ? 0.9 : 1.0)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
             withAnimation(.easeInOut(duration: 0.1)) {
                 isPressed = pressing

@@ -179,7 +179,7 @@ public struct PositionedOverlay: ViewModifier {
                     coordinator.unregisterOverlay(overlayType)
                 }
             }
-            .onChange(of: coordinator.position(for: overlayType)) { _, newPosition in
+            .onChange(of: coordinator.position(for: overlayType)) { newPosition in
                 onPositionChange?(newPosition)
             }
     }
@@ -239,7 +239,7 @@ public struct SmartOverlayContainer<Content: View>: View {
                 containerBounds = geometry.frame(in: .local)
                 coordinator.bounds = containerBounds
             }
-            .onChange(of: geometry.frame(in: .local)) { _, newBounds in
+            .onChange(of: geometry.frame(in: .local)) { newBounds in
                 containerBounds = newBounds
                 coordinator.bounds = newBounds
             }
@@ -342,7 +342,7 @@ public struct AdaptiveOverlayView<Content: View>: View {
                             .onAppear {
                                 overlaySize = geometry.size
                             }
-                            .onChange(of: geometry.size) { _, newSize in
+                            .onChange(of: geometry.size) { newSize in
                                 overlaySize = newSize
                                 // Update overlay size and recalculate position
                                 coordinator.updatePosition(for: overlayType, animated: true)

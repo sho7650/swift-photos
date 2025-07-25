@@ -20,15 +20,15 @@ struct AdvancedSettingsView: View {
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     Toggle("Enable debug logging", isOn: $isDebugLoggingEnabled)
-                        .toggleStyle(SwitchToggleStyle())
-                        .onChange(of: isDebugLoggingEnabled) { _, enabled in
+                        .toggleStyle(.switch)
+                        .onChange(of: isDebugLoggingEnabled) { enabled in
                             configureDebugLogging(enabled)
                         }
                     
                     if isDebugLoggingEnabled {
                         Toggle("Verbose logging (detailed output)", isOn: $isVerboseLoggingEnabled)
-                            .toggleStyle(SwitchToggleStyle())
-                            .onChange(of: isVerboseLoggingEnabled) { _, enabled in
+                            .toggleStyle(.switch)
+                            .onChange(of: isVerboseLoggingEnabled) { enabled in
                                 configureVerboseLogging(enabled)
                             }
                     }

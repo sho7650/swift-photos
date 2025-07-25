@@ -76,7 +76,7 @@ struct SlideshowSettingsView: View {
                             settings.updateSettings(newSettings)
                         }
                     ))
-                    .toggleStyle(SwitchToggleStyle())
+                    .toggleStyle(.switch)
                     
                     Toggle("Random order", isOn: Binding(
                         get: { settings.settings.randomOrder },
@@ -90,7 +90,7 @@ struct SlideshowSettingsView: View {
                             settings.updateSettings(newSettings)
                         }
                     ))
-                    .toggleStyle(SwitchToggleStyle())
+                    .toggleStyle(.switch)
                     
                     Toggle("Loop slideshow", isOn: Binding(
                         get: { settings.settings.loopSlideshow },
@@ -104,7 +104,7 @@ struct SlideshowSettingsView: View {
                             settings.updateSettings(newSettings)
                         }
                     ))
-                    .toggleStyle(SwitchToggleStyle())
+                    .toggleStyle(.switch)
                 }
             }
             
