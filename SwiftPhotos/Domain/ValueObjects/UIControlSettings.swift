@@ -5,6 +5,7 @@ extension Notification.Name {
     static let uiControlSettingsChanged = Notification.Name("uiControlSettingsChanged")
 }
 
+
 /// Settings for UI control behavior and appearance
 public struct UIControlSettings: Codable, Equatable, Sendable {
     /// Auto-hide delay in seconds when no interaction
@@ -43,6 +44,11 @@ public struct UIControlSettings: Codable, Equatable, Sendable {
     /// Controls position offset from bottom (in pixels)
     public let bottomOffset: Double
     
+    // MARK: - Cursor Control Settings
+    
+    /// Whether to hide cursor when hovering over images
+    public let hideOnImageHover: Bool
+    
     public init(
         autoHideDelay: Double = 5.0,
         playingAutoHideDelay: Double = 2.0,
@@ -55,7 +61,8 @@ public struct UIControlSettings: Codable, Equatable, Sendable {
         minimumVisibilityDuration: Double = 1.0,
         showOnMouseMovement: Bool = true,
         mouseSensitivity: Double = 10.0,
-        bottomOffset: Double = 50.0
+        bottomOffset: Double = 50.0,
+        hideOnImageHover: Bool = true
     ) {
         self.autoHideDelay = max(1.0, min(30.0, autoHideDelay))
         self.playingAutoHideDelay = max(0.5, min(10.0, playingAutoHideDelay))
@@ -69,6 +76,9 @@ public struct UIControlSettings: Codable, Equatable, Sendable {
         self.showOnMouseMovement = showOnMouseMovement
         self.mouseSensitivity = max(1.0, min(100.0, mouseSensitivity))
         self.bottomOffset = max(20.0, min(200.0, bottomOffset))
+        
+        // Simplified cursor control
+        self.hideOnImageHover = hideOnImageHover
     }
     
     // Predefined presets
@@ -86,7 +96,8 @@ public struct UIControlSettings: Codable, Equatable, Sendable {
         minimumVisibilityDuration: 0.5,
         showOnMouseMovement: true,
         mouseSensitivity: 15.0,
-        bottomOffset: 30.0
+        bottomOffset: 30.0,
+        hideOnImageHover: true
     )
     
     public static let alwaysVisible = UIControlSettings(
@@ -101,7 +112,8 @@ public struct UIControlSettings: Codable, Equatable, Sendable {
         minimumVisibilityDuration: 1.0,
         showOnMouseMovement: true,
         mouseSensitivity: 5.0,
-        bottomOffset: 60.0
+        bottomOffset: 60.0,
+        hideOnImageHover: false
     )
     
     public static let subtle = UIControlSettings(
@@ -116,7 +128,8 @@ public struct UIControlSettings: Codable, Equatable, Sendable {
         minimumVisibilityDuration: 1.5,
         showOnMouseMovement: true,
         mouseSensitivity: 20.0,
-        bottomOffset: 40.0
+        bottomOffset: 40.0,
+        hideOnImageHover: true
     )
     
     /// Preset configurations for UI controls

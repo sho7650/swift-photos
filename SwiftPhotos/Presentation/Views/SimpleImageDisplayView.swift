@@ -4,13 +4,15 @@ import AppKit
 public struct SimpleImageDisplayView: View {
     var viewModel: ModernSlideshowViewModel
     var transitionSettings: ModernTransitionSettingsManager
+    var uiControlStateManager: UIControlStateManager? = nil
     @State private var transitionManager: ImageTransitionManager?
     @State private var currentPhotoID: UUID?
     @State private var showImage = true
     
-    public init(viewModel: ModernSlideshowViewModel, transitionSettings: ModernTransitionSettingsManager) {
+    public init(viewModel: ModernSlideshowViewModel, transitionSettings: ModernTransitionSettingsManager, uiControlStateManager: UIControlStateManager? = nil) {
         self.viewModel = viewModel
         self.transitionSettings = transitionSettings
+        self.uiControlStateManager = uiControlStateManager
     }
     
     public var body: some View {
@@ -29,7 +31,7 @@ public struct SimpleImageDisplayView: View {
                                 .fill(Color.black)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                             
-                            // Image with transition effects (no gesture functionality)
+                            // Image with transition effects and cursor hiding on hover
                             if showImage {
                                 Image(nsImage: image.nsImage)
                                     .resizable()
@@ -41,6 +43,13 @@ public struct SimpleImageDisplayView: View {
                                     )
                                     .clipped()
                                     .transition(getTransitionEffect())
+                                    .onHover { hovering in
+                                        if hovering {
+                                            uiControlStateManager?.handleMouseEnteredImage()
+                                        } else {
+                                            uiControlStateManager?.handleMouseExitedImage()
+                                        }
+                                    }
                             }
                         }
                         .id(viewModel.refreshCounter)

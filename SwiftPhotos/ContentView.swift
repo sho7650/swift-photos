@@ -29,10 +29,11 @@ struct ContentView: View {
                let keyboardHandler = keyboardHandler,
                let uiControlStateManager = uiControlStateManager {
                 ZStack {
-                    // Main content (gesture functionality removed)
+                    // Main content with image hover cursor control
                     SimpleImageDisplayView(
                         viewModel: viewModel,
-                        transitionSettings: transitionSettings
+                        transitionSettings: transitionSettings,
+                        uiControlStateManager: uiControlStateManager
                     )
                         .ignoresSafeArea()
                     
