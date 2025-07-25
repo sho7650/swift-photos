@@ -36,6 +36,11 @@ struct ContentView: View {
                     )
                         .ignoresSafeArea()
                     
+                    // Window level accessor
+                    WindowLevelAccessor(windowLevel: viewModel.windowLevel)
+                        .allowsHitTesting(false)
+                        .frame(width: 0, height: 0)
+                    
                     // Minimal controls overlay (always present in ZStack, visibility controlled internally)
                     MinimalControlsView(
                         viewModel: viewModel,
@@ -250,6 +255,21 @@ struct ContentView: View {
                 ProductionLogger.userAction("Received folder selection from menu: \(folderURL.path)")
                 Task {
                     await self.handleFolderSelectedFromMenu(url: folderURL)
+                }
+            }
+        }
+        
+        // Listen for window level changes from Window menu
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("SwiftPhotosWindowLevelChanged"),
+            object: nil,
+            queue: .main
+        ) { notification in
+            if let windowLevel = notification.object as? WindowLevel,
+               let viewModel = self.viewModel {
+                ProductionLogger.userAction("Received window level change: \(windowLevel.displayName)")
+                Task { @MainActor in
+                    viewModel.windowLevel = windowLevel
                 }
             }
         }

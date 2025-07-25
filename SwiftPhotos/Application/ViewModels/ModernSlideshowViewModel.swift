@@ -44,6 +44,7 @@ public final class ModernSlideshowViewModel {
     public var error: SlideshowError?
     public var selectedFolderURL: URL?
     public var refreshCounter: Int = 0
+    public var windowLevel: WindowLevel = .normal
     
     public var currentPhoto: Photo? = nil {
         didSet {

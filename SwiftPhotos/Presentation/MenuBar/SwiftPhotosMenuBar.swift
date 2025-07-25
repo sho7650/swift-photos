@@ -96,6 +96,28 @@ public struct SwiftPhotosMenuBar: Commands {
                 }
             }
         }
+        
+        // Add Window menu items for window level control
+        CommandGroup(before: .windowArrangement) {
+            Menu("Window Level") {
+                Button("Normal") {
+                    changeWindowLevel(.normal)
+                }
+                .keyboardShortcut("0", modifiers: [.command, .control])
+                
+                Button("Always on Top") {
+                    changeWindowLevel(.alwaysOnTop)
+                }
+                .keyboardShortcut("1", modifiers: [.command, .control])
+                
+                Button("Always at Bottom") {
+                    changeWindowLevel(.alwaysAtBottom)
+                }
+                .keyboardShortcut("2", modifiers: [.command, .control])
+            }
+            
+            Divider()
+        }
     }
     
     // MARK: - Action Methods
@@ -271,6 +293,14 @@ public struct SwiftPhotosMenuBar: Commands {
                 }
             }
         }
+    }
+    
+    private func changeWindowLevel(_ level: WindowLevel) {
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Changing window level to \(level.displayName)")
+        NotificationCenter.default.post(
+            name: .init("SwiftPhotosWindowLevelChanged"),
+            object: level
+        )
     }
     
     private func importRecentFiles() {
