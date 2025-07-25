@@ -30,7 +30,7 @@ public struct SimpleImageDisplayView: View {
                             
                             // Image with transition effects (no gesture functionality)
                             if showImage {
-                                Image(nsImage: image)
+                                Image(nsImage: image.nsImage)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(

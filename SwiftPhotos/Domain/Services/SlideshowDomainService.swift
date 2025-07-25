@@ -36,7 +36,7 @@ public class SlideshowDomainService: ObservableObject {
     public func loadImage(for photo: Photo) async throws -> Photo {
         if let cachedImage = await cache.getCachedImage(for: photo.imageURL) {
             var updatedPhoto = photo
-            updatedPhoto.updateLoadState(.loaded(cachedImage))
+            updatedPhoto.updateLoadState(.loaded(SendableImage(cachedImage)))
             return updatedPhoto
         }
         
@@ -51,13 +51,13 @@ public class SlideshowDomainService: ObservableObject {
     
     public func preloadAdjacentImages(for slideshow: Slideshow, preloadRadius: Int = 2) async {
         guard !slideshow.isEmpty else { 
-            print("🔄 SlideshowDomainService.preloadAdjacentImages: Slideshow is empty, skipping")
+            ProductionLogger.debug("SlideshowDomainService.preloadAdjacentImages: Slideshow is empty, skipping")
             return 
         }
         
         let currentIndex = slideshow.currentIndex
         let totalPhotos = slideshow.photos.count
-        print("🔄 SlideshowDomainService.preloadAdjacentImages: Starting preload from currentIndex=\(currentIndex), totalPhotos=\(totalPhotos)")
+        ProductionLogger.debug("SlideshowDomainService.preloadAdjacentImages: Starting preload from currentIndex=\(currentIndex), totalPhotos=\(totalPhotos)")
         var indicesToPreload: [Int] = []
         
         for offset in 1...preloadRadius {
@@ -70,33 +70,33 @@ public class SlideshowDomainService: ObservableObject {
             }
         }
         
-        print("🔄 SlideshowDomainService.preloadAdjacentImages: Indices to preload: \(indicesToPreload)")
+        ProductionLogger.debug("SlideshowDomainService.preloadAdjacentImages: Indices to preload: \(indicesToPreload)")
         
         let photosToPreload = indicesToPreload.compactMap { index -> Photo? in
             guard index < slideshow.photos.count else { return nil }
             let photo = slideshow.photos[index]
             let shouldPreload = !photo.loadState.isLoaded
-            print("🔄 SlideshowDomainService.preloadAdjacentImages: Photo[\(index)] '\(photo.fileName)' - loadState: \(photo.loadState), shouldPreload: \(shouldPreload)")
+            ProductionLogger.debug("SlideshowDomainService.preloadAdjacentImages: Photo[\(index)] '\(photo.fileName)' - loadState: \(photo.loadState), shouldPreload: \(shouldPreload)")
             return shouldPreload ? photo : nil
         }
         
-        print("🔄 SlideshowDomainService.preloadAdjacentImages: Will preload \(photosToPreload.count) photos: \(photosToPreload.map { $0.fileName })")
+        ProductionLogger.debug("SlideshowDomainService.preloadAdjacentImages: Will preload \(photosToPreload.count) photos: \(photosToPreload.map { $0.fileName })")
         
         await withTaskGroup(of: Void.self) { group in
             for photo in photosToPreload.prefix(maxConcurrentLoads) {
                 group.addTask {
                     do {
-                        print("🔄 SlideshowDomainService.preloadAdjacentImages: Starting to preload '\(photo.fileName)'")
+                        ProductionLogger.debug("SlideshowDomainService.preloadAdjacentImages: Starting to preload '\(photo.fileName)'")
                         _ = try await self.loadImage(for: photo)
-                        print("🔄 SlideshowDomainService.preloadAdjacentImages: Completed preloading '\(photo.fileName)'")
+                        ProductionLogger.debug("SlideshowDomainService.preloadAdjacentImages: Completed preloading '\(photo.fileName)'")
                     } catch {
-                        print("❌ SlideshowDomainService.preloadAdjacentImages: Failed to preload '\(photo.fileName)': \(error)")
+                        ProductionLogger.error("SlideshowDomainService.preloadAdjacentImages: Failed to preload '\(photo.fileName)': \(error)")
                     }
                 }
             }
         }
         
-        print("🔄 SlideshowDomainService.preloadAdjacentImages: All preloading tasks completed")
+        ProductionLogger.debug("SlideshowDomainService.preloadAdjacentImages: All preloading tasks completed")
     }
     
     public func loadMetadata(for photo: Photo) async throws -> Photo.PhotoMetadata? {

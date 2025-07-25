@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 /// Screen transition effects configuration for slideshow
-public struct TransitionSettings: Codable, Equatable {
+public struct TransitionSettings: Codable, Equatable, Sendable {
     /// Transition effect type
     public let effectType: TransitionEffectType
     
@@ -33,7 +33,7 @@ public struct TransitionSettings: Codable, Equatable {
     }
     
     /// Transition effect types
-    public enum TransitionEffectType: String, CaseIterable, Codable {
+    public enum TransitionEffectType: String, CaseIterable, Codable, Sendable {
         case none = "none"
         case fade = "fade"
         case slideLeft = "slideLeft"
@@ -104,7 +104,7 @@ public struct TransitionSettings: Codable, Equatable {
     }
     
     /// Animation easing functions
-    public enum EasingFunction: String, CaseIterable, Codable {
+    public enum EasingFunction: String, CaseIterable, Codable, Sendable {
         case linear = "linear"
         case easeIn = "easeIn"
         case easeOut = "easeOut"

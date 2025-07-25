@@ -420,22 +420,7 @@ private struct PersistedZoomState: Codable {
 
 // Note: CGPoint already conforms to Codable in macOS 15.5+
 
-// MARK: - Environment Support
-
-/// Environment key for PhotoZoomState
-private struct PhotoZoomStateKey: EnvironmentKey {
-    @MainActor static let defaultValue: PhotoZoomState = PhotoZoomState()
-}
-
-public extension EnvironmentValues {
-    var photoZoomState: PhotoZoomState {
-        get { self[PhotoZoomStateKey.self] }
-        set { self[PhotoZoomStateKey.self] = newValue }
-    }
-}
-
-public extension View {
-    func photoZoomState(_ zoomState: PhotoZoomState) -> some View {
-        environment(\.photoZoomState, zoomState)
-    }
-}
+// MARK: - Environment Support Removed
+// PhotoZoomState is a MainActor-isolated ObservableObject that should be passed
+// directly rather than through EnvironmentValues to avoid actor isolation issues
+// Use @StateObject or @ObservedObject instead of EnvironmentValues for this class

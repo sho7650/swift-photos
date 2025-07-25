@@ -46,7 +46,7 @@ public struct ImageDisplayViewWithObserver: View {
                             
                             // Image with transition effects (simplified - no gesture conflicts)
                             if showImage {
-                                Image(nsImage: image)
+                                Image(nsImage: image.nsImage)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(

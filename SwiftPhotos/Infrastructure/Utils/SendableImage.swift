@@ -3,10 +3,10 @@ import AppKit
 
 /// A thread-safe wrapper for NSImage that conforms to Sendable
 /// This allows NSImage to be safely passed between actors in Swift concurrency
-struct SendableImage: @unchecked Sendable {
+public struct SendableImage: @unchecked Sendable {
     private let image: NSImage
     
-    init(_ image: NSImage) {
+    public init(_ image: NSImage) {
         self.image = image
     }
     

@@ -1,7 +1,7 @@
 import Foundation
 
 /// File sorting configuration for slideshow photo organization
-public struct SortSettings: Codable, Equatable {
+public struct SortSettings: Codable, Equatable, Sendable {
     /// Sort criteria
     public let order: SortOrder
     
@@ -23,7 +23,7 @@ public struct SortSettings: Codable, Equatable {
     }
     
     /// Sort order options
-    public enum SortOrder: String, CaseIterable, Codable {
+    public enum SortOrder: String, CaseIterable, Codable, Sendable {
         case fileName = "fileName"
         case creationDate = "creationDate"
         case modificationDate = "modificationDate"
@@ -62,7 +62,7 @@ public struct SortSettings: Codable, Equatable {
     }
     
     /// Sort direction options
-    public enum SortDirection: String, CaseIterable, Codable {
+    public enum SortDirection: String, CaseIterable, Codable, Sendable {
         case ascending = "ascending"
         case descending = "descending"
         

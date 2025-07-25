@@ -315,7 +315,7 @@ public class SlideshowViewModel: ObservableObject {
                     case .success(let image):
                         // 即座にUIを更新
                         var loadedPhoto = targetPhoto
-                        loadedPhoto.updateLoadState(.loaded(image))
+                        loadedPhoto.updateLoadState(.loaded(SendableImage(image)))
                         self?.updatePhotoInSlideshow(loadedPhoto)
                         self?.currentPhoto = loadedPhoto
                         
@@ -475,7 +475,7 @@ public class SlideshowViewModel: ObservableObject {
             
             // Create loaded photo directly from cached image
             var loadedPhoto = photo
-            loadedPhoto.updateLoadState(.loaded(cachedImage))
+            loadedPhoto.updateLoadState(.loaded(SendableImage(cachedImage)))
             updatePhotoInSlideshow(loadedPhoto)
         } else if !(await virtualLoader.isLoading(photoId: photo.id)) {
             ProductionLogger.debug("loadCurrentImageVirtual: Loading current image directly")
@@ -628,7 +628,7 @@ public class SlideshowViewModel: ObservableObject {
             
             // Create loaded photo with the cached image
             var loadedPhoto = photo
-            loadedPhoto.updateLoadState(.loaded(image))
+            loadedPhoto.updateLoadState(.loaded(SendableImage(image)))
             
             // Update the slideshow
             updatePhotoInSlideshow(loadedPhoto)

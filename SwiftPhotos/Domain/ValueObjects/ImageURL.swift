@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ImageURL: Equatable, Hashable, Codable {
+public struct ImageURL: Equatable, Hashable, Codable, Sendable {
     public let url: URL
     
     public init(_ url: URL) throws {
@@ -42,7 +42,7 @@ public struct ImageURL: Equatable, Hashable, Codable {
     }
 }
 
-public enum SlideshowError: Error, LocalizedError, Equatable {
+public enum SlideshowError: Error, LocalizedError, Equatable, Sendable {
     case invalidImageFormat(String)
     case fileNotFound(URL)
     case loadingFailed(underlying: Error)

@@ -5,6 +5,7 @@ import Observation
 
 /// Modern Swift 6 compliant SlideshowViewModel using @Observable
 /// This is the new implementation that replaces @ObservableObject with @Observable
+@available(macOS 14.0, *)
 @Observable
 @MainActor
 public final class ModernSlideshowViewModel {
@@ -75,7 +76,9 @@ public final class ModernSlideshowViewModel {
             queue: .main
         ) { [weak self] notification in
             if let randomOrder = notification.object as? Bool {
-                self?.updateSlideshowMode(randomOrder: randomOrder)
+                Task { @MainActor in
+                    self?.updateSlideshowMode(randomOrder: randomOrder)
+                }
             }
         }
         
@@ -271,7 +274,7 @@ public final class ModernSlideshowViewModel {
                     case .success(let image):
                         // Update UI immediately
                         var loadedPhoto = targetPhoto
-                        loadedPhoto.updateLoadState(.loaded(image))
+                        loadedPhoto.updateLoadState(.loaded(SendableImage(image)))
                         self?.updatePhotoInSlideshow(loadedPhoto)
                         self?.currentPhoto = loadedPhoto
                         
@@ -503,7 +506,9 @@ public final class ModernSlideshowViewModel {
         ProductionLogger.debug("StartTimer: Using interval \(interval) seconds from settings")
         
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            self?.nextPhoto()
+            Task { @MainActor in
+                self?.nextPhoto()
+            }
         }
     }
     
@@ -537,7 +542,7 @@ public final class ModernSlideshowViewModel {
             
             // Create loaded photo directly from cached image
             var loadedPhoto = photo
-            loadedPhoto.updateLoadState(.loaded(cachedImage))
+            loadedPhoto.updateLoadState(.loaded(SendableImage(cachedImage)))
             updatePhotoInSlideshow(loadedPhoto)
         } else if !(await virtualLoader.isLoading(photoId: photo.id)) {
             ProductionLogger.debug("loadCurrentImageVirtual: Loading current image directly")
@@ -645,7 +650,7 @@ public final class ModernSlideshowViewModel {
             
             // Create loaded photo with the cached image
             var loadedPhoto = photo
-            loadedPhoto.updateLoadState(.loaded(image))
+            loadedPhoto.updateLoadState(.loaded(SendableImage(image)))
             
             // Update the slideshow
             updatePhotoInSlideshow(loadedPhoto)

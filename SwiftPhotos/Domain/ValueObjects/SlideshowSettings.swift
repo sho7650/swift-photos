@@ -1,7 +1,7 @@
 import Foundation
 
 /// Settings for slideshow behavior
-public struct SlideshowSettings: Codable, Equatable {
+public struct SlideshowSettings: Codable, Equatable, Sendable {
     /// Slide duration in seconds
     public let slideDuration: Double
     

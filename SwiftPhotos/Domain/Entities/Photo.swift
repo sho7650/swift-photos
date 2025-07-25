@@ -2,7 +2,7 @@ import Foundation
 import AppKit
 import SwiftUI
 
-public struct Photo: Identifiable, Equatable {
+public struct Photo: Identifiable, Equatable, Sendable {
     public let id: UUID
     public let imageURL: ImageURL
     public private(set) var loadState: LoadState
@@ -15,10 +15,10 @@ public struct Photo: Identifiable, Equatable {
         self.metadata = nil
     }
     
-    public enum LoadState: Equatable {
+    public enum LoadState: Equatable, Sendable {
         case notLoaded
         case loading
-        case loaded(NSImage)
+        case loaded(SendableImage)
         case failed(SlideshowError)
         
         public static func == (lhs: LoadState, rhs: LoadState) -> Bool {
@@ -26,7 +26,7 @@ public struct Photo: Identifiable, Equatable {
             case (.notLoaded, .notLoaded), (.loading, .loading):
                 return true
             case (.loaded(let lhsImage), .loaded(let rhsImage)):
-                return lhsImage === rhsImage
+                return lhsImage.nsImage === rhsImage.nsImage
             case (.failed(let lhsError), .failed(let rhsError)):
                 return lhsError.localizedDescription == rhsError.localizedDescription
             default:
@@ -55,7 +55,7 @@ public struct Photo: Identifiable, Equatable {
         }
         
         public var image: NSImage? {
-            if case .loaded(let image) = self { return image }
+            if case .loaded(let sendableImage) = self { return sendableImage.nsImage }
             return nil
         }
         
@@ -78,7 +78,7 @@ public struct Photo: Identifiable, Equatable {
         }
     }
     
-    public struct PhotoMetadata: Equatable {
+    public struct PhotoMetadata: Equatable, Sendable {
         public let fileSize: Int64
         public let dimensions: CGSize
         public let creationDate: Date?

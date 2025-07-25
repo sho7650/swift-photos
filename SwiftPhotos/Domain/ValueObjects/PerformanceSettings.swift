@@ -2,7 +2,7 @@ import Foundation
 import CoreGraphics
 
 /// Performance settings for image loading and caching
-public struct PerformanceSettings: Codable, Equatable {
+public struct PerformanceSettings: Codable, Equatable, Sendable {
     /// Number of images to keep in memory window around current image
     public let memoryWindowSize: Int
     

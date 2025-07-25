@@ -36,8 +36,8 @@ public struct ImageDisplayView: View {
                         
                     case .loaded(let image):
                         let _ = ProductionLogger.debug("ImageDisplayView: Photo loaded for \(photo.fileName)")
-                        let _ = ProductionLogger.debug("ImageDisplayView: NSImage details - size: \(image.size), representations: \(image.representations.count)")
-                        let _ = ProductionLogger.debug("ImageDisplayView: NSImage.isValid: \(image.isValid)")
+                        let _ = ProductionLogger.debug("ImageDisplayView: NSImage details - size: \(image.nsImage.size), representations: \(image.nsImage.representations.count)")
+                        let _ = ProductionLogger.debug("ImageDisplayView: NSImage.isValid: \(image.nsImage.isValid)")
                         
                         VStack {
                             Text("✅ SHOULD DISPLAY: \(photo.fileName) | Refresh: \(refreshCounter)")
@@ -46,13 +46,13 @@ public struct ImageDisplayView: View {
                                 .padding()
                             
                             // TEST: Use NSImageView directly instead of SwiftUI Image conversion
-                            DirectNSImageViewWrapper(nsImage: image)
+                            DirectNSImageViewWrapper(nsImage: image.nsImage)
                                 .frame(maxWidth: 800, maxHeight: 600)
                                 .id(refreshCounter)
                                 .border(Color.red, width: 3) // Red border to see if view exists
                             
                             // Show debug info
-                            Text("🔍 Image: \(photo.fileName) | Size: \(image.size) | Valid: \(image.isValid)")
+                            Text("🔍 Image: \(photo.fileName) | Size: \(image.nsImage.size) | Valid: \(image.nsImage.isValid)")
                                 .foregroundColor(.white)
                                 .font(.caption)
                                 .padding()
@@ -101,23 +101,23 @@ public struct ImageDisplayView: View {
         }
     }
     
-    private func imageView(image: NSImage) -> some View {
-        let _ = ProductionLogger.debug("ImageDisplayView.imageView: Called with NSImage size: \(image.size)")
-        let _ = ProductionLogger.debug("ImageDisplayView.imageView: image.isValid = \(image.isValid)")
+    private func imageView(image: SendableImage) -> some View {
+        let _ = ProductionLogger.debug("ImageDisplayView.imageView: Called with NSImage size: \(image.nsImage.size)")
+        let _ = ProductionLogger.debug("ImageDisplayView.imageView: image.isValid = \(image.nsImage.isValid)")
         
         // Log representation details outside of ViewBuilder
-        if !image.isValid {
+        if !image.nsImage.isValid {
             ProductionLogger.error("ImageDisplayView.imageView: Image is NOT valid, showing error")
-            ProductionLogger.debug("ImageDisplayView.imageView: NSImage representations count: \(image.representations.count)")
-            for (index, rep) in image.representations.enumerated() {
+            ProductionLogger.debug("ImageDisplayView.imageView: NSImage representations count: \(image.nsImage.representations.count)")
+            for (index, rep) in image.nsImage.representations.enumerated() {
                 ProductionLogger.debug("ImageDisplayView.imageView: Rep[\(index)]: \(type(of: rep)), size: \(rep.size), hasAlpha: \(rep.hasAlpha)")
             }
         }
         
         return Group {
-            if image.isValid {
+            if image.nsImage.isValid {
                 let _ = ProductionLogger.debug("ImageDisplayView.imageView: Image is valid, creating SwiftUI Image")
-                let swiftUIImage = Image(nsImage: image)
+                let swiftUIImage = Image(nsImage: image.nsImage)
                 let _ = ProductionLogger.debug("ImageDisplayView.imageView: SwiftUI Image created successfully")
                 swiftUIImage
                     .resizable()

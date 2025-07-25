@@ -6,7 +6,7 @@ extension Notification.Name {
 }
 
 /// Settings for UI control behavior and appearance
-public struct UIControlSettings: Codable, Equatable {
+public struct UIControlSettings: Codable, Equatable, Sendable {
     /// Auto-hide delay in seconds when no interaction
     public let autoHideDelay: Double
     
@@ -120,7 +120,7 @@ public struct UIControlSettings: Codable, Equatable {
     )
     
     /// Preset configurations for UI controls
-    public enum Preset: String, CaseIterable {
+    public enum Preset: String, CaseIterable, Sendable {
         case `default` = "default"
         case minimal = "minimal"
         case alwaysVisible = "alwaysVisible"

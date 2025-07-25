@@ -63,7 +63,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
         
         do {
             let image = try await imageLoader.loadImage(from: photo.imageURL)
-            updatedPhoto.updateLoadState(.loaded(image))
+            updatedPhoto.updateLoadState(.loaded(SendableImage(image)))
             return updatedPhoto
         } catch let error as SlideshowError {
             updatedPhoto.updateLoadState(.failed(error))
