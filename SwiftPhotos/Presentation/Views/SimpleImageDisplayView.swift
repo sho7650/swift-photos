@@ -46,14 +46,30 @@ public struct SimpleImageDisplayView: View {
                         .id(viewModel.refreshCounter)
                     
                     case .loading:
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .scaleEffect(2.0)
+                                .tint(.white)
+                            
+                            Text("Loading image...")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .opacity(0.8)
+                        }
                     
                     case .notLoaded:
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .scaleEffect(2.0)
+                                .tint(.white)
+                            
+                            Text("Preparing image...")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .opacity(0.8)
+                        }
                     
                     case .failed(_):
                         VStack(spacing: 8) {

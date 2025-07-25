@@ -3,6 +3,34 @@ import SwiftUI
 import AppKit
 import Observation
 
+/// Loading states for detailed user feedback
+public enum LoadingState: Equatable {
+    case notLoading
+    case selectingFolder
+    case scanningFolder(Int) // number of files found so far
+    case loadingFirstImage
+    case preparingSlideshow
+    
+    public var isLoading: Bool {
+        self != .notLoading
+    }
+    
+    public var displayMessage: String {
+        switch self {
+        case .notLoading:
+            return ""
+        case .selectingFolder:
+            return "Opening folder selection..."
+        case .scanningFolder(let count):
+            return count > 0 ? "Found \(count) images..." : "Scanning folder..."
+        case .loadingFirstImage:
+            return "Loading first image..."
+        case .preparingSlideshow:
+            return "Preparing slideshow..."
+        }
+    }
+}
+
 /// Modern Swift 6 compliant SlideshowViewModel using @Observable
 /// This is the new implementation that replaces @ObservableObject with @Observable
 @Observable
@@ -11,7 +39,8 @@ public final class ModernSlideshowViewModel {
     
     // MARK: - Published Properties (No @Published needed with @Observable)
     public var slideshow: Slideshow?
-    public var isLoading = false
+    public var loadingState: LoadingState = .notLoading
+    public var isLoading: Bool { loadingState.isLoading }
     public var error: SlideshowError?
     public var selectedFolderURL: URL?
     public var refreshCounter: Int = 0
@@ -108,13 +137,13 @@ public final class ModernSlideshowViewModel {
     public func selectFolder() async {
         ProductionLogger.userAction("Starting folder selection")
         do {
-            isLoading = true
+            loadingState = .selectingFolder
             error = nil
             
             ProductionLogger.debug("Calling fileAccess.selectFolder()")
             guard let folderURL = try fileAccess.selectFolder() else {
                 ProductionLogger.userAction("Folder selection cancelled by user")
-                isLoading = false
+                loadingState = .notLoading
                 return
             }
             
@@ -137,7 +166,7 @@ public final class ModernSlideshowViewModel {
             self.error = SlideshowError.loadingFailed(underlying: error)
         }
         
-        isLoading = false
+        loadingState = .notLoading
         ProductionLogger.lifecycle("Folder selection completed")
     }
     
@@ -378,6 +407,7 @@ public final class ModernSlideshowViewModel {
     private func createSlideshow(from folderURL: URL) async {
         ProductionLogger.lifecycle("Creating slideshow from folder: \(folderURL.path)")
         do {
+            loadingState = .scanningFolder(0)
             ProductionLogger.debug("Calling domainService.createSlideshow")
             
             // Apply slideshow settings (random order is now handled by file sorting)
@@ -385,6 +415,8 @@ public final class ModernSlideshowViewModel {
             ProductionLogger.debug("Applying slideshow settings - mode: \(mode), autoStart: \(slideshowSettingsManager.settings.autoStart)")
             
             let customInterval = try SlideshowInterval(slideshowSettingsManager.settings.slideDuration)
+            
+            loadingState = .preparingSlideshow
             let newSlideshow = try await domainService.createSlideshow(
                 from: folderURL,
                 interval: customInterval,
@@ -392,36 +424,85 @@ public final class ModernSlideshowViewModel {
             )
             
             ProductionLogger.lifecycle("Created slideshow with \(newSlideshow.photos.count) photos")
-            slideshow = newSlideshow
             
-            if !newSlideshow.isEmpty {
-                ProductionLogger.debug("Loading current image")
-                ProductionLogger.debug("Current photo at creation: \(newSlideshow.currentPhoto?.fileName ?? "nil")")
+            // Ensure slideshow starts at index 0 (first image)
+            var initializedSlideshow = newSlideshow
+            if !initializedSlideshow.isEmpty && initializedSlideshow.currentIndex != 0 {
+                ProductionLogger.debug("Resetting slideshow to start from first image (currentIndex was \(initializedSlideshow.currentIndex))")
+                try initializedSlideshow.setCurrentIndex(0)
+            }
+            
+            slideshow = initializedSlideshow
+            
+            if !initializedSlideshow.isEmpty {
+                ProductionLogger.debug("Loading current image from index 0")
+                ProductionLogger.debug("Current photo at creation: \(initializedSlideshow.currentPhoto?.fileName ?? "nil")")
+                
+                // Explicitly set currentPhoto to ensure first image is displayed
+                currentPhoto = initializedSlideshow.currentPhoto
+                refreshCounter += 1
                 
                 // Auto-recommend settings for collection size
-                let recommendedSettings = performanceSettingsManager.recommendedSettings(for: newSlideshow.photos.count)
+                let recommendedSettings = performanceSettingsManager.recommendedSettings(for: initializedSlideshow.photos.count)
                 if recommendedSettings != performanceSettingsManager.settings {
-                    ProductionLogger.performance("Auto-applying recommended settings for \(newSlideshow.photos.count) photos")
+                    ProductionLogger.performance("Auto-applying recommended settings for \(initializedSlideshow.photos.count) photos")
                     ProductionLogger.performance("Settings: window=\(recommendedSettings.memoryWindowSize), memory=\(recommendedSettings.maxMemoryUsageMB)MB, concurrent=\(recommendedSettings.maxConcurrentLoads)")
                     performanceSettingsManager.updateSettings(recommendedSettings)
                     await updatePerformanceComponents()
                 } else {
-                    ProductionLogger.performance("Current settings already optimal for \(newSlideshow.photos.count) photos")
+                    ProductionLogger.performance("Current settings already optimal for \(initializedSlideshow.photos.count) photos")
                 }
                 
-                // Check if this is a large collection
-                if newSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
-                    ProductionLogger.performance("Large collection detected (\(newSlideshow.photos.count) photos) - using virtual loading")
-                    await loadCurrentImageVirtual()
+                // Prioritize first image loading regardless of collection size
+                loadingState = .loadingFirstImage
+                
+                // Use TargetImageLoader for immediate first image loading
+                if let firstPhoto = initializedSlideshow.currentPhoto {
+                    ProductionLogger.performance("Loading first image with high priority: \(firstPhoto.fileName)")
+                    await targetImageLoader.handleFirstImageLoad(photo: firstPhoto) { [weak self] result in
+                        Task { @MainActor in
+                            guard let self = self else { return }
+                            
+                            switch result {
+                            case .success(let image):
+                                ProductionLogger.debug("First image loaded successfully via emergency load")
+                                var loadedPhoto = firstPhoto
+                                loadedPhoto.updateLoadState(.loaded(SendableImage(image)))
+                                self.updatePhotoInSlideshow(loadedPhoto)
+                                self.currentPhoto = loadedPhoto
+                                self.refreshCounter += 1
+                                
+                            case .failure(let error):
+                                ProductionLogger.error("Failed to load first image: \(error)")
+                                self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
+                            }
+                        }
+                    }
+                }
+                
+                // Schedule background loading after first image
+                Task.detached(priority: .background) { [weak self] in
+                    guard let self = self else { return }
                     
-                    // Schedule background preloading with smart windowing
-                    await backgroundPreloader.schedulePreload(
-                        photos: newSlideshow.photos,
-                        currentIndex: newSlideshow.currentIndex
-                    )
-                } else {
-                    ProductionLogger.performance("Small collection (\(newSlideshow.photos.count) photos) - using standard loading")
-                    loadCurrentImage()
+                    // Small delay to let first image display
+                    try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+                    
+                    // Check if this is a large collection for background processing
+                    if initializedSlideshow.photos.count > await self.performanceSettingsManager.settings.largeCollectionThreshold {
+                        ProductionLogger.performance("Large collection (\(initializedSlideshow.photos.count) photos) - starting background virtual loading")
+                        await self.loadCurrentImageVirtual()
+                        
+                        // Schedule background preloading with smart windowing
+                        await self.backgroundPreloader.schedulePreload(
+                            photos: initializedSlideshow.photos,
+                            currentIndex: 0  // Always start preloading from first image
+                        )
+                    } else {
+                        ProductionLogger.performance("Small collection (\(initializedSlideshow.photos.count) photos) - background standard loading")
+                        await MainActor.run {
+                            self.loadCurrentImage()
+                        }
+                    }
                 }
             } else {
                 ProductionLogger.warning("Slideshow is empty - no photos found")
@@ -616,6 +697,12 @@ public final class ModernSlideshowViewModel {
                     // Update currentPhoto property directly
                     ProductionLogger.debug("updatePhotoInSlideshow: Setting currentPhoto property")
                     self.currentPhoto = currentSlideshow.currentPhoto
+                    
+                    // Clear loading state when first image is successfully loaded
+                    if photo.loadState.isLoaded && loadingState == .loadingFirstImage {
+                        ProductionLogger.debug("updatePhotoInSlideshow: First image loaded successfully, clearing loading state")
+                        loadingState = .notLoading
+                    }
                     
                     // Keep slideshow running if it was playing
                     ProductionLogger.debug("updatePhotoInSlideshow: Slideshow state: \(currentSlideshow.state)")

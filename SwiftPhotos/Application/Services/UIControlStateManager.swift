@@ -33,6 +33,12 @@ public class UIControlStateManager: ObservableObject {
     private var interactionClearTimer: AdaptiveTimer?
     private weak var slideshowViewModel: ModernSlideshowViewModel?
     
+    // Cursor auto-hide functionality
+    private var cursorHideTimer: AdaptiveTimer?
+    private var lastMouseMovementTime: Date = Date()
+    private var isCursorHidden: Bool = false
+    private static let cursorHideDelay: Double = 3.0 // Hide cursor after 3 seconds of inactivity
+    
     // Enhanced interaction detection
     private var mouseTracker: MouseTracker?
     private var interactionDetector: InteractionDetector?
@@ -60,15 +66,25 @@ public class UIControlStateManager: ObservableObject {
         setupEnhancedMouseTracker()
         setupUnifiedInteractionDetector()
         startHideTimer()
+        setupSlideshowStateMonitoring()
         
         ProductionLogger.lifecycle("UIControlStateManager: Initialized with controls visible: \(isControlsVisible)")
     }
     
     deinit {
+        // Ensure cursor is visible before cleanup
+        if isCursorHidden {
+            NSCursor.unhide()
+        }
+        
         // Cleanup is handled automatically by ARC
         if let monitor = globalMouseMonitor {
             NSEvent.removeMonitor(monitor)
         }
+        
+        // Stop all timers
+        stopCursorHideTimer()
+        stopAllTimers()
         
         NotificationCenter.default.removeObserver(self)
     }
@@ -155,6 +171,9 @@ public class UIControlStateManager: ObservableObject {
     public func handleMouseInteraction(at position: CGPoint) {
         mousePosition = position
         
+        // Handle cursor auto-hide functionality
+        handleMouseMovementForCursor()
+        
         // Only record interaction and process if controls need to be shown or are visible
         let shouldShowControls = uiControlSettings.settings.showOnMouseMovement && !isControlsVisible
         let shouldProcessInteraction = isControlsVisible || shouldShowControls
@@ -190,6 +209,96 @@ public class UIControlStateManager: ObservableObject {
         }
     }
     
+    // MARK: - Cursor Control Methods
+    
+    /// Handle mouse movement for cursor auto-hide functionality
+    private func handleMouseMovementForCursor() {
+        lastMouseMovementTime = Date()
+        
+        // Show cursor if it was hidden
+        if isCursorHidden {
+            showCursor()
+        }
+        
+        // Reset cursor hide timer only during slideshow playback
+        if slideshowViewModel?.slideshow?.isPlaying == true {
+            resetCursorHideTimer()
+        }
+    }
+    
+    /// Show cursor and cancel hide timer
+    private func showCursor() {
+        if isCursorHidden {
+            NSCursor.unhide()
+            isCursorHidden = false
+            ProductionLogger.debug("UIControlStateManager: Cursor shown")
+        }
+        stopCursorHideTimer()
+    }
+    
+    /// Hide cursor during slideshow playback
+    private func hideCursor() {
+        // Only hide cursor during slideshow playback
+        guard slideshowViewModel?.slideshow?.isPlaying == true else {
+            ProductionLogger.debug("UIControlStateManager: Cursor hide skipped - slideshow not playing")
+            return
+        }
+        
+        if !isCursorHidden {
+            NSCursor.hide()
+            isCursorHidden = true
+            ProductionLogger.debug("UIControlStateManager: Cursor hidden during slideshow")
+        }
+    }
+    
+    /// Start or reset the cursor hide timer
+    private func resetCursorHideTimer() {
+        stopCursorHideTimer()
+        
+        // Only start timer during slideshow playback
+        guard slideshowViewModel?.slideshow?.isPlaying == true else {
+            return
+        }
+        
+        let config = TimerConfiguration(
+            baseDuration: Self.cursorHideDelay,
+            learningEnabled: false,
+            coalescingEnabled: false,
+            backgroundOptimization: true
+        )
+        
+        cursorHideTimer = AdaptiveTimer(configuration: config)
+        cursorHideTimer?.delegate = self
+        
+        do {
+            try cursorHideTimer?.start(with: config)
+            ProductionLogger.debug("UIControlStateManager: Cursor hide timer set for \(Self.cursorHideDelay)s")
+        } catch {
+            ProductionLogger.error("UIControlStateManager: Failed to start cursor hide timer: \(error)")
+        }
+    }
+    
+    /// Stop cursor hide timer
+    private func stopCursorHideTimer() {
+        cursorHideTimer?.stop()
+        cursorHideTimer = nil
+    }
+    
+    /// Handle slideshow state changes for cursor management
+    private func handleSlideshowStateChange() {
+        if let slideshow = slideshowViewModel?.slideshow {
+            if slideshow.isPlaying {
+                // Start cursor hide timer for slideshow playback
+                resetCursorHideTimer()
+                ProductionLogger.debug("UIControlStateManager: Slideshow started - cursor auto-hide enabled")
+            } else {
+                // Show cursor and stop timer when not playing
+                showCursor()
+                ProductionLogger.debug("UIControlStateManager: Slideshow stopped - cursor always visible")
+            }
+        }
+    }
+    
     // MARK: - Private Methods
     
     private func setupNotificationObservers() {
@@ -199,6 +308,29 @@ public class UIControlStateManager: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             self?.handleSettingsChanged()
+        }
+    }
+    
+    private func setupSlideshowStateMonitoring() {
+        // Monitor slideshow state changes
+        if let slideshowViewModel = slideshowViewModel {
+            // Use a timer to periodically check slideshow state
+            // This could be improved with KVO or Combine in a future version
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
+                guard let self = self else {
+                    timer.invalidate()
+                    return
+                }
+                
+                // Check if slideshow state has changed
+                let isCurrentlyPlaying = slideshowViewModel.slideshow?.isPlaying ?? false
+                static var wasPlaying = false
+                
+                if isCurrentlyPlaying != wasPlaying {
+                    self.handleSlideshowStateChange()
+                    wasPlaying = isCurrentlyPlaying
+                }
+            }
         }
     }
     
@@ -577,6 +709,10 @@ extension UIControlStateManager: AdaptiveTimerDelegate {
         } else if timer === minimumVisibilityTimer {
             ProductionLogger.debug("UIControlStateManager: Minimum visibility timer completed")
             minimumVisibilityTimer = nil
+        } else if timer === cursorHideTimer {
+            ProductionLogger.debug("UIControlStateManager: Cursor hide timer fired - hiding cursor")
+            hideCursor()
+            cursorHideTimer = nil
         }
     }
     
@@ -601,6 +737,8 @@ extension UIControlStateManager: AdaptiveTimerDelegate {
     public func timerWasStopped(_ timer: AdaptiveTimerProviding) {
         if timer === hideTimer {
             ProductionLogger.debug("UIControlStateManager: Hide timer stopped")
+        } else if timer === cursorHideTimer {
+            ProductionLogger.debug("UIControlStateManager: Cursor hide timer stopped")
         }
     }
     

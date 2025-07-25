@@ -150,6 +150,28 @@ extension TargetImageLoader {
         }
     }
     
+    /// フォルダオープン時の最初の画像を最優先でロード
+    /// - Parameters:
+    ///   - firstPhoto: 最初の写真
+    ///   - completion: 完了時のコールバック
+    func handleFirstImageLoad(
+        photo firstPhoto: Photo,
+        completion: @escaping @MainActor (Result<NSImage, Error>) -> Void
+    ) {
+        ProductionLogger.performance("TargetImageLoader: Loading first image on folder open: \(firstPhoto.fileName)")
+        
+        // フォルダオープンの最初の画像は最優先
+        loadImageEmergency(photo: firstPhoto) { result in
+            switch result {
+            case .success(_):
+                ProductionLogger.performance("TargetImageLoader: First image loaded successfully for folder open")
+            case .failure(let error):
+                ProductionLogger.error("TargetImageLoader: Failed to load first image for folder open: \(error)")
+            }
+            completion(result)
+        }
+    }
+    
     /// 複数画像の並行緊急ロード（隣接画像の先読み用）
     func loadMultipleEmergency(
         photos: [Photo],

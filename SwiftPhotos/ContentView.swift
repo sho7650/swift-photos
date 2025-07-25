@@ -71,11 +71,51 @@ struct ContentView: View {
                         Text(error.localizedDescription)
                     }
                 }
+                // Loading overlay for detailed feedback
+                .overlay {
+                    if viewModel.loadingState.isLoading {
+                        ZStack {
+                            Color.black.opacity(0.8)
+                                .ignoresSafeArea()
+                            
+                            VStack(spacing: 20) {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+                                    .scaleEffect(2.0)
+                                    .tint(.white)
+                                
+                                VStack(spacing: 8) {
+                                    Text("Swift Photos")
+                                        .font(.title)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.white)
+                                    
+                                    Text(viewModel.loadingState.displayMessage)
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                        .animation(.easeInOut, value: viewModel.loadingState)
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
-                VStack {
+                VStack(spacing: 20) {
                     ProgressView()
-                    Text("Initializing...")
-                        .padding()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .scaleEffect(2.0)
+                        .tint(.white)
+                    
+                    VStack(spacing: 8) {
+                        Text("Swift Photos")
+                            .font(.title)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                        
+                        Text("Initializing application...")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
                 }
                 .onAppear {
                     ProductionLogger.lifecycle("ContentView loading screen appeared")
