@@ -58,6 +58,7 @@ public struct SlideshowSettings: Codable, Equatable, Sendable {
 
 /// Settings manager for slideshow configuration
 @MainActor
+@available(*, deprecated, message: "Use ModernSlideshowSettingsManager instead. This class will be removed in a future version. The new ModernSlideshowSettingsManager uses @Observable for better performance and Swift 6 compliance.")
 public class SlideshowSettingsManager: ObservableObject {
     @Published public var settings: SlideshowSettings
     

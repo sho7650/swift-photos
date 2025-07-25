@@ -70,6 +70,18 @@ Swift Photos is a macOS application built using **Clean Architecture** principle
 - **SlideshowRepository**: Abstract interface for photo loading
 - **FileSystemPhotoRepository**: Concrete implementation with security and sorting
 
+### Application Layer ViewModels
+
+The application uses Swift 6 `@Observable` ViewModels for state management:
+
+- **ModernSlideshowViewModel**: Main application state with photo loading, playback control, and slideshow management
+  - Uses `@Observable` for better performance and Swift 6 compliance
+  - Manages photo collections up to 100k+ images with virtual loading
+  - Integrates with all Modern* settings managers
+  - Provides thread-safe operations with `@MainActor` isolation
+
+**Note**: Legacy SlideshowViewModel is deprecated and will be removed in a future version.
+
 ## Settings Management Architecture
 
 The application uses a sophisticated multi-layered settings system with real-time updates:
@@ -83,12 +95,23 @@ The application uses a sophisticated multi-layered settings system with real-tim
 
 ### Settings Managers
 
-Each settings type has a dedicated `@MainActor` manager class that:
+The application uses Modern* settings managers with Swift 6 `@Observable` pattern:
+
+- **ModernPerformanceSettingsManager**: Memory and performance configuration
+- **ModernSlideshowSettingsManager**: Timing and playback behavior
+- **ModernSortSettingsManager**: Photo ordering and sorting algorithms  
+- **ModernTransitionSettingsManager**: Animation effects and transitions
+- **ModernUIControlSettingsManager**: UI controls and interaction behavior
+
+Each Modern* manager class provides:
 
 - Persists settings to UserDefaults using JSON encoding
-- Publishes changes via `@Published` properties
-- Sends NotificationCenter updates for cross-component communication
-- Provides preset configurations and validation
+- Swift 6 `@Observable` compliance for better performance
+- NotificationCenter updates for cross-component communication
+- Preset configurations and validation
+- Thread-safe operations with `@MainActor` isolation
+
+**Note**: Legacy *SettingsManager classes are deprecated and will be removed in a future version.
 
 ### Notification Pattern
 

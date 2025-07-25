@@ -88,6 +88,7 @@ public struct PerformanceSettings: Codable, Equatable, Sendable {
 
 /// Settings manager for performance configuration
 @MainActor
+@available(*, deprecated, message: "Use ModernPerformanceSettingsManager instead. This class will be removed in a future version. The new ModernPerformanceSettingsManager uses @Observable for better performance and Swift 6 compliance.")
 public class PerformanceSettingsManager: ObservableObject {
     @Published public var settings: PerformanceSettings
     

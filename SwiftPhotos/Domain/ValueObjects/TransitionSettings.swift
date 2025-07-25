@@ -210,6 +210,7 @@ public struct TransitionSettings: Codable, Equatable, Sendable {
 
 /// Manager for transition settings with persistence and notifications
 @MainActor
+@available(*, deprecated, message: "Use ModernTransitionSettingsManager instead. This class will be removed in a future version. The new ModernTransitionSettingsManager uses @Observable for better performance and Swift 6 compliance.")
 public class TransitionSettingsManager: ObservableObject {
     @Published public private(set) var settings: TransitionSettings
     

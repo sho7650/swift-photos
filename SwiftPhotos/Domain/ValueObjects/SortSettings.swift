@@ -119,6 +119,7 @@ public struct SortSettings: Codable, Equatable, Sendable {
 
 /// Settings manager for sort configuration
 @MainActor
+@available(*, deprecated, message: "Use ModernSortSettingsManager instead. This class will be removed in a future version. The new ModernSortSettingsManager uses @Observable for better performance and Swift 6 compliance.")
 public class SortSettingsManager: ObservableObject {
     @Published public var settings: SortSettings
     

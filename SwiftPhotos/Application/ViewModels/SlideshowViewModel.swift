@@ -3,6 +3,7 @@ import SwiftUI
 import AppKit
 
 @MainActor
+@available(*, deprecated, message: "Use ModernSlideshowViewModel instead. This class will be removed in a future version. The new ModernSlideshowViewModel uses @Observable for better performance and Swift 6 compliance.")
 public class SlideshowViewModel: ObservableObject {
     @Published public var slideshow: Slideshow?
     @Published public var isLoading = false

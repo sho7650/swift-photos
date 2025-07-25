@@ -185,6 +185,7 @@ public struct UIControlSettings: Codable, Equatable, Sendable {
 
 /// Settings manager for UI control configuration
 @MainActor
+@available(*, deprecated, message: "Use ModernUIControlSettingsManager instead. This class will be removed in a future version. The new ModernUIControlSettingsManager uses @Observable for better performance and Swift 6 compliance.")
 public class UIControlSettingsManager: ObservableObject {
     @Published public var settings: UIControlSettings
     
