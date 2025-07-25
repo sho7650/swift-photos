@@ -20,7 +20,8 @@ public struct SlideshowSettings: Codable, Equatable, Sendable {
         randomOrder: Bool = false,
         loopSlideshow: Bool = true
     ) {
-        self.slideDuration = max(1.0, min(30.0, slideDuration))
+        // Support 1 second to 30 minutes (1800 seconds)
+        self.slideDuration = max(1.0, min(1800.0, slideDuration))
         self.autoStart = autoStart
         self.randomOrder = randomOrder
         self.loopSlideshow = loopSlideshow

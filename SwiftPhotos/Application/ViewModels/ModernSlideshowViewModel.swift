@@ -111,6 +111,23 @@ public final class ModernSlideshowViewModel {
             }
         }
         
+        // Listen for slideshow settings changes (duration, etc.)
+        NotificationCenter.default.addObserver(
+            forName: .slideshowSettingsChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                guard let self = self else { return }
+                // If slideshow is playing, restart timer with new duration
+                if self.slideshow?.isPlaying == true {
+                    ProductionLogger.debug("Slideshow settings changed while playing - restarting timer")
+                    self.stopTimer()
+                    self.startTimer()
+                }
+            }
+        }
+        
         // Listen for sort settings changes
         NotificationCenter.default.addObserver(
             forName: .sortSettingsChanged,
