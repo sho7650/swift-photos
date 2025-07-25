@@ -273,7 +273,7 @@ struct ContentView: View {
         }
         
         // Create slideshow from the selected folder with proper security scoped access
-        viewModel.isLoading = true
+        viewModel.loadingState = .scanningFolder(0)
         viewModel.error = nil
         
         do {
@@ -294,7 +294,7 @@ struct ContentView: View {
             viewModel.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
         }
         
-        viewModel.isLoading = false
+        viewModel.loadingState = .notLoading
     }
     
     private func createSlideshowForMenuSelection(from folderURL: URL) async throws {

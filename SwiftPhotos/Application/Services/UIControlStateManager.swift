@@ -82,9 +82,8 @@ public class UIControlStateManager: ObservableObject {
             NSEvent.removeMonitor(monitor)
         }
         
-        // Stop all timers
-        stopCursorHideTimer()
-        stopAllTimers()
+        // Timers will be cleaned up automatically when the actor is deallocated
+        // Cannot call stop() from deinit as it's MainActor isolated
         
         NotificationCenter.default.removeObserver(self)
     }
@@ -307,28 +306,39 @@ public class UIControlStateManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.handleSettingsChanged()
+            Task { @MainActor in
+                self?.handleSettingsChanged()
+            }
         }
     }
     
     private func setupSlideshowStateMonitoring() {
         // Monitor slideshow state changes
         if let slideshowViewModel = slideshowViewModel {
+            // Instance variable to track playing state
+            var wasPlaying = false
+            
             // Use a timer to periodically check slideshow state
             // This could be improved with KVO or Combine in a future version
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self, weak slideshowViewModel] timer in
                 guard let self = self else {
                     timer.invalidate()
                     return
                 }
                 
-                // Check if slideshow state has changed
-                let isCurrentlyPlaying = slideshowViewModel.slideshow?.isPlaying ?? false
-                static var wasPlaying = false
+                guard let slideshowViewModel = slideshowViewModel else {
+                    timer.invalidate()
+                    return
+                }
                 
-                if isCurrentlyPlaying != wasPlaying {
-                    self.handleSlideshowStateChange()
-                    wasPlaying = isCurrentlyPlaying
+                // Check if slideshow state has changed - safely access slideshow
+                Task { @MainActor in
+                    let isCurrentlyPlaying = slideshowViewModel.slideshow?.isPlaying ?? false
+                    
+                    if isCurrentlyPlaying != wasPlaying {
+                        self.handleSlideshowStateChange()
+                        wasPlaying = isCurrentlyPlaying
+                    }
                 }
             }
         }

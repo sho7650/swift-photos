@@ -488,7 +488,8 @@ public final class ModernSlideshowViewModel {
                     try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
                     
                     // Check if this is a large collection for background processing
-                    if initializedSlideshow.photos.count > await self.performanceSettingsManager.settings.largeCollectionThreshold {
+                    let largeCollectionThreshold = await self.performanceSettingsManager.settings.largeCollectionThreshold
+                    if initializedSlideshow.photos.count > largeCollectionThreshold {
                         ProductionLogger.performance("Large collection (\(initializedSlideshow.photos.count) photos) - starting background virtual loading")
                         await self.loadCurrentImageVirtual()
                         
@@ -622,7 +623,8 @@ public final class ModernSlideshowViewModel {
             
             // Create loaded photo directly from cached image
             var loadedPhoto = photo
-            loadedPhoto.updateLoadState(.loaded(SendableImage(cachedImage)))
+            let sendableImage = SendableImage(cachedImage)
+            loadedPhoto.updateLoadState(.loaded(sendableImage))
             updatePhotoInSlideshow(loadedPhoto)
         } else if !(await virtualLoader.isLoading(photoId: photo.id)) {
             ProductionLogger.debug("loadCurrentImageVirtual: Loading current image directly")
