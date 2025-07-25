@@ -1,2 +1,0 @@
-Target dependency graph (1 target)
-Target 'PhotoSlideshow' in project 'PhotoSlideshow' (no dependencies)

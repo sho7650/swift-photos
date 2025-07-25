@@ -1,5 +1,0 @@
----
-triple:          'arm64-apple-darwin'
-binary-path:     '/Users/sho/working/swift/work/PhotoSlideshow/build/Release/PhotoSlideshow.app/Contents/MacOS/PhotoSlideshow'
-relocations:     []
-...
