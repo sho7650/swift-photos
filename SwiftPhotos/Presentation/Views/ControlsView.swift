@@ -22,7 +22,7 @@ public struct ControlsView: View {
     
     private var welcomeControls: some View {
         VStack(spacing: 24) {
-            Button("Select Folder") {
+            Button(String.selectFolderButton) {
                 ProductionLogger.userAction("ControlsView: Select Folder button pressed")
                 Task { @MainActor in
                     await viewModel.selectFolder()
@@ -36,14 +36,14 @@ public struct ControlsView: View {
                 HStack(spacing: 12) {
                     ProgressView()
                         .scaleEffect(0.8)
-                    Text("Loading images...")
+                    Text(String.loadingImages)
                         .foregroundColor(.secondary)
                 }
             }
             
             if let error = viewModel.error {
                 VStack(spacing: 8) {
-                    Text("Error")
+                    Text(String.errorTitle)
                         .font(.headline)
                         .foregroundColor(.red)
                     Text(error.localizedDescription)

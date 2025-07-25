@@ -1,0 +1,1811 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "... and %lld more" : {
+
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ • %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ • %2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld photos" : {
+
+    },
+    "• Advanced caching strategies" : {
+
+    },
+    "• Advanced gesture recognition" : {
+
+    },
+    "• Advanced memory management and caching" : {
+
+    },
+    "• All features are accessible via keyboard for full accessibility" : {
+
+    },
+    "• Alphabetical sorting provides fastest cache performance" : {
+
+    },
+    "• Background preloading ensures smooth navigation" : {
+
+    },
+    "• Custom transition effects" : {
+
+    },
+    "• Date sorting groups related photos for better caching" : {
+
+    },
+    "• Enhanced memory management algorithms" : {
+
+    },
+    "• Experimental image loading pipelines" : {
+
+    },
+    "• Fade effects are most performance-friendly" : {
+
+    },
+    "• High contrast mode automatically adjusts control appearance" : {
+
+    },
+    "• Hold Shift while using arrow keys for faster navigation (10x speed)" : {
+
+    },
+    "• Keyboard navigation is optimized for large photo collections" : {
+
+    },
+    "• Most shortcuts work both during slideshow and while paused" : {
+
+    },
+    "• Native macOS design and integration" : {
+
+    },
+    "• Press and hold any navigation key for continuous movement" : {
+
+    },
+    "• Professional-grade performance optimization" : {
+
+    },
+    "• Push effects provide smooth directional transitions" : {
+
+    },
+    "• Random order reduces cache efficiency but provides varied viewing" : {
+
+    },
+    "• Shortcuts work immediately without loading delays" : {
+
+    },
+    "• Smooth transition effects and animations" : {
+
+    },
+    "• Supports unlimited photo collections (100k+ photos)" : {
+
+    },
+    "• Touch Bar support (MacBook Pro)" : {
+
+    },
+    "• VoiceOver support available for all interface elements" : {
+
+    },
+    "• Zoom effects may impact performance on large images" : {
+
+    },
+    "⚠️ Experimental features may be unstable or incomplete" : {
+
+    },
+    "⚠️ Position Conflicts Detected" : {
+
+    },
+    "⚠️ These actions cannot be undone" : {
+
+    },
+    "⚡ Performance" : {
+
+    },
+    "✅ SHOULD DISPLAY: %@ | Refresh: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "✅ SHOULD DISPLAY: %1$@ | Refresh: %2$lld"
+          }
+        }
+      }
+    },
+    "🎯 Accessibility" : {
+
+    },
+    "💡" : {
+
+    },
+    "💡 Quick Tips" : {
+
+    },
+    "Aggressive Memory Management" : {
+
+    },
+    "Alphabetical" : {
+
+    },
+    "Always at Bottom" : {
+
+    },
+    "Always on Top" : {
+
+    },
+    "Always Visible" : {
+
+    },
+    "Animation Easing" : {
+
+    },
+    "App Sandbox Protection Enabled" : {
+
+    },
+    "Automatically remove invalid folders" : {
+
+    },
+    "Background Blur Intensity" : {
+
+    },
+    "Background Opacity" : {
+
+    },
+    "Balanced" : {
+
+    },
+    "button.select_folder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Folder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォルダを選択"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+
+    },
+    "Chronological" : {
+
+    },
+    "Cinematic Push" : {
+
+    },
+    "Clean Up Invalid Files" : {
+
+    },
+    "Clean Up Invalid Folders" : {
+
+    },
+    "Clear All" : {
+
+    },
+    "Clear All Caches" : {
+
+    },
+    "Clear All Recent Folders" : {
+
+    },
+    "Clear Cache" : {
+
+    },
+    "Clear Menu" : {
+
+    },
+    "Clear Recent Files" : {
+
+    },
+    "Conservative" : {
+
+    },
+    "Controls Position from Bottom" : {
+
+    },
+    "Current Performance" : {
+
+    },
+    "date_format.automatic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        }
+      }
+    },
+    "date_format.full" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完全"
+          }
+        }
+      }
+    },
+    "date_format.long" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細"
+          }
+        }
+      }
+    },
+    "date_format.medium" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標準"
+          }
+        }
+      }
+    },
+    "date_format.relative" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relative"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相対"
+          }
+        }
+      }
+    },
+    "date_format.short" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Short"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "短縮"
+          }
+        }
+      }
+    },
+    "Debug Information" : {
+
+    },
+    "Default" : {
+
+    },
+    "Duration" : {
+
+    },
+    "Duration: %@ seconds" : {
+
+    },
+    "duration.minute" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "minute"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分"
+          }
+        }
+      }
+    },
+    "duration.minutes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "minutes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分"
+          }
+        }
+      }
+    },
+    "duration.seconds" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "seconds"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "秒"
+          }
+        }
+      }
+    },
+    "During Slideshow" : {
+
+    },
+    "Dynamic Zoom" : {
+
+    },
+    "Easing" : {
+
+    },
+    "Easing: %@" : {
+
+    },
+    "Effect Intensity" : {
+
+    },
+    "Effect Type" : {
+
+    },
+    "Effect: %@" : {
+
+    },
+    "Elegant Slide" : {
+
+    },
+    "Enable debug logging" : {
+
+    },
+    "Enable Transition Effects" : {
+
+    },
+    "Error" : {
+
+    },
+    "Error Loading Image" : {
+
+    },
+    "error.%@" : {
+
+    },
+    "error.file_not_found" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File not found: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイルが見つかりません: %@"
+          }
+        }
+      }
+    },
+    "error.file_not_found %@" : {
+
+    },
+    "error.file_operation_failed" : {
+
+    },
+    "error.invalid_index" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid photo index: %d"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無効な写真インデックス: %d"
+          }
+        }
+      }
+    },
+    "error.invalid_index %lld" : {
+
+    },
+    "error.loading_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading failed: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込みに失敗しました: %@"
+          }
+        }
+      }
+    },
+    "error.loading_failed %@" : {
+
+    },
+    "error.recovery.general_suggestion" : {
+
+    },
+    "error.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エラー"
+          }
+        }
+      }
+    },
+    "Export Logs" : {
+
+    },
+    "Export Recent Files..." : {
+
+    },
+    "Export Recent Folders..." : {
+
+    },
+    "Extensive" : {
+
+    },
+    "External volumes and network drives are supported with automatic permission management." : {
+
+    },
+    "Fade Animation Duration" : {
+
+    },
+    "Failed to load image" : {
+
+    },
+    "Features:" : {
+
+    },
+    "General Auto-hide Delay" : {
+
+    },
+    "Hide controls completely during slideshow" : {
+
+    },
+    "Import Recent Files..." : {
+
+    },
+    "Import Recent Folders..." : {
+
+    },
+    "Initializing application..." : {
+
+    },
+    "Intensity: %@%%" : {
+
+    },
+    "Interface Enhancements" : {
+
+    },
+    "language.english" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英語"
+          }
+        }
+      }
+    },
+    "language.japanese" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Japanese"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日本語"
+          }
+        }
+      }
+    },
+    "language.system" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System Language"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム言語"
+          }
+        }
+      }
+    },
+    "Largest First" : {
+
+    },
+    "Load System Information" : {
+
+    },
+    "Loading image..." : {
+
+    },
+    "Loading..." : {
+
+    },
+    "loading.%@" : {
+
+    },
+    "loading.first_image" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading first image..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最初の画像を読み込んでいます..."
+          }
+        }
+      }
+    },
+    "loading.loading_images" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading images..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像を読み込んでいます..."
+          }
+        }
+      }
+    },
+    "loading.loading_short" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込み中..."
+          }
+        }
+      }
+    },
+    "loading.preparing_slideshow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing slideshow..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショーを準備しています..."
+          }
+        }
+      }
+    },
+    "loading.scanning_folder" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Found %d images..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d枚の画像が見つかりました..."
+          }
+        }
+      }
+    },
+    "loading.scanning_folder %lld" : {
+
+    },
+    "loading.selecting_folder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opening folder selection..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォルダ選択を開いています..."
+          }
+        }
+      }
+    },
+    "Maximum Recent Folders" : {
+
+    },
+    "measurement.automatic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        }
+      }
+    },
+    "measurement.imperial" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imperial"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヤード・ポンド法"
+          }
+        }
+      }
+    },
+    "measurement.metric" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metric"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メートル法"
+          }
+        }
+      }
+    },
+    "menu.file.open_folder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Folder..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォルダを開く..."
+          }
+        }
+      }
+    },
+    "Minimal" : {
+
+    },
+    "Minimum Visibility Duration" : {
+
+    },
+    "Mouse Sensitivity" : {
+
+    },
+    "New Random Order" : {
+
+    },
+    "Newest First" : {
+
+    },
+    "No Recent Folders" : {
+
+    },
+    "Normal" : {
+
+    },
+    "number_format.automatic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        }
+      }
+    },
+    "number_format.currency" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Currency"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通貨"
+          }
+        }
+      }
+    },
+    "number_format.decimal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decimal"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小数"
+          }
+        }
+      }
+    },
+    "number_format.percent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Percent"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パーセント"
+          }
+        }
+      }
+    },
+    "number_format.scientific" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scientific"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "科学"
+          }
+        }
+      }
+    },
+    "OK" : {
+
+    },
+    "Open Folder..." : {
+
+    },
+    "Open Recent" : {
+
+    },
+    "Order:" : {
+
+    },
+    "Performance Optimizations" : {
+
+    },
+    "Performance Report" : {
+
+    },
+    "Performance Tip" : {
+
+    },
+    "Photo Information" : {
+
+    },
+    "PhotoSlideshow uses security-scoped bookmarks to maintain safe access to your photos while respecting macOS security requirements." : {
+
+    },
+    "Preparing image..." : {
+
+    },
+    "presets.default" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標準"
+          }
+        }
+      }
+    },
+    "presets.quick" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "早い"
+          }
+        }
+      }
+    },
+    "presets.random" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Random"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ランダム"
+          }
+        }
+      }
+    },
+    "presets.slow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遅い"
+          }
+        }
+      }
+    },
+    "Press 'I' to toggle detailed information during slideshow" : {
+
+    },
+    "Professional photo slideshow application for macOS" : {
+
+    },
+    "Quick Actions" : {
+
+    },
+    "Random" : {
+
+    },
+    "Recent Files" : {
+
+    },
+    "Recent Files Settings..." : {
+
+    },
+    "Recent Folders" : {
+
+    },
+    "Refresh Metrics" : {
+
+    },
+    "Refresh Statistics" : {
+
+    },
+    "Reset" : {
+
+    },
+    "Reset All Settings" : {
+
+    },
+    "Reset Window Positions" : {
+
+    },
+    "Search settings..." : {
+
+    },
+    "Seed:" : {
+
+    },
+    "Select a category from the sidebar to configure your slideshow experience" : {
+
+    },
+    "Select a folder to start" : {
+
+    },
+    "Select a folder to start slideshow" : {
+
+    },
+    "Settings for %@ will be implemented here." : {
+
+    },
+    "settings.%@.title" : {
+
+    },
+    "settings.auto_start" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto-start slideshow when folder is selected"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォルダ選択時に自動でスライドショーを開始"
+          }
+        }
+      }
+    },
+    "settings.keyboard_controls" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keyboard Controls"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーボード操作"
+          }
+        }
+      }
+    },
+    "settings.keyboard_controls.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available keyboard shortcuts during slideshow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショー中に利用可能なキーボードショートカット"
+          }
+        }
+      }
+    },
+    "settings.language.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "言語"
+          }
+        }
+      }
+    },
+    "settings.loop_slideshow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loop slideshow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショーをループ"
+          }
+        }
+      }
+    },
+    "settings.performance.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パフォーマンス"
+          }
+        }
+      }
+    },
+    "settings.playback_behavior" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playback Behavior"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生動作"
+          }
+        }
+      }
+    },
+    "settings.playback_behavior.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control how slideshows start and play"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショーの開始と再生を制御"
+          }
+        }
+      }
+    },
+    "settings.random_order" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Random order"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ランダム順序"
+          }
+        }
+      }
+    },
+    "settings.slide_duration" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slide Duration"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライド表示時間"
+          }
+        }
+      }
+    },
+    "settings.slideshow_presets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slideshow Presets"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショープリセット"
+          }
+        }
+      }
+    },
+    "settings.slideshow_presets.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick configurations for common slideshow scenarios"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般的なスライドショーシナリオの簡単設定"
+          }
+        }
+      }
+    },
+    "settings.slideshow.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slideshow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショー"
+          }
+        }
+      }
+    },
+    "settings.sort.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "並び順"
+          }
+        }
+      }
+    },
+    "settings.timing_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timing Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイミング設定"
+          }
+        }
+      }
+    },
+    "settings.timing_settings.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure how long each photo is displayed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各写真の表示時間を設定"
+          }
+        }
+      }
+    },
+    "settings.transition.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transitions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トランジション"
+          }
+        }
+      }
+    },
+    "settings.window.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        }
+      }
+    },
+    "shortcut.%@" : {
+
+    },
+    "shortcut.desc.next_photo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next photo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の写真"
+          }
+        }
+      }
+    },
+    "shortcut.desc.play_pause" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play/Pause slideshow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショー再生/一時停止"
+          }
+        }
+      }
+    },
+    "shortcut.desc.previous_photo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous photo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前の写真"
+          }
+        }
+      }
+    },
+    "shortcut.desc.stop_slideshow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop slideshow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショー停止"
+          }
+        }
+      }
+    },
+    "shortcut.desc.toggle_controls" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle controls visibility"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コントロール表示の切り替え"
+          }
+        }
+      }
+    },
+    "shortcut.desc.toggle_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle detailed info"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細情報の切り替え"
+          }
+        }
+      }
+    },
+    "shortcut.next_photo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next Photo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の写真"
+          }
+        }
+      }
+    },
+    "shortcut.open_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を開く"
+          }
+        }
+      }
+    },
+    "shortcut.play_pause" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play/Pause"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生/一時停止"
+          }
+        }
+      }
+    },
+    "shortcut.previous_photo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous Photo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前の写真"
+          }
+        }
+      }
+    },
+    "shortcut.stop" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止"
+          }
+        }
+      }
+    },
+    "shortcut.toggle_controls" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Controls"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コントロールの表示/非表示"
+          }
+        }
+      }
+    },
+    "shortcut.toggle_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Info"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報の表示/非表示"
+          }
+        }
+      }
+    },
+    "Show controls on mouse movement" : {
+
+    },
+    "Show detailed photo information by default" : {
+
+    },
+    "Show full paths in menu" : {
+
+    },
+    "Show recent folders in File menu" : {
+
+    },
+    "Show Statistics" : {
+
+    },
+    "Show System Info" : {
+
+    },
+    "Shows: filename, dimensions, file size, creation date" : {
+
+    },
+    "Simple Fade" : {
+
+    },
+    "Slideshow Controls" : {
+
+    },
+    "slideshow.button.%@" : {
+
+    },
+    "slideshow.button.pause" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止"
+          }
+        }
+      }
+    },
+    "slideshow.button.play" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生"
+          }
+        }
+      }
+    },
+    "slideshow.button.stop" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止"
+          }
+        }
+      }
+    },
+    "slideshow.navigation.%@" : {
+
+    },
+    "slideshow.navigation.next" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next Photo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の写真"
+          }
+        }
+      }
+    },
+    "slideshow.navigation.previous" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous Photo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前の写真"
+          }
+        }
+      }
+    },
+    "Smooth Crossfade" : {
+
+    },
+    "Smooth transitions enhance user experience. Lower intensity and shorter duration improve performance on slower systems." : {
+
+    },
+    "Sort Direction" : {
+
+    },
+    "Sort Order" : {
+
+    },
+    "Sorting files before slideshow improves image caching efficiency. Random sorting with a fixed seed ensures consistent order across sessions." : {
+
+    },
+    "Subtle" : {
+
+    },
+    "Swift Photos" : {
+
+    },
+    "Swift Photos Settings" : {
+
+    },
+    "System Information" : {
+
+    },
+    "This will remove all recent folders from the File menu. This action cannot be undone." : {
+
+    },
+    "This will reset all settings to their default values. This action cannot be undone." : {
+
+    },
+    "time_format.12_hour" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12-hour"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12時間"
+          }
+        }
+      }
+    },
+    "time_format.24_hour" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "24-hour"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "24時間"
+          }
+        }
+      }
+    },
+    "time_format.automatic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        }
+      }
+    },
+    "tooltip.next" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次へ"
+          }
+        }
+      }
+    },
+    "tooltip.previous" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前へ"
+          }
+        }
+      }
+    },
+    "tooltip.tap_for_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap for more info"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タップで詳細表示"
+          }
+        }
+      }
+    },
+    "Verbose logging (detailed output)" : {
+
+    },
+    "Version 1.0" : {
+
+    },
+    "When Paused" : {
+
+    },
+    "Window Level" : {
+
+    }
+  },
+  "version" : "1.0"
+}

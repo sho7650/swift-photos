@@ -9,31 +9,31 @@ struct SlideshowSettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             // Slideshow Presets Section
             SlideshowSettingsSection(
-                title: "Slideshow Presets",
+                title: String.settingsSlideshowPresets,
                 icon: "play.circle",
-                description: "Quick configurations for common slideshow scenarios"
+                description: String.settingsSlideshowPresetsDescription
             ) {
                 HStack(spacing: 12) {
-                    Button("Default") { settings.updateSettings(.default) }
+                    Button(String.presetDefault) { settings.updateSettings(.default) }
                         .buttonStyle(.bordered)
-                    Button("Quick") { settings.updateSettings(.quick) }
+                    Button(String.presetQuick) { settings.updateSettings(.quick) }
                         .buttonStyle(.bordered)
-                    Button("Slow") { settings.updateSettings(.slow) }
+                    Button(String.presetSlow) { settings.updateSettings(.slow) }
                         .buttonStyle(.bordered)
-                    Button("Random") { settings.updateSettings(.random) }
+                    Button(String.presetRandom) { settings.updateSettings(.random) }
                         .buttonStyle(.bordered)
                 }
             }
             
             // Timing Settings Section
             SlideshowSettingsSection(
-                title: "Timing Settings",
+                title: String.settingsTimingSettings,
                 icon: "timer",
-                description: "Configure how long each photo is displayed"
+                description: String.settingsTimingSettingsDescription
             ) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("Slide Duration")
+                        Text(String.settingsSlideDuration)
                         Spacer()
                         Text(formatDuration(settings.settings.slideDuration))
                             .foregroundColor(.secondary)
@@ -58,12 +58,12 @@ struct SlideshowSettingsView: View {
             
             // Playback Behavior Section
             SlideshowSettingsSection(
-                title: "Playback Behavior",
+                title: String.settingsPlaybackBehavior,
                 icon: "gearshape",
-                description: "Control how slideshows start and play"
+                description: String.settingsPlaybackBehaviorDescription
             ) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Toggle("Auto-start slideshow when folder is selected", isOn: Binding(
+                    Toggle(String.settingsAutoStart, isOn: Binding(
                         get: { settings.settings.autoStart },
                         set: { newValue in
                             let newSettings = SlideshowSettings(
@@ -77,7 +77,7 @@ struct SlideshowSettingsView: View {
                     ))
                     .toggleStyle(.switch)
                     
-                    Toggle("Random order", isOn: Binding(
+                    Toggle(String.settingsRandomOrder, isOn: Binding(
                         get: { settings.settings.randomOrder },
                         set: { newValue in
                             let newSettings = SlideshowSettings(
@@ -91,7 +91,7 @@ struct SlideshowSettingsView: View {
                     ))
                     .toggleStyle(.switch)
                     
-                    Toggle("Loop slideshow", isOn: Binding(
+                    Toggle(String.settingsLoopSlideshow, isOn: Binding(
                         get: { settings.settings.loopSlideshow },
                         set: { newValue in
                             let newSettings = SlideshowSettings(
@@ -109,17 +109,17 @@ struct SlideshowSettingsView: View {
             
             // Keyboard Controls Section
             SlideshowSettingsSection(
-                title: "Keyboard Controls",
+                title: String.settingsKeyboardControls,
                 icon: "keyboard",
-                description: "Available keyboard shortcuts during slideshow"
+                description: String.settingsKeyboardControlsDescription
             ) {
                 VStack(alignment: .leading, spacing: 8) {
-                    ShortcutRow(key: "Space", description: "Play/Pause slideshow")
-                    ShortcutRow(key: "→ ↓", description: "Next photo")
-                    ShortcutRow(key: "← ↑", description: "Previous photo")
-                    ShortcutRow(key: "Esc", description: "Stop slideshow")
-                    ShortcutRow(key: "I", description: "Toggle detailed info")
-                    ShortcutRow(key: "H", description: "Toggle controls visibility")
+                    ShortcutRow(key: "Space", description: String.shortcutDescPlayPause)
+                    ShortcutRow(key: "→ ↓", description: String.shortcutDescNextPhoto)
+                    ShortcutRow(key: "← ↑", description: String.shortcutDescPreviousPhoto)
+                    ShortcutRow(key: "Esc", description: String.shortcutDescStopSlideshow)
+                    ShortcutRow(key: "I", description: String.shortcutDescToggleInfo)
+                    ShortcutRow(key: "H", description: String.shortcutDescToggleControls)
                 }
             }
         }
@@ -297,12 +297,13 @@ private struct CustomDurationSlider: View {
 // Format duration for display
 private func formatDuration(_ seconds: Double) -> String {
     if seconds < 60 {
-        return String(format: "%.1f seconds", seconds)
+        return String(format: "%.1f %@", seconds, String.durationSeconds)
     } else if seconds < 3600 {
         let minutes = Int(seconds) / 60
         let remainingSeconds = Int(seconds) % 60
         if remainingSeconds == 0 {
-            return "\(minutes) minute\(minutes == 1 ? "" : "s")"
+            let minuteWord = minutes == 1 ? String.durationMinute : String.durationMinutes
+            return "\(minutes) \(minuteWord)"
         } else {
             return String(format: "%d:%02d", minutes, remainingSeconds)
         }

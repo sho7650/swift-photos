@@ -41,7 +41,7 @@ public struct MinimalControlsView: View {
     
     private var welcomeControls: some View {
         VStack(spacing: 16) {
-            Button("Select Folder") {
+            Button(String.selectFolderButton) {
                 ProductionLogger.userAction("MinimalControlsView: Select Folder button pressed")
                 uiControlStateManager.handleGestureInteraction()
                 Task {
@@ -56,7 +56,7 @@ public struct MinimalControlsView: View {
                 HStack(spacing: 8) {
                     ProgressView()
                         .scaleEffect(0.6)
-                    Text("Loading...")
+                    Text(String.loadingShort)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -103,7 +103,7 @@ public struct MinimalControlsView: View {
                         viewModel.previousPhoto()
                     }
                 )
-                .shortcutTooltip("Previous", shortcut: "←")
+                .shortcutTooltip(String.tooltipPrevious, shortcut: "←")
                 
                 // Play/Pause button (larger)
                 ControlButton(
@@ -118,7 +118,7 @@ public struct MinimalControlsView: View {
                         }
                     }
                 )
-                .shortcutTooltip(slideshow.isPlaying ? "Pause" : "Play", shortcut: "Space")
+                .shortcutTooltip(slideshow.isPlaying ? String.pauseButton : String.playButton, shortcut: "Space")
                 
                 // Next button
                 ControlButton(
@@ -129,7 +129,7 @@ public struct MinimalControlsView: View {
                         viewModel.nextPhoto()
                     }
                 )
-                .shortcutTooltip("Next", shortcut: "→")
+                .shortcutTooltip(String.tooltipNext, shortcut: "→")
             }
             
             // Photo counter (minimal)
@@ -161,7 +161,7 @@ public struct MinimalControlsView: View {
         .onTapGesture {
             uiControlStateManager.toggleDetailedInfo()
         }
-        .shortcutTooltip("Tap for more info", shortcut: "I")
+        .shortcutTooltip(String.tooltipTapForInfo, shortcut: "I")
         .animation(.easeInOut(duration: 0.2), value: isHovering)
         .animation(.easeInOut(duration: 0.2), value: uiControlStateManager.isDetailedInfoVisible)
     }
