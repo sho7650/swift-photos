@@ -45,7 +45,7 @@ actor TargetImageLoader {
                 await self?.recordEmergencyLoadTime(loadTime)
                 
                 ProductionLogger.performance("TargetImageLoader: Emergency load completed in \(String(format: "%.2f", loadTime * 1000))ms")
-                return SendableImage(image)
+                return image
             } catch {
                 ProductionLogger.error("TargetImageLoader: Emergency load failed: \(error)")
                 throw error
@@ -190,7 +190,7 @@ extension TargetImageLoader {
                 group.addTask(priority: priority) { [self] in
                     do {
                         let image = try await self.imageLoader.loadImage(from: photo.imageURL)
-                        return (photo.id, SendableImage(image))
+                        return (photo.id, image)
                     } catch {
                         print("❌ TargetImageLoader: Failed to load \(photo.id): \(error)")
                         return nil

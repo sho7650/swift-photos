@@ -226,8 +226,7 @@ actor VirtualImageLoader {
         totalLoads += 1
         
         let task = Task<SendableImage, Error> {
-            let image = try await imageLoader.loadImage(from: photo.imageURL)
-            return SendableImage(image)
+            try await imageLoader.loadImage(from: photo.imageURL)
         }
         
         loadingTasks[photo.id] = task
