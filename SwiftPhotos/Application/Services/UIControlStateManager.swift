@@ -204,14 +204,44 @@ public class UIControlStateManager: ObservableObject {
     /// Handle mouse entering image area
     public func handleMouseEnteredImage() {
         if uiControlSettings.settings.hideOnImageHover {
-            cursorManager?.hideOnImageHover()
+            cursorManager?.handleMouseEnteredImage()
         }
     }
     
     /// Handle mouse exiting image area  
     public func handleMouseExitedImage() {
         if uiControlSettings.settings.hideOnImageHover {
-            cursorManager?.showOnImageExit()
+            cursorManager?.handleMouseExitedImage()
+        }
+    }
+    
+    /// Handle mouse movement over image area
+    public func handleMouseMovementOverImage(at position: CGPoint) {
+        if uiControlSettings.settings.hideOnImageHover {
+            cursorManager?.handleMouseMovement(at: position)
+        }
+    }
+    
+    /// Handle image redraw/transition events
+    public func handleImageRedraw() {
+        if uiControlSettings.settings.hideOnImageHover {
+            cursorManager?.handleImageRedraw()
+        }
+    }
+    
+    /// Enable CGDisplay cursor control for more reliable cursor management
+    public func enableAdvancedCursorControl() {
+        if uiControlSettings.settings.hideOnImageHover {
+            cursorManager?.enableCGDisplayCursorControl()
+            ProductionLogger.debug("UIControlStateManager: Enabled advanced cursor control")
+        }
+    }
+    
+    /// Disable advanced cursor control (use standard NSCursor)
+    public func disableAdvancedCursorControl() {
+        if uiControlSettings.settings.hideOnImageHover {
+            cursorManager?.enableNSCursorControl()
+            ProductionLogger.debug("UIControlStateManager: Disabled advanced cursor control")
         }
     }
     
@@ -221,7 +251,12 @@ public class UIControlStateManager: ObservableObject {
     private func setupCursorManager() {
         cursorManager = CursorManager.shared()
         cursorManager?.debugLoggingEnabled = true
-        ProductionLogger.debug("UIControlStateManager: Simple cursor manager setup complete")
+        
+        // Use NSCursor API for better SwiftUI compatibility
+        // CGDisplay API can cause cursor to become invisible in SwiftUI contexts
+        cursorManager?.enableNSCursorControl()
+        
+        ProductionLogger.debug("UIControlStateManager: Simple cursor manager setup complete with NSCursor API")
     }
     
     // MARK: - Private Methods

@@ -50,6 +50,16 @@ public struct SimpleImageDisplayView: View {
                                             uiControlStateManager?.handleMouseExitedImage()
                                         }
                                     }
+                                    .onContinuousHover { phase in
+                                        switch phase {
+                                        case .active(let location):
+                                            // Convert local location to global screen coordinates
+                                            let globalLocation = NSEvent.mouseLocation
+                                            uiControlStateManager?.handleMouseMovementOverImage(at: globalLocation)
+                                        case .ended:
+                                            break
+                                        }
+                                    }
                             }
                         }
                         .id(viewModel.refreshCounter)
@@ -142,6 +152,8 @@ public struct SimpleImageDisplayView: View {
                         self.showImage = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                             self.showImage = true
+                            // Notify cursor manager about redraw after transition preview
+                            self.uiControlStateManager?.handleImageRedraw()
                         }
                     }
                 }
@@ -157,6 +169,9 @@ public struct SimpleImageDisplayView: View {
         
         ProductionLogger.debug("handlePhotoChange: New photo loaded: \(newID.uuidString)")
         
+        // Notify cursor manager about image redraw
+        uiControlStateManager?.handleImageRedraw()
+        
         // Trigger transition if enabled
         if transitionSettings.settings.isEnabled {
             // Hide current image, then show new one with transition
@@ -164,6 +179,8 @@ public struct SimpleImageDisplayView: View {
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 showImage = true
+                // Notify cursor manager again after transition completes
+                self.uiControlStateManager?.handleImageRedraw()
             }
         } else {
             showImage = true

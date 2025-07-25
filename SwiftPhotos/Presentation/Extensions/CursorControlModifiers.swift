@@ -23,9 +23,9 @@ public struct ImageHoverCursorModifier: ViewModifier {
             }
             .onHover { hovering in
                 if hovering {
-                    cursorManager?.hideOnImageHover()
+                    cursorManager?.handleMouseEnteredImage()
                 } else {
-                    cursorManager?.showOnImageExit()
+                    cursorManager?.handleMouseExitedImage()
                 }
             }
     }
