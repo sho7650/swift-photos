@@ -36,14 +36,14 @@ public class SlideshowDomainService: ObservableObject {
     public func loadImage(for photo: Photo) async throws -> Photo {
         if let cachedImage = await cache.getCachedImage(for: photo.imageURL) {
             var updatedPhoto = photo
-            updatedPhoto.updateLoadState(.loaded(SendableImage(cachedImage)))
+            updatedPhoto.updateLoadState(.loaded(cachedImage))
             return updatedPhoto
         }
         
         let loadedPhoto = try await repository.loadImage(for: photo)
         
         if let image = loadedPhoto.loadState.image {
-            await cache.setCachedImage(image, for: photo.imageURL)
+            await cache.setCachedImage(SendableImage(image), for: photo.imageURL)
         }
         
         return loadedPhoto

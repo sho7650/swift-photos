@@ -51,7 +51,7 @@ public class SlideshowViewModel: ObservableObject {
         // Set up virtual loader callback for seamless UI integration
         Task {
             await self.virtualLoader.setImageLoadedCallback { [weak self] photoId, image in
-                self?.handleVirtualImageLoaded(photoId: photoId, image: image)
+                self?.handleVirtualImageLoaded(photoId: photoId, image: image.nsImage)
             }
         }
         
@@ -316,7 +316,7 @@ public class SlideshowViewModel: ObservableObject {
                     case .success(let image):
                         // 即座にUIを更新
                         var loadedPhoto = targetPhoto
-                        loadedPhoto.updateLoadState(.loaded(SendableImage(image)))
+                        loadedPhoto.updateLoadState(.loaded(image))
                         self?.updatePhotoInSlideshow(loadedPhoto)
                         self?.currentPhoto = loadedPhoto
                         
@@ -476,7 +476,7 @@ public class SlideshowViewModel: ObservableObject {
             
             // Create loaded photo directly from cached image
             var loadedPhoto = photo
-            loadedPhoto.updateLoadState(.loaded(SendableImage(cachedImage)))
+            loadedPhoto.updateLoadState(.loaded(cachedImage))
             updatePhotoInSlideshow(loadedPhoto)
         } else if !(await virtualLoader.isLoading(photoId: photo.id)) {
             ProductionLogger.debug("loadCurrentImageVirtual: Loading current image directly")

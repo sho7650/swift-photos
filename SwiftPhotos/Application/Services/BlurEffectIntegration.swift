@@ -14,7 +14,7 @@ public class BlurEffectIntegration: ObservableObject {
     @Published public var migrationProgress: Double = 0.0
     
     private let blurManager: BlurEffectManager
-    private let uiControlSettings: UIControlSettingsManager
+    private let uiControlSettings: ModernUIControlSettingsManager
     private let logger = Logger(subsystem: "SwiftPhotos", category: "BlurEffectIntegration")
     
     private var cancellables = Set<AnyCancellable>()
@@ -23,7 +23,7 @@ public class BlurEffectIntegration: ObservableObject {
     
     public init(
         blurManager: BlurEffectManager,
-        uiControlSettings: UIControlSettingsManager
+        uiControlSettings: ModernUIControlSettingsManager
     ) {
         self.blurManager = blurManager
         self.uiControlSettings = uiControlSettings
@@ -141,7 +141,10 @@ public class BlurEffectIntegration: ObservableObject {
     
     private func setupIntegration() {
         // Listen to UIControlSettings changes and sync with BlurEffectManager
-        uiControlSettings.$settings
+        // Listen to UIControlSettings changes and sync with BlurEffectManager
+        // Note: ModernUIControlSettingsManager uses NotificationCenter pattern
+        NotificationCenter.default.publisher(for: .uiControlSettingsChanged)
+            .compactMap { _ in self.uiControlSettings.settings }
             .sink { [weak self] settings in
                 self?.syncBlurManagerSettings(settings)
             }

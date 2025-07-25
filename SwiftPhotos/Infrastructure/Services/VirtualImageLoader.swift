@@ -6,8 +6,8 @@ import AppKit
 actor VirtualImageLoader {
     private var windowSize: Int
     private let imageLoader: ImageLoader
-    private var loadedImages: [UUID: NSImage] = [:]
-    private var loadingTasks: [UUID: Task<NSImage, Error>] = [:]
+    private var loadedImages: [UUID: SendableImage] = [:]
+    private var loadingTasks: [UUID: Task<SendableImage, Error>] = [:]
     private var maxMemoryUsage: Int // in MB
     private var settings: PerformanceSettings
     
@@ -17,7 +17,7 @@ actor VirtualImageLoader {
     private var totalLoads: Int = 0
     
     // Completion callback for UI integration
-    private var onImageLoaded: (@MainActor (UUID, NSImage) -> Void)?
+    private var onImageLoaded: (@MainActor (UUID, SendableImage) -> Void)?
     
     init(settings: PerformanceSettings = .default) {
         self.settings = settings
@@ -29,7 +29,7 @@ actor VirtualImageLoader {
     }
     
     /// Set callback for when images finish loading
-    func setImageLoadedCallback(_ callback: @escaping @MainActor (UUID, NSImage) -> Void) {
+    func setImageLoadedCallback(_ callback: @escaping @MainActor (UUID, SendableImage) -> Void) {
         self.onImageLoaded = callback
     }
     
@@ -163,7 +163,7 @@ actor VirtualImageLoader {
     }
     
     /// Get a loaded image if available
-    func getImage(for photoId: UUID) -> NSImage? {
+    func getImage(for photoId: UUID) -> SendableImage? {
         if let image = loadedImages[photoId] {
             cacheHits += 1
             return image
@@ -225,8 +225,9 @@ actor VirtualImageLoader {
     private func loadImage(photo: Photo) async {
         totalLoads += 1
         
-        let task = Task<NSImage, Error> {
-            try await imageLoader.loadImage(from: photo.imageURL)
+        let task = Task<SendableImage, Error> {
+            let image = try await imageLoader.loadImage(from: photo.imageURL)
+            return SendableImage(image)
         }
         
         loadingTasks[photo.id] = task

@@ -12,22 +12,22 @@ public actor ImageCache: PhotoCache {
         cache.name = "SwiftPhotos.ImageCache"
     }
     
-    public func getCachedImage(for imageURL: ImageURL) -> NSImage? {
+    public func getCachedImage(for imageURL: ImageURL) -> SendableImage? {
         let key = NSString(string: imageURL.url.absoluteString)
         
         if let cachedImage = cache.object(forKey: key) {
             hitCount += 1
-            return cachedImage
+            return SendableImage(cachedImage)
         } else {
             missCount += 1
             return nil
         }
     }
     
-    public func setCachedImage(_ image: NSImage, for imageURL: ImageURL) {
+    public func setCachedImage(_ image: SendableImage, for imageURL: ImageURL) {
         let key = NSString(string: imageURL.url.absoluteString)
         let estimatedCost = estimateImageCost(image)
-        cache.setObject(image, forKey: key, cost: estimatedCost)
+        cache.setObject(image.nsImage, forKey: key, cost: estimatedCost)
     }
     
     public func clearCache() {
@@ -45,8 +45,8 @@ public actor ImageCache: PhotoCache {
         )
     }
     
-    private func estimateImageCost(_ image: NSImage) -> Int {
-        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+    private func estimateImageCost(_ image: SendableImage) -> Int {
+        guard let cgImage = image.nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             return 1000
         }
         

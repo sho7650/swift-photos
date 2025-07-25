@@ -145,7 +145,7 @@ public final class ModernSlideshowViewModel {
     private func setupVirtualLoaderCallback() {
         Task {
             await self.virtualLoader.setImageLoadedCallback { [weak self] photoId, image in
-                self?.handleVirtualImageLoaded(photoId: photoId, image: image)
+                self?.handleVirtualImageLoaded(photoId: photoId, image: image.nsImage)
             }
         }
     }
@@ -345,7 +345,7 @@ public final class ModernSlideshowViewModel {
                     case .success(let image):
                         // Update UI immediately
                         var loadedPhoto = targetPhoto
-                        loadedPhoto.updateLoadState(.loaded(SendableImage(image)))
+                        loadedPhoto.updateLoadState(.loaded(image))
                         self?.updatePhotoInSlideshow(loadedPhoto)
                         self?.currentPhoto = loadedPhoto
                         
@@ -529,7 +529,7 @@ public final class ModernSlideshowViewModel {
                             case .success(let image):
                                 ProductionLogger.debug("First image loaded successfully via emergency load")
                                 var loadedPhoto = firstPhoto
-                                loadedPhoto.updateLoadState(.loaded(SendableImage(image)))
+                                loadedPhoto.updateLoadState(.loaded(image))
                                 self.updatePhotoInSlideshow(loadedPhoto)
                                 self.currentPhoto = loadedPhoto
                                 self.refreshCounter += 1
@@ -696,8 +696,7 @@ public final class ModernSlideshowViewModel {
             
             // Create loaded photo directly from cached image
             var loadedPhoto = photo
-            let sendableImage = SendableImage(cachedImage)
-            loadedPhoto.updateLoadState(.loaded(sendableImage))
+            loadedPhoto.updateLoadState(.loaded(cachedImage))
             updatePhotoInSlideshow(loadedPhoto)
         } else if !(await virtualLoader.isLoading(photoId: photo.id)) {
             ProductionLogger.debug("loadCurrentImageVirtual: Loading current image directly")

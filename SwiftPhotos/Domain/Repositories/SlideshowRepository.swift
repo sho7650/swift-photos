@@ -8,8 +8,8 @@ public protocol SlideshowRepository {
 }
 
 public protocol PhotoCache {
-    func getCachedImage(for imageURL: ImageURL) async -> NSImage?
-    func setCachedImage(_ image: NSImage, for imageURL: ImageURL) async
+    func getCachedImage(for imageURL: ImageURL) async -> SendableImage?
+    func setCachedImage(_ image: SendableImage, for imageURL: ImageURL) async
     func clearCache() async
     func getCacheStatistics() async -> CacheStatistics
 }
