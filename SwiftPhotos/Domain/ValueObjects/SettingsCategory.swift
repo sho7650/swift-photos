@@ -152,11 +152,20 @@ extension SettingsCategory {
         description: "View and customize keyboard shortcuts for slideshow control"
     )
     
+    /// Language and localization settings
+    public static let language = SettingsCategory(
+        name: "Language",
+        systemIcon: "globe",
+        displayOrder: 8,
+        searchKeywords: ["language", "localization", "region", "format", "locale", "translation", "international"],
+        description: "Configure application language, regional formatting, and localization preferences"
+    )
+    
     /// Advanced settings and debugging
     public static let advanced = SettingsCategory(
         name: "Advanced",
         systemIcon: "gearshape.2",
-        displayOrder: 8,
+        displayOrder: 9,
         searchKeywords: ["debug", "advanced", "technical", "logging", "developer", "experimental"],
         description: "Advanced configuration options and debugging features"
     )
@@ -170,6 +179,7 @@ extension SettingsCategory {
         .interface,
         .fileManagement,
         .keyboard,
+        .language,
         .advanced
     ].sorted { $0.displayOrder < $1.displayOrder }
 }

@@ -12,6 +12,7 @@ public class SettingsWindowManager: ObservableObject {
         sortSettings: ModernSortSettingsManager,
         transitionSettings: ModernTransitionSettingsManager,
         uiControlSettings: ModernUIControlSettingsManager? = nil,
+        localizationSettings: ModernLocalizationSettingsManager? = nil,
         recentFilesManager: RecentFilesManager? = nil
     ) {
         // Close existing window if open
@@ -23,7 +24,8 @@ public class SettingsWindowManager: ObservableObject {
             slideshowSettings: slideshowSettings,
             sortSettings: sortSettings,
             transitionSettings: transitionSettings,
-            uiControlSettings: uiControlSettings ?? ModernUIControlSettingsManager()
+            uiControlSettings: uiControlSettings ?? ModernUIControlSettingsManager(),
+            localizationSettings: localizationSettings ?? ModernLocalizationSettingsManager()
         )
         .environmentObject(recentFilesManager ?? RecentFilesManager())
         

@@ -9,6 +9,7 @@ public struct SidebarSettingsWindow: View {
     var sortSettings: ModernSortSettingsManager
     var transitionSettings: ModernTransitionSettingsManager
     var uiControlSettings: ModernUIControlSettingsManager
+    var localizationSettings: ModernLocalizationSettingsManager
     @EnvironmentObject var recentFilesManager: RecentFilesManager
     
     @StateObject private var settingsCategoryService = SettingsCategoryService()
@@ -26,13 +27,15 @@ public struct SidebarSettingsWindow: View {
         slideshowSettings: ModernSlideshowSettingsManager,
         sortSettings: ModernSortSettingsManager,
         transitionSettings: ModernTransitionSettingsManager,
-        uiControlSettings: ModernUIControlSettingsManager
+        uiControlSettings: ModernUIControlSettingsManager,
+        localizationSettings: ModernLocalizationSettingsManager
     ) {
         self.performanceSettings = performanceSettings
         self.slideshowSettings = slideshowSettings
         self.sortSettings = sortSettings
         self.transitionSettings = transitionSettings
         self.uiControlSettings = uiControlSettings
+        self.localizationSettings = localizationSettings
     }
     
     public var body: some View {
@@ -168,6 +171,7 @@ public struct SidebarSettingsWindow: View {
                     sortSettings: sortSettings,
                     transitionSettings: transitionSettings,
                     uiControlSettings: uiControlSettings,
+                    localizationSettings: localizationSettings,
                     recentFilesManager: recentFilesManager,
                     searchQuery: searchText
                 )
@@ -369,6 +373,7 @@ private struct CategoryDetailView: View {
     let sortSettings: ModernSortSettingsManager
     let transitionSettings: ModernTransitionSettingsManager
     let uiControlSettings: ModernUIControlSettingsManager
+    let localizationSettings: ModernLocalizationSettingsManager
     let recentFilesManager: RecentFilesManager
     let searchQuery: String
     
@@ -413,6 +418,8 @@ private struct CategoryDetailView: View {
                         FileManagementSettingsView(recentFilesManager: recentFilesManager)
                     case "Keyboard":
                         KeyboardShortcutsView()
+                    case "Language":
+                        LanguageSettingsView(localizationSettings: localizationSettings)
                     case "Advanced":
                         AdvancedSettingsView()
                     default:
@@ -433,7 +440,8 @@ private struct CategoryDetailView: View {
         slideshowSettings: ModernSlideshowSettingsManager(),
         sortSettings: ModernSortSettingsManager(),
         transitionSettings: ModernTransitionSettingsManager(),
-        uiControlSettings: ModernUIControlSettingsManager()
+        uiControlSettings: ModernUIControlSettingsManager(),
+        localizationSettings: ModernLocalizationSettingsManager()
     )
     .environmentObject(RecentFilesManager())
 }
