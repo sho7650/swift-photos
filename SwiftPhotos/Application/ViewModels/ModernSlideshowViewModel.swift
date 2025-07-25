@@ -5,7 +5,6 @@ import Observation
 
 /// Modern Swift 6 compliant SlideshowViewModel using @Observable
 /// This is the new implementation that replaces @ObservableObject with @Observable
-@available(macOS 14.0, *)
 @Observable
 @MainActor
 public final class ModernSlideshowViewModel {
@@ -38,23 +37,23 @@ public final class ModernSlideshowViewModel {
     private let virtualLoader: VirtualImageLoader
     private let backgroundPreloader: BackgroundPreloader
     private let targetImageLoader: TargetImageLoader
-    private let performanceSettingsManager: PerformanceSettingsManager
-    private let slideshowSettingsManager: SlideshowSettingsManager
-    private let sortSettingsManager: SortSettingsManager?
+    private let performanceSettingsManager: ModernPerformanceSettingsManager
+    private let slideshowSettingsManager: ModernSlideshowSettingsManager
+    private let sortSettingsManager: ModernSortSettingsManager?
     
     // MARK: - Initialization
     
     public init(
         domainService: SlideshowDomainService,
         fileAccess: SecureFileAccess,
-        performanceSettings: PerformanceSettingsManager? = nil,
-        slideshowSettings: SlideshowSettingsManager? = nil,
-        sortSettings: SortSettingsManager? = nil
+        performanceSettings: ModernPerformanceSettingsManager? = nil,
+        slideshowSettings: ModernSlideshowSettingsManager? = nil,
+        sortSettings: ModernSortSettingsManager? = nil
     ) {
         self.domainService = domainService
         self.fileAccess = fileAccess
-        self.performanceSettingsManager = performanceSettings ?? PerformanceSettingsManager()
-        self.slideshowSettingsManager = slideshowSettings ?? SlideshowSettingsManager()
+        self.performanceSettingsManager = performanceSettings ?? ModernPerformanceSettingsManager()
+        self.slideshowSettingsManager = slideshowSettings ?? ModernSlideshowSettingsManager()
         self.sortSettingsManager = sortSettings
         self.virtualLoader = VirtualImageLoader(settings: self.performanceSettingsManager.settings)
         self.backgroundPreloader = BackgroundPreloader(settings: self.performanceSettingsManager.settings)

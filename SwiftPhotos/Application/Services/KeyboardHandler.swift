@@ -3,8 +3,8 @@ import AppKit
 
 @MainActor
 public class KeyboardHandler: ObservableObject {
-    public weak var viewModel: SlideshowViewModel?
-    public weak var performanceSettings: PerformanceSettingsManager?
+    public weak var viewModel: ModernSlideshowViewModel?
+    public weak var performanceSettings: ModernPerformanceSettingsManager?
     public var onOpenSettings: (() -> Void)?
     public var onOpenFolder: (() -> Void)?
     

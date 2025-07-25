@@ -7,11 +7,11 @@ public class SettingsWindowManager: ObservableObject {
     private var settingsWindow: NSWindow?
     
     public func openSettingsWindow(
-        performanceSettings: PerformanceSettingsManager,
-        slideshowSettings: SlideshowSettingsManager,
-        sortSettings: SortSettingsManager,
-        transitionSettings: TransitionSettingsManager,
-        uiControlSettings: UIControlSettingsManager? = nil,
+        performanceSettings: ModernPerformanceSettingsManager,
+        slideshowSettings: ModernSlideshowSettingsManager,
+        sortSettings: ModernSortSettingsManager,
+        transitionSettings: ModernTransitionSettingsManager,
+        uiControlSettings: ModernUIControlSettingsManager? = nil,
         recentFilesManager: RecentFilesManager? = nil
     ) {
         // Close existing window if open
@@ -23,7 +23,7 @@ public class SettingsWindowManager: ObservableObject {
             slideshowSettings: slideshowSettings,
             sortSettings: sortSettings,
             transitionSettings: transitionSettings,
-            uiControlSettings: uiControlSettings ?? UIControlSettingsManager()
+            uiControlSettings: uiControlSettings ?? ModernUIControlSettingsManager()
         )
         .environmentObject(recentFilesManager ?? RecentFilesManager())
         

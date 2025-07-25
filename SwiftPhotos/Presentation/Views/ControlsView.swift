@@ -2,9 +2,9 @@ import SwiftUI
 import AppKit
 
 public struct ControlsView: View {
-    @ObservedObject var viewModel: SlideshowViewModel
+    var viewModel: ModernSlideshowViewModel
     
-    public init(viewModel: SlideshowViewModel) {
+    public init(viewModel: ModernSlideshowViewModel) {
         self.viewModel = viewModel
     }
     

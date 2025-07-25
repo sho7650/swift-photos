@@ -3,7 +3,7 @@ import SwiftUI
 /// Performance settings view for slideshow optimization and memory management
 /// Provides controls for adjusting performance parameters for different collection sizes
 struct PerformanceSettingsView: View {
-    @ObservedObject var settings: PerformanceSettingsManager
+    var settings: ModernPerformanceSettingsManager
     @State private var selectedPreset: String = "Custom"
     
     var body: some View {
@@ -16,27 +16,27 @@ struct PerformanceSettingsView: View {
             ) {
                 VStack(spacing: 8) {
                     PresetButton(title: "Default (0-100 images)", preset: .default, current: settings.settings) {
-                        settings.applyPreset(.default)
+                        settings.updateSettings(.default)
                         selectedPreset = "Default"
                     }
                     
                     PresetButton(title: "High Performance (101-1,000 images)", preset: .highPerformance, current: settings.settings) {
-                        settings.applyPreset(.highPerformance)
+                        settings.updateSettings(.highPerformance)
                         selectedPreset = "High Performance"
                     }
                     
                     PresetButton(title: "Unlimited (1,001-10,000 images)", preset: .unlimited, current: settings.settings) {
-                        settings.applyPreset(.unlimited)
+                        settings.updateSettings(.unlimited)
                         selectedPreset = "Unlimited"
                     }
                     
                     PresetButton(title: "Massive (10,001-50,000 images)", preset: .massive, current: settings.settings) {
-                        settings.applyPreset(.massive)
+                        settings.updateSettings(.massive)
                         selectedPreset = "Massive"
                     }
                     
                     PresetButton(title: "Extreme (50,001+ images)", preset: .extreme, current: settings.settings) {
-                        settings.applyPreset(.extreme)
+                        settings.updateSettings(.extreme)
                         selectedPreset = "Extreme"
                     }
                 }
@@ -270,6 +270,6 @@ private struct SettingSlider: View {
 }
 
 #Preview {
-    PerformanceSettingsView(settings: PerformanceSettingsManager())
+    PerformanceSettingsView(settings: ModernPerformanceSettingsManager())
         .frame(width: 500, height: 600)
 }

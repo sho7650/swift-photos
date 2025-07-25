@@ -7,10 +7,10 @@ public class ImageTransitionManager: ObservableObject {
     @Published public private(set) var isTransitioning = false
     @Published public private(set) var transitionProgress: Double = 0.0
     
-    private let transitionSettings: TransitionSettingsManager
+    private let transitionSettings: ModernTransitionSettingsManager
     private var currentTransitionTask: Task<Void, Never>?
     
-    public init(transitionSettings: TransitionSettingsManager) {
+    public init(transitionSettings: ModernTransitionSettingsManager) {
         self.transitionSettings = transitionSettings
         ProductionLogger.lifecycle("ImageTransitionManager: Initialized")
     }

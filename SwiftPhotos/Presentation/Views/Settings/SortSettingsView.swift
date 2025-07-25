@@ -3,7 +3,7 @@ import SwiftUI
 /// Sort settings view for configuring photo ordering in slideshow
 /// Provides controls for sort order, direction, and random seed management
 struct SortSettingsView: View {
-    @ObservedObject var settings: SortSettingsManager
+    var settings: ModernSortSettingsManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -15,18 +15,18 @@ struct SortSettingsView: View {
             ) {
                 VStack(spacing: 8) {
                     HStack(spacing: 12) {
-                        Button("Alphabetical") { settings.applyPreset(.alphabetical) }
+                        Button("Alphabetical") { settings.updateSettings(.alphabetical) }
                             .buttonStyle(.bordered)
-                        Button("Chronological") { settings.applyPreset(.chronological) }
+                        Button("Chronological") { settings.updateSettings(.chronological) }
                             .buttonStyle(.bordered)
-                        Button("Newest First") { settings.applyPreset(.newestFirst) }
+                        Button("Newest First") { settings.updateSettings(.newestFirst) }
                             .buttonStyle(.bordered)
-                        Button("Largest First") { settings.applyPreset(.largestFirst) }
+                        Button("Largest First") { settings.updateSettings(.largestFirst) }
                             .buttonStyle(.bordered)
                     }
                     
                     HStack {
-                        Button("Random") { settings.applyPreset(.randomized) }
+                        Button("Random") { settings.updateSettings(.randomized) }
                             .buttonStyle(.bordered)
                         
                         if settings.settings.order == .random {
@@ -200,6 +200,6 @@ private struct SortSettingsSection<Content: View>: View {
 }
 
 #Preview {
-    SortSettingsView(settings: SortSettingsManager())
+    SortSettingsView(settings: ModernSortSettingsManager())
         .frame(width: 500, height: 600)
 }

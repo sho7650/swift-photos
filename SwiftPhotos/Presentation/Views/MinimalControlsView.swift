@@ -3,16 +3,16 @@ import AppKit
 
 /// Minimal, compact controls overlay positioned at bottom-center with blur background
 public struct MinimalControlsView: View {
-    @ObservedObject var viewModel: SlideshowViewModel
+    var viewModel: ModernSlideshowViewModel
     @ObservedObject var uiControlStateManager: UIControlStateManager
-    @ObservedObject var uiControlSettings: UIControlSettingsManager
+    var uiControlSettings: ModernUIControlSettingsManager
     
     @State private var isHovering = false
     
     public init(
-        viewModel: SlideshowViewModel,
+        viewModel: ModernSlideshowViewModel,
         uiControlStateManager: UIControlStateManager,
-        uiControlSettings: UIControlSettingsManager
+        uiControlSettings: ModernUIControlSettingsManager
     ) {
         self.viewModel = viewModel
         self.uiControlStateManager = uiControlStateManager

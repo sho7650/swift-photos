@@ -4,11 +4,11 @@ import AppKit
 /// Modern Music.app-style settings window with sidebar navigation
 /// Follows macOS design patterns with native sidebar and content area layout
 public struct SidebarSettingsWindow: View {
-    @ObservedObject var performanceSettings: PerformanceSettingsManager
-    @ObservedObject var slideshowSettings: SlideshowSettingsManager
-    @ObservedObject var sortSettings: SortSettingsManager
-    @ObservedObject var transitionSettings: TransitionSettingsManager
-    @ObservedObject var uiControlSettings: UIControlSettingsManager
+    var performanceSettings: ModernPerformanceSettingsManager
+    var slideshowSettings: ModernSlideshowSettingsManager
+    var sortSettings: ModernSortSettingsManager
+    var transitionSettings: ModernTransitionSettingsManager
+    var uiControlSettings: ModernUIControlSettingsManager
     @EnvironmentObject var recentFilesManager: RecentFilesManager
     
     @StateObject private var settingsCategoryService = SettingsCategoryService()
@@ -22,11 +22,11 @@ public struct SidebarSettingsWindow: View {
     private let minimumWindowHeight: CGFloat = 520
     
     public init(
-        performanceSettings: PerformanceSettingsManager,
-        slideshowSettings: SlideshowSettingsManager,
-        sortSettings: SortSettingsManager,
-        transitionSettings: TransitionSettingsManager,
-        uiControlSettings: UIControlSettingsManager
+        performanceSettings: ModernPerformanceSettingsManager,
+        slideshowSettings: ModernSlideshowSettingsManager,
+        sortSettings: ModernSortSettingsManager,
+        transitionSettings: ModernTransitionSettingsManager,
+        uiControlSettings: ModernUIControlSettingsManager
     ) {
         self.performanceSettings = performanceSettings
         self.slideshowSettings = slideshowSettings
@@ -266,11 +266,11 @@ public struct SidebarSettingsWindow: View {
     }
     
     private func resetAllSettings() {
-        performanceSettings.resetToDefault()
-        slideshowSettings.resetToDefault()
-        sortSettings.resetToDefault()
-        transitionSettings.resetToDefault()
-        uiControlSettings.resetToDefault()
+        performanceSettings.resetToDefaults()
+        slideshowSettings.resetToDefaults()
+        sortSettings.resetToDefaults()
+        transitionSettings.resetToDefaults()
+        uiControlSettings.resetToDefaults()
         
         // Reset recent files configuration if available
         Task {
@@ -364,11 +364,11 @@ private struct QuickActionButton: View {
 
 private struct CategoryDetailView: View {
     let category: SettingsCategory
-    let performanceSettings: PerformanceSettingsManager
-    let slideshowSettings: SlideshowSettingsManager
-    let sortSettings: SortSettingsManager
-    let transitionSettings: TransitionSettingsManager
-    let uiControlSettings: UIControlSettingsManager
+    let performanceSettings: ModernPerformanceSettingsManager
+    let slideshowSettings: ModernSlideshowSettingsManager
+    let sortSettings: ModernSortSettingsManager
+    let transitionSettings: ModernTransitionSettingsManager
+    let uiControlSettings: ModernUIControlSettingsManager
     let recentFilesManager: RecentFilesManager
     let searchQuery: String
     
@@ -429,11 +429,11 @@ private struct CategoryDetailView: View {
 
 #Preview {
     SidebarSettingsWindow(
-        performanceSettings: PerformanceSettingsManager(),
-        slideshowSettings: SlideshowSettingsManager(),
-        sortSettings: SortSettingsManager(),
-        transitionSettings: TransitionSettingsManager(),
-        uiControlSettings: UIControlSettingsManager()
+        performanceSettings: ModernPerformanceSettingsManager(),
+        slideshowSettings: ModernSlideshowSettingsManager(),
+        sortSettings: ModernSortSettingsManager(),
+        transitionSettings: ModernTransitionSettingsManager(),
+        uiControlSettings: ModernUIControlSettingsManager()
     )
     .environmentObject(RecentFilesManager())
 }

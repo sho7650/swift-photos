@@ -4,9 +4,9 @@ import AppKit
 public class FileSystemPhotoRepository: SlideshowRepository {
     private let fileAccess: SecureFileAccess
     private let imageLoader: ImageLoader
-    private let sortSettings: SortSettingsManager
+    private let sortSettings: ModernSortSettingsManager
     
-    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: SortSettingsManager) {
+    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: ModernSortSettingsManager) {
         self.fileAccess = fileAccess
         self.imageLoader = imageLoader
         self.sortSettings = sortSettings

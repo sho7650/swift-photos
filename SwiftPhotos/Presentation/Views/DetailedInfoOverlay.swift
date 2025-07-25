@@ -3,17 +3,17 @@ import AppKit
 
 /// Expandable detailed information overlay with photo metadata and enhanced controls
 public struct DetailedInfoOverlay: View {
-    @ObservedObject var viewModel: SlideshowViewModel
+    var viewModel: ModernSlideshowViewModel
     @ObservedObject var uiControlStateManager: UIControlStateManager
-    @ObservedObject var uiControlSettings: UIControlSettingsManager
+    var uiControlSettings: ModernUIControlSettingsManager
     
     @State private var isExpanded = false
     @State private var showMetadata = false
     
     public init(
-        viewModel: SlideshowViewModel,
+        viewModel: ModernSlideshowViewModel,
         uiControlStateManager: UIControlStateManager,
-        uiControlSettings: UIControlSettingsManager
+        uiControlSettings: ModernUIControlSettingsManager
     ) {
         self.viewModel = viewModel
         self.uiControlStateManager = uiControlStateManager

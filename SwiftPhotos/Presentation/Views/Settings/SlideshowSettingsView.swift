@@ -3,7 +3,7 @@ import SwiftUI
 /// Slideshow settings view for configuring automatic slideshow behavior and timing
 /// Provides controls for slideshow duration, auto-start, ordering, and other playback options
 struct SlideshowSettingsView: View {
-    @ObservedObject var settings: SlideshowSettingsManager
+    var settings: ModernSlideshowSettingsManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -14,13 +14,13 @@ struct SlideshowSettingsView: View {
                 description: "Quick configurations for common slideshow scenarios"
             ) {
                 HStack(spacing: 12) {
-                    Button("Default") { settings.applyPreset(.default) }
+                    Button("Default") { settings.updateSettings(.default) }
                         .buttonStyle(.bordered)
-                    Button("Quick") { settings.applyPreset(.quick) }
+                    Button("Quick") { settings.updateSettings(.quick) }
                         .buttonStyle(.bordered)
-                    Button("Slow") { settings.applyPreset(.slow) }
+                    Button("Slow") { settings.updateSettings(.slow) }
                         .buttonStyle(.bordered)
-                    Button("Random") { settings.applyPreset(.random) }
+                    Button("Random") { settings.updateSettings(.random) }
                         .buttonStyle(.bordered)
                 }
             }
@@ -185,6 +185,6 @@ private struct ShortcutRow: View {
 }
 
 #Preview {
-    SlideshowSettingsView(settings: SlideshowSettingsManager())
+    SlideshowSettingsView(settings: ModernSlideshowSettingsManager())
         .frame(width: 500, height: 600)
 }

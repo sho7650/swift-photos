@@ -3,7 +3,7 @@ import SwiftUI
 /// Interface settings view for UI controls and interaction behavior
 /// Integrates with the sidebar-based settings window design
 struct InterfaceSettingsView: View {
-    @ObservedObject var settings: UIControlSettingsManager
+    var settings: ModernUIControlSettingsManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -436,22 +436,22 @@ struct InterfaceSettingsView: View {
             ) {
                 HStack(spacing: 12) {
                     Button("Default") {
-                        settings.applyPreset(UIControlSettings.Preset.default)
+                        settings.updateSettings(.default)
                     }
                     .buttonStyle(.bordered)
                     
                     Button("Minimal") {
-                        settings.applyPreset(UIControlSettings.Preset.minimal)
+                        settings.updateSettings(.minimal)
                     }
                     .buttonStyle(.bordered)
                     
                     Button("Always Visible") {
-                        settings.applyPreset(UIControlSettings.Preset.alwaysVisible)
+                        settings.updateSettings(.alwaysVisible)
                     }
                     .buttonStyle(.bordered)
                     
                     Button("Subtle") {
-                        settings.applyPreset(UIControlSettings.Preset.subtle)
+                        settings.updateSettings(.subtle)
                     }
                     .buttonStyle(.bordered)
                 }
@@ -494,6 +494,6 @@ private struct SettingsSectionView<Content: View>: View {
 }
 
 #Preview {
-    InterfaceSettingsView(settings: UIControlSettingsManager())
+    InterfaceSettingsView(settings: ModernUIControlSettingsManager())
         .frame(width: 500, height: 600)
 }

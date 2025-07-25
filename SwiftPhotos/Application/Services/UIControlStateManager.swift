@@ -24,14 +24,14 @@ public class UIControlStateManager: ObservableObject {
     
     // MARK: - Private Properties
     
-    private let uiControlSettings: UIControlSettingsManager
+    private let uiControlSettings: ModernUIControlSettingsManager
     private var hideTimer: AdaptiveTimer?
     private var mouseTrackingArea: NSTrackingArea?
     private var globalMouseMonitor: Any?
     private var lastInteractionTime: Date = Date()
     private var minimumVisibilityTimer: AdaptiveTimer?
     private var interactionClearTimer: AdaptiveTimer?
-    private weak var slideshowViewModel: SlideshowViewModel?
+    private weak var slideshowViewModel: ModernSlideshowViewModel?
     
     // Enhanced interaction detection
     private var mouseTracker: MouseTracker?
@@ -50,7 +50,7 @@ public class UIControlStateManager: ObservableObject {
     
     // MARK: - Initialization
     
-    public init(uiControlSettings: UIControlSettingsManager, slideshowViewModel: SlideshowViewModel? = nil) {
+    public init(uiControlSettings: ModernUIControlSettingsManager, slideshowViewModel: ModernSlideshowViewModel? = nil) {
         self.uiControlSettings = uiControlSettings
         self.slideshowViewModel = slideshowViewModel
         self.isDetailedInfoVisible = uiControlSettings.settings.showDetailedInfoByDefault

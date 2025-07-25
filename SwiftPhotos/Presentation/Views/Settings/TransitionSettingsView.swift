@@ -3,7 +3,7 @@ import SwiftUI
 /// Transition settings view for configuring smooth transition effects between photos
 /// Provides controls for effect type, duration, easing, and intensity
 struct TransitionSettingsView: View {
-    @ObservedObject var settings: TransitionSettingsManager
+    var settings: ModernTransitionSettingsManager
     
     private func createTransitionSettings(
         effectType: TransitionSettings.TransitionEffectType? = nil,
@@ -48,29 +48,29 @@ struct TransitionSettingsView: View {
                     VStack(spacing: 8) {
                         HStack(spacing: 12) {
                             Button("Simple Fade") { 
-                                settings.applyPreset(.simpleFade) 
+                                settings.updateSettings(.simpleFade) 
                             }
                             .buttonStyle(.bordered)
                             
                             Button("Elegant Slide") { 
-                                settings.applyPreset(.elegantSlide) 
+                                settings.updateSettings(.elegantSlide) 
                             }
                             .buttonStyle(.bordered)
                             
                             Button("Dynamic Zoom") { 
-                                settings.applyPreset(.dynamicZoom) 
+                                settings.updateSettings(.dynamicZoom) 
                             }
                             .buttonStyle(.bordered)
                         }
                         
                         HStack(spacing: 12) {
                             Button("Smooth Crossfade") { 
-                                settings.applyPreset(.smoothCrossfade) 
+                                settings.updateSettings(.smoothCrossfade) 
                             }
                             .buttonStyle(.bordered)
                             
                             Button("Cinematic Push") { 
-                                settings.applyPreset(.cinematicPush) 
+                                settings.updateSettings(.cinematicPush) 
                             }
                             .buttonStyle(.bordered)
                         }
@@ -274,6 +274,6 @@ private struct TransitionSettingsSection<Content: View>: View {
 }
 
 #Preview {
-    TransitionSettingsView(settings: TransitionSettingsManager())
+    TransitionSettingsView(settings: ModernTransitionSettingsManager())
         .frame(width: 500, height: 600)
 }

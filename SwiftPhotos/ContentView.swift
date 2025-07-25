@@ -9,16 +9,16 @@ import SwiftUI
 import AppKit
 
 struct ContentView: View {
-    @State private var viewModel: SlideshowViewModel?
+    @State private var viewModel: ModernSlideshowViewModel?
     @State private var keyboardHandler: KeyboardHandler?
     @State private var uiControlStateManager: UIControlStateManager?
     @State private var isInitialized = false
     @State private var secureFileAccess = SecureFileAccess()
-    @StateObject private var performanceSettings = PerformanceSettingsManager()
-    @StateObject private var slideshowSettings = SlideshowSettingsManager()
-    @StateObject private var sortSettings = SortSettingsManager()
-    @StateObject private var transitionSettings = TransitionSettingsManager()
-    @StateObject private var uiControlSettings = UIControlSettingsManager()
+    @State private var performanceSettings = ModernPerformanceSettingsManager()
+    @State private var slideshowSettings = ModernSlideshowSettingsManager()
+    @State private var sortSettings = ModernSortSettingsManager()
+    @State private var transitionSettings = ModernTransitionSettingsManager()
+    @State private var uiControlSettings = ModernUIControlSettingsManager()
     @StateObject private var settingsWindowManager = SettingsWindowManager()
     @EnvironmentObject private var recentFilesManager: RecentFilesManager
     
@@ -31,9 +31,9 @@ struct ContentView: View {
                 ZStack {
                     // Main content (gesture functionality removed)
                     SimpleImageDisplayView(
-                        viewModel: viewModel
+                        viewModel: viewModel,
+                        transitionSettings: transitionSettings
                     )
-                        .environmentObject(transitionSettings)
                         .ignoresSafeArea()
                     
                     // Minimal controls overlay (always present in ZStack, visibility controlled internally)
@@ -106,7 +106,7 @@ struct ContentView: View {
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
             // Create view model and UI managers
-            let createdViewModel = SlideshowViewModel(domainService: domainService, fileAccess: secureFileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings, sortSettings: sortSettings)
+            let createdViewModel = ModernSlideshowViewModel(domainService: domainService, fileAccess: secureFileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings, sortSettings: sortSettings)
             let createdKeyboardHandler = KeyboardHandler()
             let createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: createdViewModel)
             
