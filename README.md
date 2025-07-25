@@ -39,17 +39,17 @@ A modern, high-performance photo slideshow application for macOS built with Swif
 ## 🚀 Installation
 
 ### Requirements
-- macOS 12.0 or later
+- macOS 15.0 or later
 - Xcode 15.0 or later (for building from source)
 
 ### Download
-1. Download the latest release from [Releases](https://github.com/username/swift-photos/releases)
+1. Download the latest release from [Releases](https://github.com/sho7650/swift-photos/releases)
 2. Mount the DMG file
 3. Drag "Swift Photos.app" to your Applications folder
 
 ### Build from Source
 ```bash
-git clone https://github.com/username/swift-photos.git
+git clone https://github.com/sho7650/swift-photos.git
 cd swift-photos
 open "Swift Photos.xcodeproj"
 ```
@@ -76,6 +76,7 @@ xcodebuild -project "Swift Photos.xcodeproj" -scheme "Swift Photos" build
 | `↑/↓` | Previous/Next photo |
 | `I` | Toggle detailed info overlay |
 | `H` | Toggle controls visibility |
+| `F` | Toggle full-screen |
 | `Esc` | Stop/Pause slideshow |
 | `⌘+O` | Open folder |
 | `⌘+,` | Open settings |
@@ -199,10 +200,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/username/swift-photos/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/username/swift-photos/discussions)
-- **Documentation**: [Wiki](https://github.com/username/swift-photos/wiki)
+- **Issues**: [GitHub Issues](https://github.com/sho7650/swift-photos/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/sho7650/swift-photos/discussions)
+- **Documentation**: [Wiki](https://github.com/sho7650/swift-photos/wiki)
 
 ---
 
-Made with ❤️ by [Sho Kisaragi](https://github.com/username)
+Made with ❤️ by [Sho Kisaragi](https://github.com/sho7650)
