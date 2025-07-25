@@ -161,6 +161,10 @@ public class UIControlStateManager: ObservableObject {
     /// Record keyboard interaction
     public func handleKeyboardInteraction() {
         ProductionLogger.debug("UIControlStateManager: Keyboard interaction detected")
+        
+        // Ensure cursor is visible on keyboard interaction (including Cmd+O for folder open)
+        showCursor()
+        
         recordInteraction()
         showControls()
         onKeyboardInteraction?()

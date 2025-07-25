@@ -140,15 +140,29 @@ public final class ModernSlideshowViewModel {
             loadingState = .selectingFolder
             error = nil
             
+            // Ensure cursor is visible when opening folder
+            await MainActor.run {
+                NSCursor.unhide()
+            }
+            
             ProductionLogger.debug("Calling fileAccess.selectFolder()")
             guard let folderURL = try fileAccess.selectFolder() else {
                 ProductionLogger.userAction("Folder selection cancelled by user")
                 loadingState = .notLoading
+                // Ensure cursor remains visible when cancelled
+                await MainActor.run {
+                    NSCursor.unhide()
+                }
                 return
             }
             
             ProductionLogger.userAction("Selected folder: \(folderURL.path)")
             selectedFolderURL = folderURL
+            
+            // Ensure cursor is visible after folder selection
+            await MainActor.run {
+                NSCursor.unhide()
+            }
             
             // Generate new random seed if sort order is random
             if let sortSettings = sortSettingsManager, sortSettings.settings.order == .random {
@@ -163,10 +177,21 @@ public final class ModernSlideshowViewModel {
             error = slideshowError
         } catch {
             ProductionLogger.error("Unexpected error: \(error)")
-            self.error = SlideshowError.loadingFailed(underlying: error)
+            // Don't set error for cancellation errors as they are expected during rapid folder changes
+            if !(error is CancellationError) {
+                self.error = SlideshowError.loadingFailed(underlying: error)
+            } else {
+                ProductionLogger.debug("Folder selection operation was cancelled (expected during rapid selections)")
+            }
         }
         
         loadingState = .notLoading
+        
+        // Ensure cursor is visible when folder selection completes
+        await MainActor.run {
+            NSCursor.unhide()
+        }
+        
         ProductionLogger.lifecycle("Folder selection completed")
     }
     
@@ -404,9 +429,28 @@ public final class ModernSlideshowViewModel {
     
     // MARK: - Private Methods
     
+    /// Cancel existing loading operations to prevent conflicts
+    private func cancelExistingOperations() async {
+        ProductionLogger.debug("Cancelling existing loading operations")
+        
+        // Cancel virtual loader operations
+        await virtualLoader.clearCache()
+        
+        // Cancel background preloader operations
+        await backgroundPreloader.cancelAllPreloads()
+        
+        // Cancel target image loader operations
+        await targetImageLoader.cleanup()
+        
+        ProductionLogger.debug("Existing operations cancelled successfully")
+    }
+    
     private func createSlideshow(from folderURL: URL) async {
         ProductionLogger.lifecycle("Creating slideshow from folder: \(folderURL.path)")
         do {
+            // Cancel any existing loading operations to prevent CancellationError
+            await cancelExistingOperations()
+            
             loadingState = .scanningFolder(0)
             ProductionLogger.debug("Calling domainService.createSlideshow")
             
@@ -474,7 +518,12 @@ public final class ModernSlideshowViewModel {
                                 
                             case .failure(let error):
                                 ProductionLogger.error("Failed to load first image: \(error)")
-                                self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
+                                // Don't set error for cancellation errors as they are expected during folder changes
+                                if !(error is CancellationError) {
+                                    self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
+                                } else {
+                                    ProductionLogger.debug("First image loading was cancelled (expected during folder change)")
+                                }
                             }
                         }
                     }
@@ -520,7 +569,12 @@ public final class ModernSlideshowViewModel {
             error = slideshowError
         } catch {
             ProductionLogger.error("Unexpected error in createSlideshow: \(error)")
-            self.error = SlideshowError.loadingFailed(underlying: error)
+            // Don't set error for cancellation errors as they are expected during folder operations
+            if !(error is CancellationError) {
+                self.error = SlideshowError.loadingFailed(underlying: error)
+            } else {
+                ProductionLogger.debug("Slideshow creation was cancelled (expected during folder operations)")
+            }
         }
     }
     
@@ -562,11 +616,12 @@ public final class ModernSlideshowViewModel {
         // Reload slideshow from folder with new sorting
         await createSlideshow(from: folderURL)
         
-        // Try to maintain current position if possible
+        // Always start from the first image when reloading folder
         if let newSlideshow = slideshow, !newSlideshow.isEmpty {
-            let targetIndex = min(currentIndex, newSlideshow.photos.count - 1)
-            if targetIndex != newSlideshow.currentIndex {
-                goToPhoto(at: targetIndex)
+            // Force to start from index 0 (first image)
+            if newSlideshow.currentIndex != 0 {
+                ProductionLogger.debug("reloadSlideshowWithNewSorting: Resetting to first image")
+                goToPhoto(at: 0)
             }
             
             // Resume playing if it was playing before
