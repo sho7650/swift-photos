@@ -6,6 +6,7 @@
 //
 
 import Testing
+@testable import Swift_Photos
 
 struct SwiftPhotosTests {
 

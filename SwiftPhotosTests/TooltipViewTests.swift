@@ -1,6 +1,6 @@
 import Testing
 import SwiftUI
-@testable import SwiftPhotos
+@testable import Swift_Photos
 
 @MainActor
 struct TooltipViewTests {
