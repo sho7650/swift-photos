@@ -42,9 +42,9 @@ public struct MinimalControlsView: View {
     private var welcomeControls: some View {
         VStack(spacing: 16) {
             Button("Select Folder") {
-                print("🎮 MinimalControlsView: Select Folder button pressed")
+                ProductionLogger.userAction("MinimalControlsView: Select Folder button pressed")
                 uiControlStateManager.handleGestureInteraction()
-                Task { @MainActor in
+                Task {
                     await viewModel.selectFolder()
                 }
             }
@@ -174,7 +174,7 @@ public struct MinimalControlsView: View {
                 currentIndex: slideshow.currentIndex,
                 totalCount: slideshow.count
             ) { targetIndex in
-                print("🎯 MinimalControlsView: Progress bar clicked - fast jumping to photo \(targetIndex)")
+                ProductionLogger.userAction("MinimalControlsView: Progress bar clicked - fast jumping to photo \(targetIndex)")
                 uiControlStateManager.handleGestureInteraction()
                 viewModel.fastGoToPhoto(at: targetIndex)
             }

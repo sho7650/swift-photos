@@ -16,7 +16,7 @@ public struct ImageDisplayView: View {
     
     public var body: some View {
         let _ = Self._printChanges()
-        let _ = print("🖼️ ImageDisplayView: BODY CALLED - photo: \(photo?.fileName ?? "nil"), refreshCounter: \(refreshCounter)")
+        let _ = ProductionLogger.debug("ImageDisplayView: BODY CALLED - photo: \(photo?.fileName ?? "nil"), refreshCounter: \(refreshCounter)")
         
         return ZStack {
             Color.black
@@ -24,20 +24,20 @@ public struct ImageDisplayView: View {
             
             Group {
                 if let photo = photo {
-                    let _ = print("🖼️ ImageDisplayView: Photo found - filename: \(photo.fileName), loadState: \(photo.loadState)")
+                    let _ = ProductionLogger.debug("ImageDisplayView: Photo found - filename: \(photo.fileName), loadState: \(photo.loadState)")
                     switch photo.loadState {
                     case .notLoaded:
-                        let _ = print("🖼️ ImageDisplayView: ❌ Photo not loaded - showing loading view for \(photo.fileName)")
+                        let _ = ProductionLogger.debug("ImageDisplayView: Photo not loaded - showing loading view for \(photo.fileName)")
                         loadingView
                         
                     case .loading:
-                        let _ = print("🖼️ ImageDisplayView: ⏳ Photo loading - showing loading view for \(photo.fileName)")
+                        let _ = ProductionLogger.debug("ImageDisplayView: Photo loading - showing loading view for \(photo.fileName)")
                         loadingView
                         
                     case .loaded(let image):
-                        let _ = print("🖼️ ImageDisplayView: ✅ Photo loaded for \(photo.fileName)")
-                        let _ = print("🖼️ ImageDisplayView: NSImage details - size: \(image.size), representations: \(image.representations.count)")
-                        let _ = print("🖼️ ImageDisplayView: NSImage.isValid: \(image.isValid)")
+                        let _ = ProductionLogger.debug("ImageDisplayView: Photo loaded for \(photo.fileName)")
+                        let _ = ProductionLogger.debug("ImageDisplayView: NSImage details - size: \(image.size), representations: \(image.representations.count)")
+                        let _ = ProductionLogger.debug("ImageDisplayView: NSImage.isValid: \(image.isValid)")
                         
                         VStack {
                             Text("✅ SHOULD DISPLAY: \(photo.fileName) | Refresh: \(refreshCounter)")
@@ -59,11 +59,11 @@ public struct ImageDisplayView: View {
                         }
                         
                     case .failed(let error):
-                        let _ = print("🖼️ ImageDisplayView: ❌ Photo failed for \(photo.fileName): \(error)")
+                        let _ = ProductionLogger.error("ImageDisplayView: Photo failed for \(photo.fileName): \(error)")
                         errorView(error: error)
                     }
                 } else {
-                    let _ = print("🖼️ ImageDisplayView: ⚠️ No photo available, showing empty view")
+                    let _ = ProductionLogger.debug("ImageDisplayView: No photo available, showing empty view")
                     emptyView
                 }
             }
@@ -102,30 +102,30 @@ public struct ImageDisplayView: View {
     }
     
     private func imageView(image: NSImage) -> some View {
-        let _ = print("🖼️ ImageDisplayView.imageView: Called with NSImage size: \(image.size)")
-        let _ = print("🖼️ ImageDisplayView.imageView: image.isValid = \(image.isValid)")
+        let _ = ProductionLogger.debug("ImageDisplayView.imageView: Called with NSImage size: \(image.size)")
+        let _ = ProductionLogger.debug("ImageDisplayView.imageView: image.isValid = \(image.isValid)")
         
         // Log representation details outside of ViewBuilder
         if !image.isValid {
-            print("🖼️ ImageDisplayView.imageView: ❌ Image is NOT valid, showing error")
-            print("🖼️ ImageDisplayView.imageView: NSImage representations count: \(image.representations.count)")
+            ProductionLogger.error("ImageDisplayView.imageView: Image is NOT valid, showing error")
+            ProductionLogger.debug("ImageDisplayView.imageView: NSImage representations count: \(image.representations.count)")
             for (index, rep) in image.representations.enumerated() {
-                print("🖼️ ImageDisplayView.imageView: Rep[\(index)]: \(type(of: rep)), size: \(rep.size), hasAlpha: \(rep.hasAlpha)")
+                ProductionLogger.debug("ImageDisplayView.imageView: Rep[\(index)]: \(type(of: rep)), size: \(rep.size), hasAlpha: \(rep.hasAlpha)")
             }
         }
         
         return Group {
             if image.isValid {
-                let _ = print("🖼️ ImageDisplayView.imageView: ✅ Image is valid, creating SwiftUI Image")
+                let _ = ProductionLogger.debug("ImageDisplayView.imageView: Image is valid, creating SwiftUI Image")
                 let swiftUIImage = Image(nsImage: image)
-                let _ = print("🖼️ ImageDisplayView.imageView: ✅ SwiftUI Image created successfully")
+                let _ = ProductionLogger.debug("ImageDisplayView.imageView: SwiftUI Image created successfully")
                 swiftUIImage
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .scaleEffect(scale)
                     .offset(offset)
             } else {
-                let _ = print("🖼️ ImageDisplayView.imageView: ❌ Showing error view")
+                let _ = ProductionLogger.debug("ImageDisplayView.imageView: Showing error view")
                 errorView(error: SlideshowError.loadingFailed(underlying: NSError(domain: "InvalidImage", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid image data"])))
             }
         }
@@ -253,7 +253,7 @@ struct DirectNSImageViewWrapper: NSViewRepresentable {
         imageView.layer?.backgroundColor = NSColor.clear.cgColor
         imageView.layer?.masksToBounds = true
         
-        print("🖼️ DirectNSImageViewWrapper: Created - image size: \(nsImage.size), target: \(targetSize?.debugDescription ?? "nil")")
+        ProductionLogger.debug("DirectNSImageViewWrapper: Created - image size: \(nsImage.size), target: \(targetSize?.debugDescription ?? "nil")")
         return imageView
     }
     
@@ -266,7 +266,7 @@ struct DirectNSImageViewWrapper: NSViewRepresentable {
             nsView.frame.size = targetSize
         }
         
-        print("🖼️ DirectNSImageViewWrapper: Updated - image size: \(nsImage.size), target: \(targetSize?.debugDescription ?? "nil")")
+        ProductionLogger.debug("DirectNSImageViewWrapper: Updated - image size: \(nsImage.size), target: \(targetSize?.debugDescription ?? "nil")")
     }
 }
 

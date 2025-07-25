@@ -118,6 +118,69 @@ public struct UIControlSettings: Codable, Equatable {
         mouseSensitivity: 20.0,
         bottomOffset: 40.0
     )
+    
+    /// Preset configurations for UI controls
+    public enum Preset: String, CaseIterable {
+        case `default` = "default"
+        case minimal = "minimal"
+        case alwaysVisible = "alwaysVisible"
+        case subtle = "subtle"
+        
+        public var displayName: String {
+            switch self {
+            case .default:
+                return "Default"
+            case .minimal:
+                return "Minimal"
+            case .alwaysVisible:
+                return "Always Visible"
+            case .subtle:
+                return "Subtle"
+            }
+        }
+        
+        public var description: String {
+            switch self {
+            case .default:
+                return "Balanced auto-hide settings with moderate visual effects"
+            case .minimal:
+                return "Quick auto-hide with subtle effects for minimal distraction"
+            case .alwaysVisible:
+                return "Controls always visible with enhanced visual effects"
+            case .subtle:
+                return "Longer auto-hide with very subtle effects"
+            }
+        }
+        
+        public var settings: UIControlSettings {
+            switch self {
+            case .default:
+                return UIControlSettings.default
+            case .minimal:
+                return UIControlSettings.minimal
+            case .alwaysVisible:
+                return UIControlSettings.alwaysVisible
+            case .subtle:
+                return UIControlSettings.subtle
+            }
+        }
+    }
+    
+    /// Get preset for current settings, if any
+    public var preset: Preset? {
+        switch self {
+        case UIControlSettings.default:
+            return .default
+        case UIControlSettings.minimal:
+            return .minimal
+        case UIControlSettings.alwaysVisible:
+            return .alwaysVisible
+        case UIControlSettings.subtle:
+            return .subtle
+        default:
+            return nil
+        }
+    }
 }
 
 /// Settings manager for UI control configuration
@@ -135,13 +198,13 @@ public class UIControlSettingsManager: ObservableObject {
         } else {
             self.settings = .default
         }
-        print("🎮 UIControlSettingsManager: Initialized with settings - autoHide: \(settings.autoHideDelay)s, blur: \(settings.backgroundBlurIntensity), opacity: \(settings.backgroundOpacity)")
+        ProductionLogger.lifecycle("UIControlSettingsManager: Initialized with settings - autoHide: \(settings.autoHideDelay)s, blur: \(settings.backgroundBlurIntensity), opacity: \(settings.backgroundOpacity)")
     }
     
     public func updateSettings(_ newSettings: UIControlSettings) {
         settings = newSettings
         saveSettings()
-        print("🎮 UIControlSettingsManager: Updated settings - autoHide: \(settings.autoHideDelay)s, blur: \(settings.backgroundBlurIntensity), opacity: \(settings.backgroundOpacity)")
+        ProductionLogger.debug("UIControlSettingsManager: Updated settings - autoHide: \(settings.autoHideDelay)s, blur: \(settings.backgroundBlurIntensity), opacity: \(settings.backgroundOpacity)")
         
         // Notify observers about settings change
         NotificationCenter.default.post(name: .uiControlSettingsChanged, object: settings)
@@ -153,6 +216,21 @@ public class UIControlSettingsManager: ObservableObject {
     
     public func applyPreset(_ preset: UIControlSettings) {
         updateSettings(preset)
+    }
+    
+    /// Apply preset by type
+    public func applyPreset(_ presetType: UIControlSettings.Preset) {
+        updateSettings(presetType.settings)
+    }
+    
+    /// Get current preset type, if any
+    public var currentPreset: UIControlSettings.Preset? {
+        return settings.preset
+    }
+    
+    /// Check if current settings match a preset
+    public func isPreset(_ presetType: UIControlSettings.Preset) -> Bool {
+        return settings == presetType.settings
     }
     
     private func saveSettings() {

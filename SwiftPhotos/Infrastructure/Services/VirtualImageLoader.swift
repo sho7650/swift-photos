@@ -17,7 +17,7 @@ actor VirtualImageLoader {
     private var totalLoads: Int = 0
     
     // Completion callback for UI integration
-    private var onImageLoaded: ((UUID, NSImage) -> Void)?
+    private var onImageLoaded: (@MainActor (UUID, NSImage) -> Void)?
     
     init(settings: PerformanceSettings = .default) {
         self.settings = settings
@@ -25,11 +25,11 @@ actor VirtualImageLoader {
         self.maxMemoryUsage = settings.maxMemoryUsageMB
         self.imageLoader = ImageLoader()
         
-        print("🗄️ VirtualImageLoader: Initialized with window size: \(windowSize), max memory: \(maxMemoryUsage)MB")
+        ProductionLogger.lifecycle("VirtualImageLoader: Initialized with window size: \(windowSize), max memory: \(maxMemoryUsage)MB")
     }
     
     /// Set callback for when images finish loading
-    func setImageLoadedCallback(_ callback: @escaping (UUID, NSImage) -> Void) {
+    func setImageLoadedCallback(_ callback: @escaping @MainActor (UUID, NSImage) -> Void) {
         self.onImageLoaded = callback
     }
     
@@ -39,7 +39,7 @@ actor VirtualImageLoader {
         self.windowSize = newSettings.memoryWindowSize
         self.maxMemoryUsage = newSettings.maxMemoryUsageMB
         
-        print("🗄️ VirtualImageLoader: Settings updated - window: \(windowSize), memory: \(maxMemoryUsage)MB")
+        ProductionLogger.debug("VirtualImageLoader: Settings updated - window: \(windowSize), memory: \(maxMemoryUsage)MB")
         
         // Adjust cache size if needed
         if getMemoryUsage() > maxMemoryUsage {
@@ -82,7 +82,7 @@ actor VirtualImageLoader {
     func loadImageWindowAsync(around index: Int, photos: [Photo]) {
         Task {
             await loadImageWindow(around: index, photos: photos)
-            print("🗄️ VirtualImageLoader: Background window reconstruction completed for index \(index)")
+            ProductionLogger.debug("VirtualImageLoader: Background window reconstruction completed for index \(index)")
         }
     }
     
@@ -131,7 +131,7 @@ actor VirtualImageLoader {
             if !photosInWindow.contains(photoId) {
                 task.cancel()
                 loadingTasks.removeValue(forKey: photoId)
-                print("🚫 VirtualImageLoader: Cancelled out-of-window load for \(photoId)")
+                ProductionLogger.debug("VirtualImageLoader: Cancelled out-of-window load for \(photoId)")
             }
         }
     }
@@ -148,7 +148,7 @@ actor VirtualImageLoader {
         let afterCount = loadedImages.count
         
         if beforeCount != afterCount {
-            print("🧹 VirtualImageLoader: Cleaned up \(beforeCount - afterCount) out-of-window images")
+            ProductionLogger.debug("VirtualImageLoader: Cleaned up \(beforeCount - afterCount) out-of-window images")
         }
     }
     
@@ -238,9 +238,7 @@ actor VirtualImageLoader {
             
             // Notify UI that image is loaded
             if let callback = onImageLoaded {
-                Task { @MainActor in
-                    callback(photo.id, image)
-                }
+                await callback(photo.id, image)
             }
             
             // Check memory pressure

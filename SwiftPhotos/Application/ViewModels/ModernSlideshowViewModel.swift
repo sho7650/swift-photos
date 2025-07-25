@@ -1,17 +1,22 @@
 import Foundation
 import SwiftUI
 import AppKit
+import Observation
 
+/// Modern Swift 6 compliant SlideshowViewModel using @Observable
+/// This is the new implementation that replaces @ObservableObject with @Observable
+@Observable
 @MainActor
-public class SlideshowViewModel: ObservableObject {
-    @Published public var slideshow: Slideshow?
-    @Published public var isLoading = false
-    @Published public var error: SlideshowError?
-    @Published public var selectedFolderURL: URL?
-    @Published public var refreshCounter: Int = 0
-    // Swipe functionality removed
+public final class ModernSlideshowViewModel {
     
-    @Published public var currentPhoto: Photo? = nil {
+    // MARK: - Published Properties (No @Published needed with @Observable)
+    public var slideshow: Slideshow?
+    public var isLoading = false
+    public var error: SlideshowError?
+    public var selectedFolderURL: URL?
+    public var refreshCounter: Int = 0
+    
+    public var currentPhoto: Photo? = nil {
         didSet {
             let currentIndex = slideshow?.currentIndex ?? -1
             ProductionLogger.debug("SlideshowViewModel.currentPhoto changed (refreshCounter: \(refreshCounter), currentIndex: \(currentIndex))")
@@ -23,6 +28,7 @@ public class SlideshowViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Private Dependencies
     private let domainService: SlideshowDomainService
     private let fileAccess: SecureFileAccess
     private var timer: Timer?
@@ -35,7 +41,15 @@ public class SlideshowViewModel: ObservableObject {
     private let slideshowSettingsManager: SlideshowSettingsManager
     private let sortSettingsManager: SortSettingsManager?
     
-    public init(domainService: SlideshowDomainService, fileAccess: SecureFileAccess, performanceSettings: PerformanceSettingsManager? = nil, slideshowSettings: SlideshowSettingsManager? = nil, sortSettings: SortSettingsManager? = nil) {
+    // MARK: - Initialization
+    
+    public init(
+        domainService: SlideshowDomainService,
+        fileAccess: SecureFileAccess,
+        performanceSettings: PerformanceSettingsManager? = nil,
+        slideshowSettings: SlideshowSettingsManager? = nil,
+        sortSettings: SortSettingsManager? = nil
+    ) {
         self.domainService = domainService
         self.fileAccess = fileAccess
         self.performanceSettingsManager = performanceSettings ?? PerformanceSettingsManager()
@@ -47,13 +61,13 @@ public class SlideshowViewModel: ObservableObject {
         
         ProductionLogger.lifecycle("SlideshowViewModel initialized with settings - window: \(self.performanceSettingsManager.settings.memoryWindowSize), threshold: \(self.performanceSettingsManager.settings.largeCollectionThreshold)")
         
-        // Set up virtual loader callback for seamless UI integration
-        Task {
-            await self.virtualLoader.setImageLoadedCallback { [weak self] photoId, image in
-                self?.handleVirtualImageLoaded(photoId: photoId, image: image)
-            }
-        }
-        
+        setupNotificationObservers()
+        setupVirtualLoaderCallback()
+    }
+    
+    // MARK: - Setup Methods
+    
+    private func setupNotificationObservers() {
         // Listen for slideshow mode changes
         NotificationCenter.default.addObserver(
             forName: .slideshowModeChanged,
@@ -79,6 +93,15 @@ public class SlideshowViewModel: ObservableObject {
         }
     }
     
+    private func setupVirtualLoaderCallback() {
+        Task {
+            await self.virtualLoader.setImageLoadedCallback { [weak self] photoId, image in
+                self?.handleVirtualImageLoaded(photoId: photoId, image: image)
+            }
+        }
+    }
+    
+    // MARK: - Public Methods
     
     public func selectFolder() async {
         ProductionLogger.userAction("Starting folder selection")
@@ -113,8 +136,242 @@ public class SlideshowViewModel: ObservableObject {
         }
         
         isLoading = false
-        ProductionLogger.userAction("Folder selection completed")
+        ProductionLogger.lifecycle("Folder selection completed")
     }
+    
+    public func play() {
+        guard var currentSlideshow = slideshow else { return }
+        
+        currentSlideshow.play()
+        slideshow = currentSlideshow
+        startTimer()
+    }
+    
+    public func pause() {
+        guard var currentSlideshow = slideshow else { return }
+        
+        currentSlideshow.pause()
+        slideshow = currentSlideshow
+        stopTimer()
+    }
+    
+    public func stop() {
+        guard var currentSlideshow = slideshow else { return }
+        
+        currentSlideshow.stop()
+        slideshow = currentSlideshow
+        stopTimer()
+    }
+    
+    public func nextPhoto() {
+        guard var currentSlideshow = slideshow else { return }
+        
+        ProductionLogger.debug("NextPhoto: Current slideshow mode: \(currentSlideshow.mode), current index: \(currentSlideshow.currentIndex)")
+        currentSlideshow.nextPhoto()
+        ProductionLogger.debug("NextPhoto: After nextPhoto() - new index: \(currentSlideshow.currentIndex)")
+        slideshow = currentSlideshow
+        currentPhoto = currentSlideshow.currentPhoto
+        refreshCounter += 1
+        
+        // Load the new current image
+        Task {
+            if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+                await loadCurrentImageVirtual()
+                // Update preloader priorities
+                await backgroundPreloader.updatePriorities(
+                    photos: currentSlideshow.photos,
+                    newIndex: currentSlideshow.currentIndex
+                )
+            } else {
+                loadCurrentImage()
+            }
+        }
+    }
+    
+    public func previousPhoto() {
+        guard var currentSlideshow = slideshow else { return }
+        
+        currentSlideshow.previousPhoto()
+        slideshow = currentSlideshow
+        currentPhoto = currentSlideshow.currentPhoto
+        refreshCounter += 1
+        
+        // Load the new current image
+        Task {
+            if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+                await loadCurrentImageVirtual()
+                // Update preloader priorities
+                await backgroundPreloader.updatePriorities(
+                    photos: currentSlideshow.photos,
+                    newIndex: currentSlideshow.currentIndex
+                )
+            } else {
+                loadCurrentImage()
+            }
+        }
+    }
+    
+    public func goToPhoto(at index: Int) {
+        guard var currentSlideshow = slideshow else { return }
+        
+        do {
+            try currentSlideshow.setCurrentIndex(index)
+            slideshow = currentSlideshow
+            currentPhoto = currentSlideshow.currentPhoto
+            refreshCounter += 1
+            
+            // Load the new current image
+            Task {
+                if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+                    await loadCurrentImageVirtual()
+                    // Update preloader priorities for jump navigation
+                    await backgroundPreloader.updatePriorities(
+                        photos: currentSlideshow.photos,
+                        newIndex: currentSlideshow.currentIndex
+                    )
+                } else {
+                    loadCurrentImage()
+                }
+            }
+        } catch {
+            self.error = error as? SlideshowError ?? SlideshowError.invalidIndex(index)
+        }
+    }
+    
+    /// Fast navigation for progress bar - immediate display + background cache reconstruction
+    public func fastGoToPhoto(at index: Int) {
+        guard var currentSlideshow = slideshow else { return }
+        
+        ProductionLogger.performance("SlideshowViewModel: Fast jump to photo \(index)")
+        let startTime = Date()
+        
+        do {
+            // 1. Update index immediately
+            try currentSlideshow.setCurrentIndex(index)
+            slideshow = currentSlideshow
+            refreshCounter += 1
+            
+            guard let targetPhoto = currentSlideshow.currentPhoto else {
+                ProductionLogger.error("fastGoToPhoto: No photo at index \(index)")
+                return
+            }
+            
+            // 2. Load target image with highest priority
+            Task {
+                // Cancel existing load tasks
+                await virtualLoader.cancelAllForProgressJump()
+                await backgroundPreloader.cancelAllPreloads()
+                
+                // Emergency load target image
+                await targetImageLoader.handleProgressBarJump(to: targetPhoto) { [weak self] result in
+                    let jumpTime = Date().timeIntervalSince(startTime)
+                    ProductionLogger.performance("fastGoToPhoto: Target image loaded", duration: jumpTime)
+                    
+                    switch result {
+                    case .success(let image):
+                        // Update UI immediately
+                        var loadedPhoto = targetPhoto
+                        loadedPhoto.updateLoadState(.loaded(image))
+                        self?.updatePhotoInSlideshow(loadedPhoto)
+                        self?.currentPhoto = loadedPhoto
+                        
+                        ProductionLogger.debug("fastGoToPhoto: UI updated immediately")
+                        
+                    case .failure(let error):
+                        ProductionLogger.error("fastGoToPhoto: Failed to load target image: \(error)")
+                        self?.error = error as? SlideshowError ?? SlideshowError.fileNotFound(targetPhoto.imageURL.url)
+                    }
+                }
+                
+                // 3. Background cache window reconstruction (parallel execution)
+                let largeCollectionThreshold = self.performanceSettingsManager.settings.largeCollectionThreshold
+                Task.detached(priority: .background) { [weak self] in
+                    guard let self = self else { return }
+                    
+                    if currentSlideshow.photos.count > largeCollectionThreshold {
+                        ProductionLogger.debug("fastGoToPhoto: Starting background cache reconstruction")
+                        
+                        // Async cache window reconstruction
+                        await self.virtualLoader.loadImageWindowAsync(
+                            around: index,
+                            photos: currentSlideshow.photos
+                        )
+                        
+                        // Update background preloader priorities
+                        await self.backgroundPreloader.updatePriorities(
+                            photos: currentSlideshow.photos,
+                            newIndex: index
+                        )
+                        
+                        let totalTime = Date().timeIntervalSince(startTime)
+                        ProductionLogger.performance("fastGoToPhoto: Background reconstruction completed", duration: totalTime)
+                    }
+                }
+            }
+            
+        } catch {
+            self.error = error as? SlideshowError ?? SlideshowError.invalidIndex(index)
+        }
+    }
+    
+    public func setInterval(_ interval: SlideshowInterval) {
+        guard var currentSlideshow = slideshow else { return }
+        
+        currentSlideshow.setInterval(interval)
+        slideshow = currentSlideshow
+        
+        if currentSlideshow.isPlaying {
+            stopTimer()
+            startTimer()
+        }
+    }
+    
+    public func setMode(_ mode: Slideshow.SlideshowMode) {
+        guard var currentSlideshow = slideshow else { return }
+        
+        currentSlideshow.setMode(mode)
+        slideshow = currentSlideshow
+    }
+    
+    public func clearError() {
+        error = nil
+    }
+    
+    // MARK: - Performance Methods
+    
+    /// Update performance settings and propagate to components
+    public func updatePerformanceSettings(_ newSettings: PerformanceSettings) async {
+        performanceSettingsManager.updateSettings(newSettings)
+        await updatePerformanceComponents()
+        
+        ProductionLogger.performance("SlideshowViewModel: Performance settings updated")
+    }
+    
+    /// Get current performance statistics
+    public func getPerformanceStatistics() async -> (virtualLoader: (hits: Int, misses: Int, hitRate: Double, loadedCount: Int, memoryUsageMB: Int), preloader: (total: Int, successful: Int, failed: Int, successRate: Double, activeLoads: Int)) {
+        let virtualStats = await virtualLoader.getCacheStatistics()
+        let preloaderStats = await backgroundPreloader.getStatistics()
+        return (virtualLoader: virtualStats, preloader: preloaderStats)
+    }
+    
+    /// Get performance recommendation analysis for current collection
+    public func getPerformanceAnalysis() -> (currentSettings: PerformanceSettings, recommendedSettings: PerformanceSettings, collectionSize: Int, estimatedMemoryUsage: Int, canHandle: Bool) {
+        let collectionSize = slideshow?.photos.count ?? 0
+        let currentSettings = performanceSettingsManager.settings
+        let recommendedSettings = performanceSettingsManager.recommendedSettings(for: collectionSize)
+        let estimatedUsage = performanceSettingsManager.estimatedMemoryUsage(for: collectionSize)
+        let canHandle = performanceSettingsManager.canHandleCollection(size: collectionSize)
+        
+        return (
+            currentSettings: currentSettings,
+            recommendedSettings: recommendedSettings,
+            collectionSize: collectionSize,
+            estimatedMemoryUsage: estimatedUsage,
+            canHandle: canHandle
+        )
+    }
+    
+    // MARK: - Private Methods
     
     private func createSlideshow(from folderURL: URL) async {
         ProductionLogger.lifecycle("Creating slideshow from folder: \(folderURL.path)")
@@ -123,7 +380,7 @@ public class SlideshowViewModel: ObservableObject {
             
             // Apply slideshow settings (random order is now handled by file sorting)
             let mode: Slideshow.SlideshowMode = .sequential
-            ProductionLogger.lifecycle("Applying slideshow settings - mode: \(mode), autoStart: \(slideshowSettingsManager.settings.autoStart)")
+            ProductionLogger.debug("Applying slideshow settings - mode: \(mode), autoStart: \(slideshowSettingsManager.settings.autoStart)")
             
             let customInterval = try SlideshowInterval(slideshowSettingsManager.settings.slideDuration)
             let newSlideshow = try await domainService.createSlideshow(
@@ -183,205 +440,11 @@ public class SlideshowViewModel: ObservableObject {
         }
     }
     
-    public func play() {
-        guard var currentSlideshow = slideshow else { return }
-        
-        currentSlideshow.play()
-        slideshow = currentSlideshow
-        startTimer()
-    }
-    
-    public func pause() {
-        guard var currentSlideshow = slideshow else { return }
-        
-        currentSlideshow.pause()
-        slideshow = currentSlideshow
-        stopTimer()
-    }
-    
-    public func stop() {
-        guard var currentSlideshow = slideshow else { return }
-        
-        currentSlideshow.stop()
-        slideshow = currentSlideshow
-        stopTimer()
-    }
-    
-    public func nextPhoto() {
-        guard var currentSlideshow = slideshow else { return }
-        
-        ProductionLogger.debug("NextPhoto: Current slideshow mode: \(currentSlideshow.mode), current index: \(currentSlideshow.currentIndex)")
-        currentSlideshow.nextPhoto()
-        ProductionLogger.debug("NextPhoto: After nextPhoto() - new index: \(currentSlideshow.currentIndex)")
-        slideshow = currentSlideshow
-        currentPhoto = currentSlideshow.currentPhoto  // UPDATE @Published property
-        refreshCounter += 1
-        
-        // Load the new current image
-        Task {
-            if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
-                await loadCurrentImageVirtual()
-                // Update preloader priorities
-                await backgroundPreloader.updatePriorities(
-                    photos: currentSlideshow.photos,
-                    newIndex: currentSlideshow.currentIndex
-                )
-            } else {
-                loadCurrentImage()
-            }
-        }
-    }
-    
-    public func previousPhoto() {
-        guard var currentSlideshow = slideshow else { return }
-        
-        currentSlideshow.previousPhoto()
-        slideshow = currentSlideshow
-        currentPhoto = currentSlideshow.currentPhoto  // UPDATE @Published property
-        refreshCounter += 1
-        
-        // Load the new current image
-        Task {
-            if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
-                await loadCurrentImageVirtual()
-                // Update preloader priorities
-                await backgroundPreloader.updatePriorities(
-                    photos: currentSlideshow.photos,
-                    newIndex: currentSlideshow.currentIndex
-                )
-            } else {
-                loadCurrentImage()
-            }
-        }
-    }
-    
-    public func goToPhoto(at index: Int) {
-        guard var currentSlideshow = slideshow else { return }
-        
-        do {
-            try currentSlideshow.setCurrentIndex(index)
-            slideshow = currentSlideshow
-            currentPhoto = currentSlideshow.currentPhoto  // UPDATE @Published property
-            refreshCounter += 1
-            
-            // Load the new current image
-            Task {
-                if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
-                    await loadCurrentImageVirtual()
-                    // Update preloader priorities for jump navigation
-                    await backgroundPreloader.updatePriorities(
-                        photos: currentSlideshow.photos,
-                        newIndex: currentSlideshow.currentIndex
-                    )
-                } else {
-                    loadCurrentImage()
-                }
-            }
-        } catch {
-            self.error = error as? SlideshowError ?? SlideshowError.invalidIndex(index)
-        }
-    }
-    
-    /// プログレスバー専用高速ナビゲーション - 即座表示＋バックグラウンドキャッシュ再構成
-    public func fastGoToPhoto(at index: Int) {
-        guard var currentSlideshow = slideshow else { return }
-        
-        ProductionLogger.userAction("Fast jump to photo \(index)")
-        let startTime = Date()
-        
-        do {
-            // 1. まずインデックスを即座に更新
-            try currentSlideshow.setCurrentIndex(index)
-            slideshow = currentSlideshow
-            refreshCounter += 1
-            
-            guard let targetPhoto = currentSlideshow.currentPhoto else {
-                ProductionLogger.error("fastGoToPhoto: No photo at index \(index)")
-                return
-            }
-            
-            // 2. ターゲット画像を最優先で即座ロード
-            Task {
-                // 既存のロードタスクをキャンセル
-                await virtualLoader.cancelAllForProgressJump()
-                await backgroundPreloader.cancelAllPreloads()
-                
-                // ターゲット画像を緊急ロード
-                await targetImageLoader.handleProgressBarJump(to: targetPhoto) { [weak self] result in
-                    let jumpTime = Date().timeIntervalSince(startTime)
-                    ProductionLogger.performance("fastGoToPhoto: Target image loaded in \(String(format: "%.2f", jumpTime * 1000))ms")
-                    
-                    switch result {
-                    case .success(let image):
-                        // 即座にUIを更新
-                        var loadedPhoto = targetPhoto
-                        loadedPhoto.updateLoadState(.loaded(image))
-                        self?.updatePhotoInSlideshow(loadedPhoto)
-                        self?.currentPhoto = loadedPhoto
-                        
-                        ProductionLogger.debug("fastGoToPhoto: UI updated immediately")
-                        
-                    case .failure(let error):
-                        ProductionLogger.error("fastGoToPhoto: Failed to load target image: \(error)")
-                        self?.error = error as? SlideshowError ?? SlideshowError.fileNotFound(targetPhoto.imageURL.url)
-                    }
-                }
-                
-                // 3. バックグラウンドでキャッシュウィンドウを再構成（並行実行）
-                let largeCollectionThreshold = self.performanceSettingsManager.settings.largeCollectionThreshold
-                Task.detached(priority: .background) { [weak self] in
-                    guard let self = self else { return }
-                    
-                    if currentSlideshow.photos.count > largeCollectionThreshold {
-                        ProductionLogger.performance("fastGoToPhoto: Starting background cache reconstruction")
-                        
-                        // 非同期でキャッシュウィンドウを再構成
-                        await self.virtualLoader.loadImageWindowAsync(
-                            around: index,
-                            photos: currentSlideshow.photos
-                        )
-                        
-                        // バックグラウンドプリローダーの優先度を更新
-                        await self.backgroundPreloader.updatePriorities(
-                            photos: currentSlideshow.photos,
-                            newIndex: index
-                        )
-                        
-                        let totalTime = Date().timeIntervalSince(startTime)
-                        ProductionLogger.performance("fastGoToPhoto: Background reconstruction completed in \(String(format: "%.2f", totalTime * 1000))ms total")
-                    }
-                }
-            }
-            
-        } catch {
-            self.error = error as? SlideshowError ?? SlideshowError.invalidIndex(index)
-        }
-    }
-    
-    public func setInterval(_ interval: SlideshowInterval) {
-        guard var currentSlideshow = slideshow else { return }
-        
-        currentSlideshow.setInterval(interval)
-        slideshow = currentSlideshow
-        
-        if currentSlideshow.isPlaying {
-            stopTimer()
-            startTimer()
-        }
-    }
-    
-    public func setMode(_ mode: Slideshow.SlideshowMode) {
-        guard var currentSlideshow = slideshow else { return }
-        
-        currentSlideshow.setMode(mode)
-        slideshow = currentSlideshow
-    }
-    
     /// Update slideshow mode based on settings change (random order now handled by file sorting)
     private func updateSlideshowMode(randomOrder: Bool) {
-        guard var currentSlideshow = slideshow else { 
+        guard var currentSlideshow = slideshow else {
             ProductionLogger.debug("updateSlideshowMode: No slideshow to update")
-            return 
+            return
         }
         
         // Random order is now handled at file sorting level, slideshow always uses sequential
@@ -395,14 +458,13 @@ public class SlideshowViewModel: ObservableObject {
     }
     
     /// Reload slideshow with new sorting settings
-    @MainActor
     private func reloadSlideshowWithNewSorting() async {
         guard let folderURL = selectedFolderURL else {
             ProductionLogger.debug("reloadSlideshowWithNewSorting: No folder selected, ignoring sort change")
             return
         }
         
-        ProductionLogger.lifecycle("reloadSlideshowWithNewSorting: Reloading slideshow with new sort settings")
+        ProductionLogger.debug("reloadSlideshowWithNewSorting: Reloading slideshow with new sort settings")
         
         // Store current state
         let wasPlaying = slideshow?.isPlaying ?? false
@@ -429,7 +491,7 @@ public class SlideshowViewModel: ObservableObject {
             }
         }
         
-        ProductionLogger.lifecycle("reloadSlideshowWithNewSorting: Slideshow reloaded successfully")
+        ProductionLogger.debug("reloadSlideshowWithNewSorting: Slideshow reloaded successfully")
     }
     
     private func startTimer() {
@@ -514,7 +576,6 @@ public class SlideshowViewModel: ObservableObject {
                 updatePhotoInSlideshow(loadedPhoto)
             } catch {
                 ProductionLogger.error("loadCurrentImage: Failed to load image: \(error.localizedDescription)")
-                SwiftPhotosLogger.shared.error("Failed to load image: \(error.localizedDescription)")
             }
         }
     }
@@ -522,93 +583,50 @@ public class SlideshowViewModel: ObservableObject {
     private func updatePhotoInSlideshow(_ photo: Photo) {
         ProductionLogger.debug("updatePhotoInSlideshow: Updating photo \(photo.fileName) with state \(photo.loadState)")
         
-        guard var currentSlideshow = self.slideshow else { 
+        guard var currentSlideshow = self.slideshow else {
             ProductionLogger.error("updatePhotoInSlideshow: No slideshow available")
-            return 
+            return
         }
-            
-            ProductionLogger.debug("updatePhotoInSlideshow: BEFORE update - currentIndex: \(currentSlideshow.currentIndex)")
-            
-            if let index = currentSlideshow.photos.firstIndex(where: { $0.id == photo.id }) {
-                ProductionLogger.debug("updatePhotoInSlideshow: Found photo at index \(index), current index: \(currentSlideshow.currentIndex)")
-                do {
-                    try currentSlideshow.updatePhoto(at: index, with: photo)
-                    ProductionLogger.debug("updatePhotoInSlideshow: AFTER updatePhoto - currentIndex: \(currentSlideshow.currentIndex)")
+        
+        ProductionLogger.debug("updatePhotoInSlideshow: BEFORE update - currentIndex: \(currentSlideshow.currentIndex)")
+        
+        if let index = currentSlideshow.photos.firstIndex(where: { $0.id == photo.id }) {
+            ProductionLogger.debug("updatePhotoInSlideshow: Found photo at index \(index), current index: \(currentSlideshow.currentIndex)")
+            do {
+                try currentSlideshow.updatePhoto(at: index, with: photo)
+                ProductionLogger.debug("updatePhotoInSlideshow: AFTER updatePhoto - currentIndex: \(currentSlideshow.currentIndex)")
+                
+                // Store the current index before updating slideshow
+                let wasCurrentPhoto = index == currentSlideshow.currentIndex
+                
+                // Update slideshow property
+                ProductionLogger.debug("updatePhotoInSlideshow: Setting slideshow property")
+                self.slideshow = currentSlideshow
+                ProductionLogger.debug("updatePhotoInSlideshow: AFTER setting slideshow - currentIndex: \(self.slideshow?.currentIndex ?? -1)")
+                
+                // Only increment refreshCounter for the current photo, not for preloaded photos
+                if wasCurrentPhoto {
+                    ProductionLogger.debug("updatePhotoInSlideshow: Setting refreshCounter")
+                    self.refreshCounter += 1
                     
-                    // Store the current index before updating slideshow
-                    let wasCurrentPhoto = index == currentSlideshow.currentIndex
+                    // Update currentPhoto property directly
+                    ProductionLogger.debug("updatePhotoInSlideshow: Setting currentPhoto property")
+                    self.currentPhoto = currentSlideshow.currentPhoto
                     
-                    // CRITICAL: Force UI update by setting properties individually
-                    ProductionLogger.debug("updatePhotoInSlideshow: Setting slideshow property")
-                    self.slideshow = currentSlideshow
-                    ProductionLogger.debug("updatePhotoInSlideshow: AFTER setting slideshow - currentIndex: \(self.slideshow?.currentIndex ?? -1)")
+                    // Keep slideshow running if it was playing
+                    ProductionLogger.debug("updatePhotoInSlideshow: Slideshow state: \(currentSlideshow.state)")
                     
-                    // Only increment refreshCounter for the current photo, not for preloaded photos
-                    if wasCurrentPhoto {
-                        ProductionLogger.debug("updatePhotoInSlideshow: Setting refreshCounter")
-                        self.refreshCounter += 1
-                        
-                                // CRITICAL: Update currentPhoto @Published property directly
-                        ProductionLogger.debug("updatePhotoInSlideshow: Setting currentPhoto @Published property")
-                        self.currentPhoto = currentSlideshow.currentPhoto
-                        
-                        // Keep slideshow running if it was playing
-                        ProductionLogger.debug("updatePhotoInSlideshow: Slideshow state: \(currentSlideshow.state)")
-                        
-                        ProductionLogger.debug("updatePhotoInSlideshow: Updated CURRENT photo (refreshCounter: \(self.refreshCounter), currentIndex: \(self.slideshow?.currentIndex ?? -1))")
-                        ProductionLogger.debug("updatePhotoInSlideshow: Current photo after update: \(self.slideshow?.currentPhoto?.fileName ?? "nil") - \(self.slideshow?.currentPhoto?.loadState.description ?? "no state")")
-                        
-                        ProductionLogger.debug("updatePhotoInSlideshow: Forcing objectWillChange notification")
-                        self.objectWillChange.send()
-                        ProductionLogger.debug("updatePhotoInSlideshow: objectWillChange sent")
-                        
-                        ProductionLogger.debug("updatePhotoInSlideshow: UI update completed")
-                    } else {
-                        ProductionLogger.debug("updatePhotoInSlideshow: Updated preloaded photo (no refreshCounter change)")
-                    }
-                } catch {
-                    ProductionLogger.error("updatePhotoInSlideshow: Failed to update photo: \(error.localizedDescription)")
-                    SwiftPhotosLogger.shared.error("Failed to update photo: \(error.localizedDescription)")
+                    ProductionLogger.debug("updatePhotoInSlideshow: Updated CURRENT photo (refreshCounter: \(self.refreshCounter), currentIndex: \(self.slideshow?.currentIndex ?? -1))")
+                    ProductionLogger.debug("updatePhotoInSlideshow: Current photo after update: \(self.slideshow?.currentPhoto?.fileName ?? "nil") - \(self.slideshow?.currentPhoto?.loadState.description ?? "no state")")
+                } else {
+                    ProductionLogger.debug("updatePhotoInSlideshow: Updated preloaded photo (no refreshCounter change)")
                 }
-            } else {
-                ProductionLogger.error("updatePhotoInSlideshow: Could not find photo with id \(photo.id)")
+            } catch {
+                ProductionLogger.error("updatePhotoInSlideshow: Failed to update photo: \(error.localizedDescription)")
             }
-    }
-    
-    public func clearError() {
-        error = nil
-    }
-    
-    /// Update performance settings and propagate to components
-    public func updatePerformanceSettings(_ newSettings: PerformanceSettings) async {
-        performanceSettingsManager.updateSettings(newSettings)
-        await updatePerformanceComponents()
-        
-        ProductionLogger.performance("SlideshowViewModel: Performance settings updated")
-    }
-    
-    /// Get current performance statistics
-    public func getPerformanceStatistics() async -> (virtualLoader: (hits: Int, misses: Int, hitRate: Double, loadedCount: Int, memoryUsageMB: Int), preloader: (total: Int, successful: Int, failed: Int, successRate: Double, activeLoads: Int)) {
-        let virtualStats = await virtualLoader.getCacheStatistics()
-        let preloaderStats = await backgroundPreloader.getStatistics()
-        return (virtualLoader: virtualStats, preloader: preloaderStats)
-    }
-    
-    /// Get performance recommendation analysis for current collection
-    public func getPerformanceAnalysis() -> (currentSettings: PerformanceSettings, recommendedSettings: PerformanceSettings, collectionSize: Int, estimatedMemoryUsage: Int, canHandle: Bool) {
-        let collectionSize = slideshow?.photos.count ?? 0
-        let currentSettings = performanceSettingsManager.settings
-        let recommendedSettings = performanceSettingsManager.recommendedSettings(for: collectionSize)
-        let estimatedUsage = performanceSettingsManager.estimatedMemoryUsage(for: collectionSize)
-        let canHandle = performanceSettingsManager.canHandleCollection(size: collectionSize)
-        
-        return (
-            currentSettings: currentSettings,
-            recommendedSettings: recommendedSettings,
-            collectionSize: collectionSize,
-            estimatedMemoryUsage: estimatedUsage,
-            canHandle: canHandle
-        )
+        } else {
+            ProductionLogger.error("updatePhotoInSlideshow: Could not find photo with id \(photo.id)")
+        }
     }
     
     /// Update performance components with current settings
@@ -618,7 +636,6 @@ public class SlideshowViewModel: ObservableObject {
     }
     
     /// Handle virtual image loading completion for seamless UI integration
-    @MainActor
     private func handleVirtualImageLoaded(photoId: UUID, image: NSImage) {
         guard let currentSlideshow = slideshow else { return }
         
@@ -635,10 +652,9 @@ public class SlideshowViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Deinitialization
+    
     deinit {
-        timer?.invalidate()
-        timer = nil
-        
         // Remove notification observer
         NotificationCenter.default.removeObserver(self)
         
@@ -647,5 +663,14 @@ public class SlideshowViewModel: ObservableObject {
             await virtualLoader.clearCache()
             await backgroundPreloader.cancelAllPreloads()
         }
+        
+        // Timer will be cleaned up automatically when the actor is deallocated
     }
+}
+
+// MARK: - Sendable Conformance
+
+extension ModernSlideshowViewModel: @unchecked Sendable {
+    // @MainActor ensures thread safety
+    // This conformance allows the ViewModel to be passed between actors safely
 }

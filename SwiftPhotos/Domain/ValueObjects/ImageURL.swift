@@ -27,7 +27,7 @@ public struct ImageURL: Equatable, Hashable, Codable {
         let isValid = supportedExtensions.contains(pathExtension)
         
         if !isValid {
-            print("⚠️ Invalid image format for \(url.lastPathComponent): .\(pathExtension)")
+            ProductionLogger.warning("Invalid image format for \(url.lastPathComponent): .\(pathExtension)")
         }
         
         return isValid

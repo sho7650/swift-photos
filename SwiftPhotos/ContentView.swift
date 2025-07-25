@@ -95,7 +95,7 @@ struct ContentView: View {
         ProductionLogger.lifecycle("Starting initialization")
         
         // Add small delay to ensure UI is ready
-        Task { @MainActor in
+        Task {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
             
             ProductionLogger.debug("Creating dependencies")
@@ -124,7 +124,7 @@ struct ContentView: View {
                 )
             }
             createdKeyboardHandler.onOpenFolder = {
-                Task { @MainActor in
+                Task {
                     await self.handleTraditionalFolderSelection()
                 }
             }
@@ -208,7 +208,7 @@ struct ContentView: View {
         ) { notification in
             if let folderURL = notification.object as? URL {
                 ProductionLogger.userAction("Received folder selection from menu: \(folderURL.path)")
-                Task { @MainActor in
+                Task {
                     await self.handleFolderSelectedFromMenu(url: folderURL)
                 }
             }

@@ -473,11 +473,11 @@ public struct PhotoGestureView<Content: View>: View {
         DragGesture(minimumDistance: 10)  // Very low threshold for maximum sensitivity
             .onChanged { value in
                 // Debug output to check if gesture is detected
-                print("🌊 Drag detected: translation=\(value.translation), predictedEnd=\(value.predictedEndTranslation)")
+                ProductionLogger.debug("Drag detected: translation=\(value.translation), predictedEnd=\(value.predictedEndTranslation)")
                 
                 // Only allow swipe navigation when not heavily zoomed
                 guard gestureManager.photoZoomState.currentZoomLevel <= 1.5 else { 
-                    print("🌊 Swipe blocked: zoom level too high (\(gestureManager.photoZoomState.currentZoomLevel))")
+                    ProductionLogger.debug("Swipe blocked: zoom level too high (\(gestureManager.photoZoomState.currentZoomLevel))")
                     return 
                 }
                 
@@ -485,17 +485,17 @@ public struct PhotoGestureView<Content: View>: View {
                 let progress = value.translation.width / 150.0  // Even more sensitive feedback
                 if abs(progress) > 0.02 {
                     // Swipe progress functionality removed
-                    print("🌊 Swipe progress: \(progress)")
+                    ProductionLogger.debug("Swipe progress: \(progress)")
                 }
             }
             .onEnded { value in
-                print("🌊 Drag ended: translation=\(value.translation)")
+                ProductionLogger.debug("Drag ended: translation=\(value.translation)")
                 
                 // Swipe progress functionality removed
                 
                 // Only allow swipe navigation when not heavily zoomed
                 guard gestureManager.photoZoomState.currentZoomLevel <= 1.5 else { 
-                    print("🌊 Swipe navigation blocked: zoom level too high")
+                    ProductionLogger.debug("Swipe navigation blocked: zoom level too high")
                     return 
                 }
                 

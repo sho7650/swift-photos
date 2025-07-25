@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// SwiftUI Commands integration for Swift Photos menu bar
 /// Provides declarative menu bar configuration with recent files support
@@ -100,7 +101,7 @@ public struct SwiftPhotosMenuBar: Commands {
     // MARK: - Action Methods
     
     private func openFolderAction() {
-        print("🎬 PhotoSlideshowMenuBar: Open Folder action triggered")
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Open Folder action triggered")
         isSelectingFolder = true
         
         Task { @MainActor in
@@ -109,11 +110,11 @@ public struct SwiftPhotosMenuBar: Commands {
             do {
                 let secureFileAccess = SecureFileAccess()
                 guard let folderURL = try secureFileAccess.selectFolder() else {
-                    print("🎬 PhotoSlideshowMenuBar: Folder selection cancelled")
+                    ProductionLogger.debug("PhotoSlideshowMenuBar: Folder selection cancelled")
                     return
                 }
                 
-                print("🎬 PhotoSlideshowMenuBar: Selected folder: \(folderURL.path)")
+                ProductionLogger.userAction("PhotoSlideshowMenuBar: Selected folder: \(folderURL.path)")
                 
                 // Start security scoped access
                 let accessStarted = folderURL.startAccessingSecurityScopedResource()
@@ -123,7 +124,7 @@ public struct SwiftPhotosMenuBar: Commands {
                     }
                 }
                 
-                print("🎬 PhotoSlideshowMenuBar: Security access \(accessStarted ? "started" : "not needed") for selected folder")
+                ProductionLogger.debug("PhotoSlideshowMenuBar: Security access \(accessStarted ? "started" : "not needed") for selected folder")
                 
                 // Create security bookmark
                 let bookmarkData = try folderURL.bookmarkData(
@@ -139,14 +140,14 @@ public struct SwiftPhotosMenuBar: Commands {
                 onFolderSelected(folderURL)
                 
             } catch {
-                print("❌ PhotoSlideshowMenuBar: Failed to open folder: \(error)")
+                ProductionLogger.error("PhotoSlideshowMenuBar: Failed to open folder: \(error)")
                 showErrorAlert("Failed to open folder: \(error.localizedDescription)")
             }
         }
     }
     
     private func openRecentFile(_ recentFile: RecentFileItem) {
-        print("🎬 PhotoSlideshowMenuBar: Opening recent file: \(recentFile.displayName)")
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Opening recent file: \(recentFile.displayName)")
         
         Task { @MainActor in
             do {
@@ -188,7 +189,7 @@ public struct SwiftPhotosMenuBar: Commands {
                 onFolderSelected(resolvedURL)
                 
             } catch {
-                print("❌ PhotoSlideshowMenuBar: Failed to open recent file: \(error)")
+                ProductionLogger.error("PhotoSlideshowMenuBar: Failed to open recent file: \(error)")
                 
                 // Remove invalid file from recent files
                 await recentFilesManager.removeRecentFile(id: recentFile.id)
@@ -199,22 +200,22 @@ public struct SwiftPhotosMenuBar: Commands {
     }
     
     private func clearRecentFiles() {
-        print("🎬 PhotoSlideshowMenuBar: Clear recent files action triggered")
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Clear recent files action triggered")
         
         Task { @MainActor in
             await recentFilesManager.clearAllRecentFiles()
-            print("🎬 PhotoSlideshowMenuBar: Recent files cleared")
+            ProductionLogger.debug("PhotoSlideshowMenuBar: Recent files cleared")
         }
     }
     
     private func openRecentFilesSettings() {
-        print("🎬 PhotoSlideshowMenuBar: Opening recent files settings")
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Opening recent files settings")
         // This would open a settings window focused on recent files configuration
         // For now, we'll just log the action
     }
     
     private func showRecentFilesStatistics() {
-        print("🎬 PhotoSlideshowMenuBar: Showing recent files statistics")
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Showing recent files statistics")
         
         Task { @MainActor in
             await recentFilesManager.refreshStatistics()
@@ -236,7 +237,7 @@ public struct SwiftPhotosMenuBar: Commands {
     }
     
     private func performCleanup() {
-        print("🎬 PhotoSlideshowMenuBar: Performing cleanup")
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Performing cleanup")
         
         Task { @MainActor in
             let cleanedCount = await recentFilesManager.performCleanup()
@@ -250,7 +251,7 @@ public struct SwiftPhotosMenuBar: Commands {
     }
     
     private func exportRecentFiles() {
-        print("🎬 PhotoSlideshowMenuBar: Exporting recent files")
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Exporting recent files")
         
         let savePanel = NSSavePanel()
         savePanel.title = "Export Recent Files"
@@ -273,7 +274,7 @@ public struct SwiftPhotosMenuBar: Commands {
     }
     
     private func importRecentFiles() {
-        print("🎬 PhotoSlideshowMenuBar: Importing recent files")
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Importing recent files")
         
         let openPanel = NSOpenPanel()
         openPanel.title = "Import Recent Files"

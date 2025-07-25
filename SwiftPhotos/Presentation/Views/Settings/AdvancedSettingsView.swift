@@ -260,12 +260,12 @@ struct AdvancedSettingsView: View {
     
     private func configureDebugLogging(_ enabled: Bool) {
         UserDefaults.standard.set(enabled, forKey: "DebugLoggingEnabled")
-        print("Debug logging \(enabled ? "enabled" : "disabled")")
+        ProductionLogger.debug("Debug logging \(enabled ? "enabled" : "disabled")")
     }
     
     private func configureVerboseLogging(_ enabled: Bool) {
         UserDefaults.standard.set(enabled, forKey: "VerboseLoggingEnabled")
-        print("Verbose logging \(enabled ? "enabled" : "disabled")")
+        ProductionLogger.debug("Verbose logging \(enabled ? "enabled" : "disabled")")
     }
     
     private func loadSystemInfo() {
@@ -287,7 +287,7 @@ struct AdvancedSettingsView: View {
     
     private func clearAllCaches() {
         // Clear image caches and other temporary data
-        print("Clearing all caches...")
+        ProductionLogger.userAction("Clearing all caches...")
     }
     
     private func generatePerformanceReport() {
@@ -333,17 +333,17 @@ struct AdvancedSettingsView: View {
     
     private func resetAllSettings() {
         // This would reset all settings to defaults
-        print("Resetting all settings to defaults...")
+        ProductionLogger.userAction("Resetting all settings to defaults...")
     }
     
     private func resetWindowPositions() {
         // Reset all window positions and sizes
-        print("Resetting window positions...")
+        ProductionLogger.userAction("Resetting window positions...")
     }
     
     private func clearRecentFiles() {
         // Clear recent files list
-        print("Clearing recent files...")
+        ProductionLogger.userAction("Clearing recent files...")
     }
 }
 

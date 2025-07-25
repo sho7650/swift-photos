@@ -29,7 +29,7 @@ public class RecentFilesManager: ObservableObject {
     public init(repository: SecureRecentFilesRepository? = nil) {
         self.repository = repository ?? SecureRecentFilesRepository()
         
-        print("📁 RecentFilesManager: Initializing...")
+        ProductionLogger.lifecycle("RecentFilesManager: Initializing...")
         
         // Load initial data
         Task {
@@ -37,7 +37,7 @@ public class RecentFilesManager: ObservableObject {
             await setupPeriodicCleanup()
         }
         
-        print("📁 RecentFilesManager: Initialized")
+        ProductionLogger.lifecycle("RecentFilesManager: Initialized")
     }
     
     // MARK: - Public Interface
@@ -45,7 +45,7 @@ public class RecentFilesManager: ObservableObject {
     /// Add a folder to recent files
     /// This is the primary method called when user selects a folder
     public func addRecentFile(url: URL, securityBookmark: Data) async {
-        print("📁 RecentFilesManager: Adding recent file: \(url.lastPathComponent)")
+        ProductionLogger.userAction("RecentFilesManager: Adding recent file: \(url.lastPathComponent)")
         isLoading = true
         
         do {
@@ -59,9 +59,9 @@ public class RecentFilesManager: ObservableObject {
                 userInfo: ["displayName": url.lastPathComponent]
             )
             
-            print("📁 RecentFilesManager: Successfully added recent file")
+            ProductionLogger.debug("RecentFilesManager: Successfully added recent file")
         } catch {
-            print("❌ RecentFilesManager: Failed to add recent file: \(error)")
+            ProductionLogger.error("RecentFilesManager: Failed to add recent file: \(error)")
             // Could emit an error event here for UI to handle
         }
         
@@ -70,7 +70,7 @@ public class RecentFilesManager: ObservableObject {
     
     /// Remove a specific recent file
     public func removeRecentFile(id: UUID) async {
-        print("📁 RecentFilesManager: Removing recent file with ID: \(id)")
+        ProductionLogger.userAction("RecentFilesManager: Removing recent file with ID: \(id)")
         isLoading = true
         
         do {
@@ -83,9 +83,9 @@ public class RecentFilesManager: ObservableObject {
                 object: id
             )
             
-            print("📁 RecentFilesManager: Successfully removed recent file")
+            ProductionLogger.debug("RecentFilesManager: Successfully removed recent file")
         } catch {
-            print("❌ RecentFilesManager: Failed to remove recent file: \(error)")
+            ProductionLogger.error("RecentFilesManager: Failed to remove recent file: \(error)")
         }
         
         isLoading = false
@@ -93,7 +93,7 @@ public class RecentFilesManager: ObservableObject {
     
     /// Remove a specific recent file by URL
     public func removeRecentFile(url: URL) async {
-        print("📁 RecentFilesManager: Removing recent file: \(url.lastPathComponent)")
+        ProductionLogger.userAction("RecentFilesManager: Removing recent file: \(url.lastPathComponent)")
         isLoading = true
         
         do {
@@ -106,9 +106,9 @@ public class RecentFilesManager: ObservableObject {
                 object: url
             )
             
-            print("📁 RecentFilesManager: Successfully removed recent file")
+            ProductionLogger.debug("RecentFilesManager: Successfully removed recent file")
         } catch {
-            print("❌ RecentFilesManager: Failed to remove recent file: \(error)")
+            ProductionLogger.error("RecentFilesManager: Failed to remove recent file: \(error)")
         }
         
         isLoading = false
@@ -116,7 +116,7 @@ public class RecentFilesManager: ObservableObject {
     
     /// Clear all recent files
     public func clearAllRecentFiles() async {
-        print("📁 RecentFilesManager: Clearing all recent files")
+        ProductionLogger.userAction("RecentFilesManager: Clearing all recent files")
         isLoading = true
         
         do {
@@ -126,9 +126,9 @@ public class RecentFilesManager: ObservableObject {
             // Notify observers
             NotificationCenter.default.post(name: .recentFilesChanged, object: nil)
             
-            print("📁 RecentFilesManager: Successfully cleared all recent files")
+            ProductionLogger.debug("RecentFilesManager: Successfully cleared all recent files")
         } catch {
-            print("❌ RecentFilesManager: Failed to clear recent files: \(error)")
+            ProductionLogger.error("RecentFilesManager: Failed to clear recent files: \(error)")
         }
         
         isLoading = false
@@ -136,7 +136,7 @@ public class RecentFilesManager: ObservableObject {
     
     /// Update menu configuration
     public func updateConfiguration(_ newConfiguration: MenuConfiguration) async {
-        print("📁 RecentFilesManager: Updating configuration")
+        ProductionLogger.debug("RecentFilesManager: Updating configuration")
         
         do {
             try await repository.updateConfiguration(newConfiguration)
@@ -149,15 +149,15 @@ public class RecentFilesManager: ObservableObject {
                 object: newConfiguration
             )
             
-            print("📁 RecentFilesManager: Successfully updated configuration")
+            ProductionLogger.debug("RecentFilesManager: Successfully updated configuration")
         } catch {
-            print("❌ RecentFilesManager: Failed to update configuration: \(error)")
+            ProductionLogger.error("RecentFilesManager: Failed to update configuration: \(error)")
         }
     }
     
     /// Manually trigger cleanup of invalid files
     public func performCleanup() async -> Int {
-        print("📁 RecentFilesManager: Performing manual cleanup")
+        ProductionLogger.userAction("RecentFilesManager: Performing manual cleanup")
         isLoading = true
         
         let cleanedCount = await repository.cleanupInvalidFiles()
@@ -175,7 +175,7 @@ public class RecentFilesManager: ObservableObject {
         }
         
         isLoading = false
-        print("📁 RecentFilesManager: Cleanup completed, removed \(cleanedCount) files")
+        ProductionLogger.debug("RecentFilesManager: Cleanup completed, removed \(cleanedCount) files")
         return cleanedCount
     }
     
@@ -194,9 +194,9 @@ public class RecentFilesManager: ObservableObject {
         do {
             try await repository.updatePhotoCount(for: url, photoCount: count)
             await refreshRecentFiles()
-            print("📁 RecentFilesManager: Updated photo count for \(url.lastPathComponent): \(count)")
+            ProductionLogger.debug("RecentFilesManager: Updated photo count for \(url.lastPathComponent): \(count)")
         } catch {
-            print("❌ RecentFilesManager: Failed to update photo count: \(error)")
+            ProductionLogger.error("RecentFilesManager: Failed to update photo count: \(error)")
         }
     }
     
@@ -218,7 +218,7 @@ public class RecentFilesManager: ObservableObject {
     public func refreshStatistics() async {
         let stats = await repository.getStatistics()
         self.statistics = stats
-        print("📁 RecentFilesManager: Refreshed statistics - \(stats.totalCount) total files")
+        ProductionLogger.debug("RecentFilesManager: Refreshed statistics - \(stats.totalCount) total files")
     }
     
     /// Get recent files grouped by directory
@@ -251,7 +251,7 @@ public class RecentFilesManager: ObservableObject {
     // MARK: - Private Methods
     
     private func loadInitialData() async {
-        print("📁 RecentFilesManager: Loading initial data")
+        ProductionLogger.lifecycle("RecentFilesManager: Loading initial data")
         
         // Load configuration
         self.configuration = await repository.getConfiguration()
@@ -262,7 +262,7 @@ public class RecentFilesManager: ObservableObject {
         // Load statistics
         await refreshStatistics()
         
-        print("📁 RecentFilesManager: Initial data loaded")
+        ProductionLogger.lifecycle("RecentFilesManager: Initial data loaded")
     }
     
     private func refreshRecentFiles() async {
@@ -275,11 +275,11 @@ public class RecentFilesManager: ObservableObject {
     
     private func setupPeriodicCleanup() async {
         guard configuration.autoCleanupInvalidFiles else {
-            print("📁 RecentFilesManager: Auto cleanup is disabled")
+            ProductionLogger.debug("RecentFilesManager: Auto cleanup is disabled")
             return
         }
         
-        print("📁 RecentFilesManager: Setting up periodic cleanup every \(autoCleanupInterval/3600) hours")
+        ProductionLogger.lifecycle("RecentFilesManager: Setting up periodic cleanup every \(autoCleanupInterval/3600) hours")
         
         // Cancel existing timer
         cleanupTimer?.invalidate()
@@ -290,7 +290,7 @@ public class RecentFilesManager: ObservableObject {
                 guard let self = self else { return }
                 let cleanedCount = await self.performCleanup()
                 if cleanedCount > 0 {
-                    print("📁 RecentFilesManager: Periodic cleanup removed \(cleanedCount) invalid files")
+                    ProductionLogger.debug("RecentFilesManager: Periodic cleanup removed \(cleanedCount) invalid files")
                 }
             }
         }
@@ -318,6 +318,6 @@ public class RecentFilesManager: ObservableObject {
     deinit {
         cleanupTimer?.invalidate()
         cancellables.removeAll()
-        print("📁 RecentFilesManager: Deinitialized")
+        ProductionLogger.lifecycle("RecentFilesManager: Deinitialized")
     }
 }

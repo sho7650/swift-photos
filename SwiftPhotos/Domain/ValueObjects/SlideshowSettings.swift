@@ -1,10 +1,5 @@
 import Foundation
 
-// Notification for slideshow mode changes
-extension Notification.Name {
-    static let slideshowModeChanged = Notification.Name("slideshowModeChanged")
-}
-
 /// Settings for slideshow behavior
 public struct SlideshowSettings: Codable, Equatable {
     /// Slide duration in seconds
@@ -76,18 +71,18 @@ public class SlideshowSettingsManager: ObservableObject {
         } else {
             self.settings = .default
         }
-        print("🎬 SlideshowSettingsManager: Initialized with settings - duration: \(settings.slideDuration)s, autoStart: \(settings.autoStart), random: \(settings.randomOrder), loop: \(settings.loopSlideshow)")
+        ProductionLogger.lifecycle("SlideshowSettingsManager: Initialized with settings - duration: \(settings.slideDuration)s, autoStart: \(settings.autoStart), random: \(settings.randomOrder), loop: \(settings.loopSlideshow)")
     }
     
     public func updateSettings(_ newSettings: SlideshowSettings) {
         let previousRandomOrder = settings.randomOrder
         settings = newSettings
         saveSettings()
-        print("🎬 SlideshowSettingsManager: Updated settings - duration: \(settings.slideDuration)s, autoStart: \(settings.autoStart), random: \(settings.randomOrder), loop: \(settings.loopSlideshow)")
+        ProductionLogger.debug("SlideshowSettingsManager: Updated settings - duration: \(settings.slideDuration)s, autoStart: \(settings.autoStart), random: \(settings.randomOrder), loop: \(settings.loopSlideshow)")
         
         // Notify about mode change if random order changed
         if previousRandomOrder != newSettings.randomOrder {
-            print("🎬 SlideshowSettingsManager: Random order changed from \(previousRandomOrder) to \(newSettings.randomOrder)")
+            ProductionLogger.debug("SlideshowSettingsManager: Random order changed from \(previousRandomOrder) to \(newSettings.randomOrder)")
             NotificationCenter.default.post(name: .slideshowModeChanged, object: newSettings.randomOrder)
         }
     }

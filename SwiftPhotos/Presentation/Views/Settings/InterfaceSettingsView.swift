@@ -436,22 +436,22 @@ struct InterfaceSettingsView: View {
             ) {
                 HStack(spacing: 12) {
                     Button("Default") {
-                        settings.applyPreset(.default)
+                        settings.applyPreset(UIControlSettings.Preset.default)
                     }
                     .buttonStyle(.bordered)
                     
                     Button("Minimal") {
-                        settings.applyPreset(.minimal)
+                        settings.applyPreset(UIControlSettings.Preset.minimal)
                     }
                     .buttonStyle(.bordered)
                     
                     Button("Always Visible") {
-                        settings.applyPreset(.alwaysVisible)
+                        settings.applyPreset(UIControlSettings.Preset.alwaysVisible)
                     }
                     .buttonStyle(.bordered)
                     
                     Button("Subtle") {
-                        settings.applyPreset(.subtle)
+                        settings.applyPreset(UIControlSettings.Preset.subtle)
                     }
                     .buttonStyle(.bordered)
                 }

@@ -14,7 +14,7 @@ private let logger = Logger(subsystem: "com.example.SwiftPhotos", category: "App
 class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        print("🚀 AppDelegate: Application did finish launching")
+        ProductionLogger.lifecycle("AppDelegate: Application did finish launching")
         logger.info("🚀 AppDelegate: Application did finish launching via Logger")
         
         // Configure window transparency after app has fully loaded
@@ -22,7 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationWillTerminate(_ notification: Notification) {
-        print("🚀 AppDelegate: Application will terminate")
+        ProductionLogger.lifecycle("AppDelegate: Application will terminate")
     }
     
     private func configureWindowTransparency() {
@@ -33,12 +33,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func setupWindowTransparency() {
-        print("🔧 AppDelegate: Setting up window for blur support (best practices)")
+        ProductionLogger.debug("AppDelegate: Setting up window for blur support (best practices)")
         
         for window in NSApplication.shared.windows {
             guard window.isVisible else { continue }
             
-            print("🔧 AppDelegate: Configuring window: \(window)")
+            ProductionLogger.debug("AppDelegate: Configuring window: \(window)")
             
             // Best practices for blur-capable window
             window.titlebarAppearsTransparent = true
@@ -56,7 +56,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Store window reference for later blur control
             TransparencyManager.shared.registerWindow(window)
             
-            print("✅ AppDelegate: Window configured for Material blur support")
+            ProductionLogger.debug("AppDelegate: Window configured for Material blur support")
         }
     }
 }
@@ -72,12 +72,12 @@ class TransparencyManager: ObservableObject {
     func registerWindow(_ window: NSWindow) {
         if !registeredWindows.contains(window) {
             registeredWindows.append(window)
-            print("🔧 TransparencyManager: Registered window: \(window)")
+            ProductionLogger.debug("TransparencyManager: Registered window: \(window)")
         }
     }
     
     func enableTransparency() {
-        print("🔧 TransparencyManager: Enabling blur transparency (best practices)")
+        ProductionLogger.debug("TransparencyManager: Enabling blur transparency (best practices)")
         
         for window in registeredWindows {
             // Best practices for Material blur transparency
@@ -97,12 +97,12 @@ class TransparencyManager: ObservableObject {
             window.invalidateShadow()
             window.display()
             
-            print("✅ TransparencyManager: Material blur transparency enabled for window: \(window)")
+            ProductionLogger.debug("TransparencyManager: Material blur transparency enabled for window: \(window)")
         }
     }
     
     func disableTransparency() {
-        print("🔧 TransparencyManager: Disabling blur transparency")
+        ProductionLogger.debug("TransparencyManager: Disabling blur transparency")
         
         for window in registeredWindows {
             window.isOpaque = true
@@ -119,25 +119,25 @@ class TransparencyManager: ObservableObject {
             window.invalidateShadow()
             window.display()
             
-            print("✅ TransparencyManager: Blur transparency disabled for window: \(window)")
+            ProductionLogger.debug("TransparencyManager: Blur transparency disabled for window: \(window)")
         }
     }
     
     // MARK: - Fullscreen Management
     
     func toggleFullscreen() {
-        print("🔧 TransparencyManager: Toggling fullscreen")
+        ProductionLogger.userAction("TransparencyManager: Toggling fullscreen")
         
         guard let mainWindow = registeredWindows.first ?? NSApplication.shared.mainWindow else {
-            print("❌ TransparencyManager: No main window found for fullscreen toggle")
+            ProductionLogger.error("TransparencyManager: No main window found for fullscreen toggle")
             return
         }
         
         if mainWindow.styleMask.contains(.fullScreen) {
-            print("🔧 TransparencyManager: Exiting fullscreen")
+            ProductionLogger.debug("TransparencyManager: Exiting fullscreen")
             mainWindow.toggleFullScreen(nil)
         } else {
-            print("🔧 TransparencyManager: Entering fullscreen")
+            ProductionLogger.debug("TransparencyManager: Entering fullscreen")
             mainWindow.toggleFullScreen(nil)
         }
     }

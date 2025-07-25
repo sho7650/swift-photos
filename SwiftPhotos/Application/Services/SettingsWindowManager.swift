@@ -55,19 +55,19 @@ public class SettingsWindowManager: ObservableObject {
         window.setContentSize(NSSize(width: 900, height: 650))
         window.center()
         
-        print("⚙️ SettingsWindowManager: Created modern sidebar settings window with size: \(window.frame.size)")
+        ProductionLogger.debug("SettingsWindowManager: Created modern sidebar settings window with size: \(window.frame.size)")
         
         self.settingsWindow = window
         window.makeKeyAndOrderFront(nil)
         
-        print("⚙️ SettingsWindowManager: Opened modern settings window")
+        ProductionLogger.userAction("SettingsWindowManager: Opened modern settings window")
     }
     
     
     public func closeSettingsWindow() {
         settingsWindow?.close()
         settingsWindow = nil
-        print("⚙️ SettingsWindowManager: Closed settings window")
+        ProductionLogger.userAction("SettingsWindowManager: Closed settings window")
     }
     
     public var isWindowOpen: Bool {

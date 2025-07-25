@@ -25,7 +25,7 @@ public class MenuBarCoordinator: NSObject, ObservableObject {
         
         super.init()
         
-        print("🍔 MenuBarCoordinator: Initializing menu bar coordinator")
+        ProductionLogger.lifecycle("MenuBarCoordinator: Initializing menu bar coordinator")
         
         // Setup menu bar
         setupMenuBar()
@@ -33,21 +33,21 @@ public class MenuBarCoordinator: NSObject, ObservableObject {
         // Listen for recent files changes
         setupNotificationObservers()
         
-        print("🍔 MenuBarCoordinator: Menu bar coordinator initialized")
+        ProductionLogger.lifecycle("MenuBarCoordinator: Menu bar coordinator initialized")
     }
     
     // MARK: - Menu Setup
     
     private func setupMenuBar() {
         guard let mainMenu = NSApplication.shared.mainMenu else {
-            print("❌ MenuBarCoordinator: No main menu found")
+            ProductionLogger.error("MenuBarCoordinator: No main menu found")
             return
         }
         
         // Find or create File menu
         if let existingFileMenu = findFileMenu(in: mainMenu) {
             fileMenu = existingFileMenu
-            print("🍔 MenuBarCoordinator: Found existing File menu")
+            ProductionLogger.debug("MenuBarCoordinator: Found existing File menu")
         } else {
             fileMenu = createFileMenu()
             if let fileMenu = fileMenu {
@@ -55,7 +55,7 @@ public class MenuBarCoordinator: NSObject, ObservableObject {
                 let fileMenuItem = NSMenuItem(title: "File", action: nil, keyEquivalent: "")
                 fileMenuItem.submenu = fileMenu
                 mainMenu.insertItem(fileMenuItem, at: 1)
-                print("🍔 MenuBarCoordinator: Created new File menu")
+                ProductionLogger.debug("MenuBarCoordinator: Created new File menu")
             }
         }
         

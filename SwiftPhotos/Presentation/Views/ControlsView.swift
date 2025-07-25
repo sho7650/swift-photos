@@ -23,7 +23,7 @@ public struct ControlsView: View {
     private var welcomeControls: some View {
         VStack(spacing: 24) {
             Button("Select Folder") {
-                print("🎮 ControlsView: Select Folder button pressed")
+                ProductionLogger.userAction("ControlsView: Select Folder button pressed")
                 Task { @MainActor in
                     await viewModel.selectFolder()
                 }
@@ -108,7 +108,7 @@ public struct ControlsView: View {
                 currentIndex: slideshow.currentIndex,
                 totalCount: slideshow.count
             ) { targetIndex in
-                print("🎯 ControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
+                ProductionLogger.userAction("ControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
                 viewModel.goToPhoto(at: targetIndex)
             }
             .frame(height: 8)  // DOUBLED: from 4 to 8 for better clickability
@@ -197,7 +197,7 @@ struct InteractiveProgressBar: View {
         let targetIndex = Int(clampedProgress * Double(totalCount - 1))
         let validIndex = max(0, min(totalCount - 1, targetIndex))
         
-        print("🎯 InteractiveProgressBar: Tap at \(location.x)/\(geometry.size.width) (\(clampedProgress*100)%) -> index \(validIndex)")
+        ProductionLogger.debug("InteractiveProgressBar: Tap at \(location.x)/\(geometry.size.width) (\(clampedProgress*100)%) -> index \(validIndex)")
         
         // Only jump if clicking on a different photo
         if validIndex != currentIndex {

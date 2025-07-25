@@ -14,21 +14,21 @@ public class SlideshowDomainService: ObservableObject {
     }
     
     public func createSlideshow(from folderURL: URL, interval: SlideshowInterval, mode: Slideshow.SlideshowMode) async throws -> Slideshow {
-        print("🎯 SlideshowDomainService: Loading photos from repository...")
-        NSLog("🎯 SlideshowDomainService: About to call repository.loadPhotos")
+        ProductionLogger.debug("SlideshowDomainService: Loading photos from repository...")
+        ProductionLogger.debug("SlideshowDomainService: About to call repository.loadPhotos")
         
         do {
             let photos = try await repository.loadPhotos(from: folderURL)
-            print("🎯 SlideshowDomainService: Loaded \(photos.count) photos")
-            NSLog("🎯 SlideshowDomainService: Successfully loaded \(photos.count) photos")
+            ProductionLogger.debug("SlideshowDomainService: Loaded \(photos.count) photos")
+            ProductionLogger.debug("SlideshowDomainService: Successfully loaded \(photos.count) photos")
             
             let slideshow = Slideshow(photos: photos, interval: interval, mode: mode)
-            print("🎯 SlideshowDomainService: Created slideshow successfully")
-            NSLog("🎯 SlideshowDomainService: Created slideshow successfully")
+            ProductionLogger.debug("SlideshowDomainService: Created slideshow successfully")
+            ProductionLogger.debug("SlideshowDomainService: Created slideshow successfully")
             return slideshow
         } catch {
-            print("❌ SlideshowDomainService: Error in createSlideshow: \(error)")
-            NSLog("❌ SlideshowDomainService: Error in createSlideshow: \(error)")
+            ProductionLogger.error("SlideshowDomainService: Error in createSlideshow: \(error)")
+            ProductionLogger.error("SlideshowDomainService: Error in createSlideshow: \(error)")
             throw error
         }
     }

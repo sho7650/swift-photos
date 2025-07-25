@@ -19,17 +19,17 @@ struct WindowAccessor: NSViewRepresentable {
         // Use DispatchQueue to ensure window is available
         DispatchQueue.main.async {
             if let window = view.window {
-                print("🔧 WindowAccessor: Window found: \(window)")
+                ProductionLogger.debug("WindowAccessor: Window found: \(window)")
                 self.callback(window)
             } else {
-                print("⚠️ WindowAccessor: Window not yet available, retrying...")
+                ProductionLogger.debug("WindowAccessor: Window not yet available, retrying...")
                 // Retry after a short delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     if let window = view.window {
-                        print("🔧 WindowAccessor: Window found on retry: \(window)")
+                        ProductionLogger.debug("WindowAccessor: Window found on retry: \(window)")
                         self.callback(window)
                     } else {
-                        print("❌ WindowAccessor: Window still not available")
+                        ProductionLogger.warning("WindowAccessor: Window still not available")
                     }
                 }
             }

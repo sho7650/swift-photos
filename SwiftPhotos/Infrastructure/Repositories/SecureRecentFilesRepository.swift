@@ -24,13 +24,13 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
             await loadConfigurationFromStorage()
         }
         
-        print("🔐 SecureRecentFilesRepository: Initialized with secure storage")
+        ProductionLogger.lifecycle("SecureRecentFilesRepository: Initialized with secure storage")
     }
     
     // MARK: - Core RecentFilesService Implementation
     
     public func addRecentFile(_ url: URL, securityBookmark: Data) async throws {
-        print("🔐 Adding recent file: \(url.path)")
+        ProductionLogger.debug("Adding recent file: \(url.path)")
         
         // Validation
         guard url.isFileURL else {
@@ -47,15 +47,15 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
             let existingFile = recentFiles[existingIndex]
             let updatedFile = existingFile.withUpdatedAccessDate()
             recentFiles[existingIndex] = updatedFile
-            print("🔐 Updated existing recent file access date")
+            ProductionLogger.debug("Updated existing recent file access date")
         } else {
             // Add new file
             do {
                 let newFile = try RecentFileItem.fromFolder(url: url, securityBookmark: securityBookmark)
                 recentFiles.insert(newFile, at: 0) // Add to beginning for most recent first
-                print("🔐 Added new recent file")
+                ProductionLogger.debug("Added new recent file")
             } catch {
-                print("❌ Failed to create recent file item: \(error)")
+                ProductionLogger.error("Failed to create recent file item: \(error)")
                 throw RecentFilesServiceError.storageError("Failed to create recent file item: \(error.localizedDescription)")
             }
         }
@@ -69,7 +69,7 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
         // Persist to storage
         try await saveRecentFilesToStorage()
         
-        print("🔐 Recent file added successfully, total count: \(recentFiles.count)")
+        ProductionLogger.debug("Recent file added successfully, total count: \(recentFiles.count)")
     }
     
     public func getRecentFiles() async -> [RecentFileItem] {
@@ -78,14 +78,14 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
     }
     
     public func clearRecentFiles() async throws {
-        print("🔐 Clearing all recent files")
+        ProductionLogger.userAction("Clearing all recent files")
         recentFiles.removeAll()
         try await saveRecentFilesToStorage()
-        print("🔐 All recent files cleared")
+        ProductionLogger.debug("All recent files cleared")
     }
     
     public func removeRecentFile(id: UUID) async throws {
-        print("🔐 Removing recent file with ID: \(id)")
+        ProductionLogger.debug("Removing recent file with ID: \(id)")
         
         guard let index = recentFiles.firstIndex(where: { $0.id == id }) else {
             throw RecentFilesServiceError.fileNotFound(URL(fileURLWithPath: "unknown"))
@@ -94,11 +94,11 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
         let removedFile = recentFiles.remove(at: index)
         try await saveRecentFilesToStorage()
         
-        print("🔐 Removed recent file: \(removedFile.displayName)")
+        ProductionLogger.debug("Removed recent file: \(removedFile.displayName)")
     }
     
     public func removeRecentFile(url: URL) async throws {
-        print("🔐 Removing recent file with URL: \(url.path)")
+        ProductionLogger.debug("Removing recent file with URL: \(url.path)")
         
         guard let index = recentFiles.firstIndex(where: { $0.url == url }) else {
             throw RecentFilesServiceError.fileNotFound(url)
@@ -107,18 +107,18 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
         let removedFile = recentFiles.remove(at: index)
         try await saveRecentFilesToStorage()
         
-        print("🔐 Removed recent file: \(removedFile.displayName)")
+        ProductionLogger.debug("Removed recent file: \(removedFile.displayName)")
     }
     
     public func updateConfiguration(_ configuration: MenuConfiguration) async throws {
-        print("🔐 Updating menu configuration")
+        ProductionLogger.debug("Updating menu configuration")
         self.configuration = configuration
         try await saveConfigurationToStorage()
         
         // Enforce new limits
         await enforceMaximumRecentFiles()
         
-        print("🔐 Menu configuration updated")
+        ProductionLogger.debug("Menu configuration updated")
     }
     
     public func getConfiguration() async -> MenuConfiguration {
@@ -127,7 +127,7 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
     }
     
     public func cleanupInvalidFiles() async -> Int {
-        print("🔐 Starting cleanup of invalid recent files")
+        ProductionLogger.debug("Starting cleanup of invalid recent files")
         
         var cleanedCount = 0
         var validFiles: [RecentFileItem] = []
@@ -137,7 +137,7 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
                 validFiles.append(file)
             } else {
                 cleanedCount += 1
-                print("🔐 Removing invalid file: \(file.displayPath)")
+                ProductionLogger.debug("Removing invalid file: \(file.displayPath)")
             }
         }
         
@@ -145,9 +145,9 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
             recentFiles = validFiles
             do {
                 try await saveRecentFilesToStorage()
-                print("🔐 Cleanup completed, removed \(cleanedCount) invalid files")
+                ProductionLogger.debug("Cleanup completed, removed \(cleanedCount) invalid files")
             } catch {
-                print("❌ Failed to save after cleanup: \(error)")
+                ProductionLogger.error("Failed to save after cleanup: \(error)")
             }
         }
         
@@ -182,7 +182,7 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
             let updatedFile = try recentFiles[index].withUpdatedPhotoCount(photoCount)
             recentFiles[index] = updatedFile
             try await saveRecentFilesToStorage()
-            print("🔐 Updated photo count for \(url.lastPathComponent): \(photoCount)")
+            ProductionLogger.debug("Updated photo count for \(url.lastPathComponent): \(photoCount)")
         } catch {
             throw RecentFilesServiceError.storageError("Failed to update photo count: \(error.localizedDescription)")
         }
@@ -241,7 +241,7 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
         
         do {
             let exportData = try JSONEncoder().encode(recentFiles)
-            print("🔐 Exported \(recentFiles.count) recent files")
+            ProductionLogger.debug("Exported \(recentFiles.count) recent files")
             return exportData
         } catch {
             throw RecentFilesServiceError.storageError("Failed to export recent files: \(error.localizedDescription)")
@@ -267,7 +267,7 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
             await enforceMaximumRecentFiles()
             
             try await saveRecentFilesToStorage()
-            print("🔐 Imported \(importedFiles.count) recent files, merge: \(merge)")
+            ProductionLogger.debug("Imported \(importedFiles.count) recent files, merge: \(merge)")
         } catch {
             throw RecentFilesServiceError.storageError("Failed to import recent files: \(error.localizedDescription)")
         }
@@ -280,9 +280,9 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
             do {
                 recentFiles = try JSONDecoder().decode([RecentFileItem].self, from: data)
                 lastLoadTime = Date()
-                print("🔐 Loaded \(recentFiles.count) recent files from storage")
+                ProductionLogger.debug("Loaded \(recentFiles.count) recent files from storage")
             } catch {
-                print("❌ Failed to decode recent files: \(error)")
+                ProductionLogger.error("Failed to decode recent files: \(error)")
                 recentFiles = []
             }
         }
@@ -292,9 +292,9 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
         do {
             let data = try JSONEncoder().encode(recentFiles)
             userDefaults.set(data, forKey: recentFilesKey)
-            print("🔐 Saved \(recentFiles.count) recent files to storage")
+            ProductionLogger.debug("Saved \(recentFiles.count) recent files to storage")
         } catch {
-            print("❌ Failed to encode recent files: \(error)")
+            ProductionLogger.error("Failed to encode recent files: \(error)")
             throw RecentFilesServiceError.storageError("Failed to save recent files: \(error.localizedDescription)")
         }
     }
@@ -303,9 +303,9 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
         if let data = userDefaults.data(forKey: configurationKey) {
             do {
                 configuration = try JSONDecoder().decode(MenuConfiguration.self, from: data)
-                print("🔐 Loaded menu configuration from storage")
+                ProductionLogger.debug("Loaded menu configuration from storage")
             } catch {
-                print("❌ Failed to decode menu configuration: \(error)")
+                ProductionLogger.error("Failed to decode menu configuration: \(error)")
                 configuration = .default
             }
         }
@@ -315,9 +315,9 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
         do {
             let data = try JSONEncoder().encode(configuration)
             userDefaults.set(data, forKey: configurationKey)
-            print("🔐 Saved menu configuration to storage")
+            ProductionLogger.debug("Saved menu configuration to storage")
         } catch {
-            print("❌ Failed to encode menu configuration: \(error)")
+            ProductionLogger.error("Failed to encode menu configuration: \(error)")
             throw RecentFilesServiceError.configurationError("Failed to save configuration: \(error.localizedDescription)")
         }
     }
@@ -339,7 +339,7 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
         if recentFiles.count > maxFiles {
             let excessCount = recentFiles.count - maxFiles
             recentFiles.removeLast(excessCount)
-            print("🔐 Enforced maximum recent files limit, removed \(excessCount) oldest files")
+            ProductionLogger.debug("Enforced maximum recent files limit, removed \(excessCount) oldest files")
         }
     }
     
@@ -363,7 +363,7 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
             )
             
             if bookmarkDataIsStale {
-                print("🔐 Security bookmark is stale for: \(file.displayName)")
+                ProductionLogger.warning("Security bookmark is stale for: \(file.displayName)")
                 return false
             }
             
@@ -381,12 +381,12 @@ public actor SecureRecentFilesRepository: RecentFilesAnalyticsService {
                 let _ = try fileManager.contentsOfDirectory(at: resolvedURL, includingPropertiesForKeys: nil)
                 return true
             } catch {
-                print("🔐 Cannot access directory: \(error)")
+                ProductionLogger.warning("Cannot access directory: \(error)")
                 return false
             }
             
         } catch {
-            print("🔐 Invalid security bookmark: \(error)")
+            ProductionLogger.warning("Invalid security bookmark: \(error)")
             return false
         }
     }

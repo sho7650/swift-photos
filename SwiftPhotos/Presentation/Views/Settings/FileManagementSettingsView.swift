@@ -33,7 +33,7 @@ struct FileManagementSettingsView: View {
                                 )
                                 Task { await recentFilesManager.updateConfiguration(newConfig) }
                             } catch {
-                                print("Failed to update configuration: \(error)")
+                                ProductionLogger.error("Failed to update configuration: \(error)")
                             }
                         }
                     ))
@@ -65,7 +65,7 @@ struct FileManagementSettingsView: View {
                                             )
                                             Task { await recentFilesManager.updateConfiguration(newConfig) }
                                         } catch {
-                                            print("Failed to update configuration: \(error)")
+                                            ProductionLogger.error("Failed to update configuration: \(error)")
                                         }
                                     }
                                 ),
@@ -90,7 +90,7 @@ struct FileManagementSettingsView: View {
                                     )
                                     Task { await recentFilesManager.updateConfiguration(newConfig) }
                                 } catch {
-                                    print("Failed to update configuration: \(error)")
+                                    ProductionLogger.error("Failed to update configuration: \(error)")
                                 }
                             }
                         ))
@@ -111,7 +111,7 @@ struct FileManagementSettingsView: View {
                                     )
                                     Task { await recentFilesManager.updateConfiguration(newConfig) }
                                 } catch {
-                                    print("Failed to update configuration: \(error)")
+                                    ProductionLogger.error("Failed to update configuration: \(error)")
                                 }
                             }
                         ))

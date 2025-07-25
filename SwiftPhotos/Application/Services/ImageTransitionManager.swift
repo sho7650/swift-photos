@@ -12,7 +12,7 @@ public class ImageTransitionManager: ObservableObject {
     
     public init(transitionSettings: TransitionSettingsManager) {
         self.transitionSettings = transitionSettings
-        print("🎬 ImageTransitionManager: Initialized")
+        ProductionLogger.lifecycle("ImageTransitionManager: Initialized")
     }
     
     /// Execute transition between two images
@@ -44,7 +44,7 @@ public class ImageTransitionManager: ObservableObject {
         isTransitioning = true
         transitionProgress = 0.0
         
-        print("🎬 ImageTransitionManager: Starting \(settings.effectType.displayName) transition (duration: \(duration)s)")
+        ProductionLogger.debug("ImageTransitionManager: Starting \(settings.effectType.displayName) transition (duration: \(duration)s)")
         
         // Create animation steps
         let steps = 60 // 60 FPS
@@ -65,7 +65,7 @@ public class ImageTransitionManager: ObservableObject {
         transitionProgress = 1.0
         completion()
         
-        print("🎬 ImageTransitionManager: Completed transition")
+        ProductionLogger.debug("ImageTransitionManager: Completed transition")
     }
     
     /// Cancel current transition
@@ -74,7 +74,7 @@ public class ImageTransitionManager: ObservableObject {
         currentTransitionTask = nil
         isTransitioning = false
         transitionProgress = 0.0
-        print("🎬 ImageTransitionManager: Cancelled transition")
+        ProductionLogger.debug("ImageTransitionManager: Cancelled transition")
     }
     
     /// Get transition modifier for SwiftUI views

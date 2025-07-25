@@ -1,11 +1,6 @@
 import Foundation
 import SwiftUI
 
-/// Notification name for transition settings changes
-extension Notification.Name {
-    static let transitionSettingsChanged = Notification.Name("transitionSettingsChanged")
-}
-
 /// Screen transition effects configuration for slideshow
 public struct TransitionSettings: Codable, Equatable {
     /// Transition effect type
@@ -228,13 +223,13 @@ public class TransitionSettingsManager: ObservableObject {
         } else {
             self.settings = .default
         }
-        print("🎬 TransitionSettingsManager: Initialized with effect: \(settings.effectType.displayName), duration: \(settings.duration)s")
+        ProductionLogger.lifecycle("TransitionSettingsManager: Initialized with effect: \(settings.effectType.displayName), duration: \(settings.duration)s")
     }
     
     public func updateSettings(_ newSettings: TransitionSettings) {
         settings = newSettings
         saveSettings()
-        print("🎬 TransitionSettingsManager: Updated to effect: \(settings.effectType.displayName), duration: \(settings.duration)s")
+        ProductionLogger.debug("TransitionSettingsManager: Updated to effect: \(settings.effectType.displayName), duration: \(settings.duration)s")
         
         // Notify observers of settings change
         NotificationCenter.default.post(name: .transitionSettingsChanged, object: newSettings)

@@ -112,7 +112,7 @@ public struct DetailedInfoOverlay: View {
                 currentIndex: slideshow.currentIndex,
                 totalCount: slideshow.count
             ) { targetIndex in
-                print("🎯 DetailedInfoOverlay: Progress bar clicked - jumping to photo \(targetIndex)")
+                ProductionLogger.userAction("DetailedInfoOverlay: Progress bar clicked - jumping to photo \(targetIndex)")
                 uiControlStateManager.handleGestureInteraction()
                 viewModel.goToPhoto(at: targetIndex)
             }
@@ -249,7 +249,7 @@ public struct DetailedInfoOverlay: View {
                     action: {
                         uiControlStateManager.handleGestureInteraction()
                         // TODO: Implement reveal in finder
-                        print("📁 Reveal in Finder action")
+                        ProductionLogger.userAction("Reveal in Finder action")
                     }
                 )
                 
@@ -260,7 +260,7 @@ public struct DetailedInfoOverlay: View {
                     action: {
                         uiControlStateManager.handleGestureInteraction()
                         // TODO: Open settings window
-                        print("⚙️ Open settings action")
+                        ProductionLogger.userAction("Open settings action")
                     }
                 )
                 

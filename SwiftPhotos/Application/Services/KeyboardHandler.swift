@@ -57,7 +57,7 @@ public class KeyboardHandler: ObservableObject {
         // Open Folder shortcut (Cmd+O)
         case 31: // 'O' key
             if event.modifierFlags.contains(.command) {
-                print("🎮 KeyboardHandler: Open folder shortcut pressed")
+                ProductionLogger.userAction("KeyboardHandler: Open folder shortcut pressed")
                 onOpenFolder?()
                 handled = true
             }
@@ -65,7 +65,7 @@ public class KeyboardHandler: ObservableObject {
         // Toggle detailed info (I key)
         case 34: // 'I' key
             if !event.modifierFlags.contains(.command) {
-                print("🎮 KeyboardHandler: Toggle detailed info shortcut pressed")
+                ProductionLogger.userAction("KeyboardHandler: Toggle detailed info shortcut pressed")
                 onToggleDetailedInfo?()
                 handled = true
             }
@@ -73,7 +73,7 @@ public class KeyboardHandler: ObservableObject {
         // Toggle controls visibility (H key)
         case 4: // 'H' key
             if !event.modifierFlags.contains(.command) {
-                print("🎮 KeyboardHandler: Toggle controls visibility shortcut pressed")
+                ProductionLogger.userAction("KeyboardHandler: Toggle controls visibility shortcut pressed")
                 onToggleControlsVisibility?()
                 handled = true
             }
@@ -83,7 +83,7 @@ public class KeyboardHandler: ObservableObject {
         // Fullscreen toggle (F key)
         case 3: // 'F' key
             if !event.modifierFlags.contains(.command) {
-                print("🔧 KeyboardHandler: Fullscreen toggle shortcut pressed")
+                ProductionLogger.userAction("KeyboardHandler: Fullscreen toggle shortcut pressed")
                 TransparencyManager.shared.toggleFullscreen()
                 handled = true
             }
@@ -91,7 +91,7 @@ public class KeyboardHandler: ObservableObject {
         // Reserved for future debug functionality
         case 17: // 'T' key  
             if event.modifierFlags.contains(.command) {
-                print("🔍 DEBUG: Debug shortcut pressed")
+                ProductionLogger.debug("DEBUG: Debug shortcut pressed")
                 handled = true
             }
             
@@ -101,7 +101,7 @@ public class KeyboardHandler: ObservableObject {
         
         // Notify UI control state manager of any keyboard interaction
         if handled {
-            print("🎮 KeyboardHandler: Keyboard interaction detected, notifying UI state manager")
+            ProductionLogger.debug("KeyboardHandler: Keyboard interaction detected, notifying UI state manager")
             onKeyboardInteraction?()
         }
         

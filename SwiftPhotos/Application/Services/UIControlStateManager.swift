@@ -61,24 +61,13 @@ public class UIControlStateManager: ObservableObject {
         setupUnifiedInteractionDetector()
         startHideTimer()
         
-        print("🎮 UIControlStateManager: Initialized with controls visible: \(isControlsVisible)")
+        ProductionLogger.lifecycle("UIControlStateManager: Initialized with controls visible: \(isControlsVisible)")
     }
     
     deinit {
-        // Cleanup adaptive timers (must be done with Task for @MainActor isolation)
-        Task { @MainActor [weak hideTimer, weak minimumVisibilityTimer, weak interactionClearTimer] in
-            hideTimer?.stop()
-            minimumVisibilityTimer?.stop()
-            interactionClearTimer?.stop()
-        }
-        
+        // Cleanup is handled automatically by ARC
         if let monitor = globalMouseMonitor {
             NSEvent.removeMonitor(monitor)
-        }
-        
-        Task { @MainActor in
-            mouseTracker?.stopTracking()
-            interactionDetector?.stopDetection()
         }
         
         NotificationCenter.default.removeObserver(self)
@@ -94,7 +83,7 @@ public class UIControlStateManager: ObservableObject {
             return
         }
         
-        print("🎮 UIControlStateManager: Showing controls")
+        ProductionLogger.debug("UIControlStateManager: Showing controls")
         
         withAnimation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration)) {
             isControlsVisible = true
@@ -118,19 +107,19 @@ public class UIControlStateManager: ObservableObject {
         
         // Don't hide if we're within minimum visibility duration (unless forced)
         if !force && minimumVisibilityTimer?.isRunning == true {
-            print("🎮 UIControlStateManager: Hide blocked - within minimum visibility duration")
+            ProductionLogger.debug("UIControlStateManager: Hide blocked - within minimum visibility duration")
             return
         }
         
         // Don't hide if slideshow is not playing and hideOnPlay is false
         if !force && !uiControlSettings.settings.hideOnPlay {
             if slideshowViewModel?.slideshow?.isPlaying != true {
-                print("🎮 UIControlStateManager: Hide blocked - slideshow not playing and hideOnPlay is disabled")
+                ProductionLogger.debug("UIControlStateManager: Hide blocked - slideshow not playing and hideOnPlay is disabled")
                 return
             }
         }
         
-        print("🎮 UIControlStateManager: Hiding controls")
+        ProductionLogger.debug("UIControlStateManager: Hiding controls")
         
         withAnimation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration)) {
             isControlsVisible = false
@@ -156,7 +145,7 @@ public class UIControlStateManager: ObservableObject {
     
     /// Record keyboard interaction
     public func handleKeyboardInteraction() {
-        print("🎮 UIControlStateManager: Keyboard interaction detected")
+        ProductionLogger.debug("UIControlStateManager: Keyboard interaction detected")
         recordInteraction()
         showControls()
         onKeyboardInteraction?()
@@ -183,7 +172,7 @@ public class UIControlStateManager: ObservableObject {
     
     /// Record gesture interaction
     public func handleGestureInteraction() {
-        print("🎮 UIControlStateManager: Gesture interaction detected")
+        ProductionLogger.debug("UIControlStateManager: Gesture interaction detected")
         recordInteraction()
         showControls()
         onGestureInteraction?()
@@ -209,9 +198,7 @@ public class UIControlStateManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in
-                self?.handleSettingsChanged()
-            }
+            self?.handleSettingsChanged()
         }
     }
     
@@ -225,7 +212,7 @@ public class UIControlStateManager: ObservableObject {
         
         // Set up global mouse monitoring only when needed
         globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged]) { [weak self] event in
-            Task { @MainActor in
+            DispatchQueue.main.async {
                 self?.handleGlobalMouseEvent(event)
             }
         }
@@ -234,23 +221,21 @@ public class UIControlStateManager: ObservableObject {
         do {
             try mouseTracker?.startTracking()
         } catch {
-            print("🎮 UIControlStateManager: Failed to start enhanced mouse tracking: \(error)")
+            ProductionLogger.error("UIControlStateManager: Failed to start enhanced mouse tracking: \(error)")
         }
         
-        print("🎮 UIControlStateManager: Mouse monitoring enabled")
+        ProductionLogger.debug("UIControlStateManager: Mouse monitoring enabled")
     }
     
     private func disableMouseMonitoring() {
         if let monitor = globalMouseMonitor {
             NSEvent.removeMonitor(monitor)
             globalMouseMonitor = nil
-            print("🎮 UIControlStateManager: Mouse monitoring disabled")
+            ProductionLogger.debug("UIControlStateManager: Mouse monitoring disabled")
         }
         
         // Also disable enhanced mouse tracker when not needed
-        Task { @MainActor in
-            mouseTracker?.stopTracking()
-        }
+        mouseTracker?.stopTracking()
     }
     
     private func setupEnhancedMouseTracker() {
@@ -268,7 +253,7 @@ public class UIControlStateManager: ObservableObject {
         mouseTracker = MouseTracker(configuration: config)
         mouseTracker?.delegate = self
         
-        print("🎮 UIControlStateManager: Enhanced mouse tracker configured")
+        ProductionLogger.debug("UIControlStateManager: Enhanced mouse tracker configured")
     }
     
     
@@ -304,7 +289,7 @@ public class UIControlStateManager: ObservableObject {
         do {
             try interactionClearTimer?.start(with: config)
         } catch {
-            print("🎮 UIControlStateManager: Failed to start interaction clear timer: \(error)")
+            ProductionLogger.error("UIControlStateManager: Failed to start interaction clear timer: \(error)")
             // Fallback: clear flag immediately
             hasRecentInteraction = false
         }
@@ -317,7 +302,7 @@ public class UIControlStateManager: ObservableObject {
     private func resetHideTimer(withDelay delay: Double? = nil) {
         // Only create hide timer if controls are visible
         guard isControlsVisible else {
-            print("🎮 UIControlStateManager: Skipping hide timer - controls already hidden")
+            ProductionLogger.debug("UIControlStateManager: Skipping hide timer - controls already hidden")
             return
         }
         
@@ -327,7 +312,7 @@ public class UIControlStateManager: ObservableObject {
         
         // Avoid creating timer for very long delays (effectively "never hide")
         guard hideDelay < 100.0 else {
-            print("🎮 UIControlStateManager: Skipping hide timer - delay too long (\(hideDelay)s)")
+            ProductionLogger.debug("UIControlStateManager: Skipping hide timer - delay too long (\(hideDelay)s)")
             return
         }
         
@@ -338,9 +323,9 @@ public class UIControlStateManager: ObservableObject {
         
         do {
             try hideTimer?.start(with: config)
-            print("🎮 UIControlStateManager: Adaptive hide timer set for \(hideDelay)s")
+            ProductionLogger.debug("UIControlStateManager: Adaptive hide timer set for \(hideDelay)s")
         } catch {
-            print("🎮 UIControlStateManager: Failed to start hide timer: \(error)")
+            ProductionLogger.error("UIControlStateManager: Failed to start hide timer: \(error)")
         }
     }
     
@@ -356,7 +341,7 @@ public class UIControlStateManager: ObservableObject {
         minimumVisibilityTimer = nil
         interactionClearTimer?.stop()
         interactionClearTimer = nil
-        print("🎮 UIControlStateManager: All adaptive timers stopped")
+        ProductionLogger.debug("UIControlStateManager: All adaptive timers stopped")
     }
     
     private func getCurrentHideDelay() -> Double {
@@ -387,14 +372,14 @@ public class UIControlStateManager: ObservableObject {
         
         do {
             try minimumVisibilityTimer?.start(with: config)
-            print("🎮 UIControlStateManager: Minimum visibility timer set for \(config.baseDuration)s")
+            ProductionLogger.debug("UIControlStateManager: Minimum visibility timer set for \(config.baseDuration)s")
         } catch {
-            print("🎮 UIControlStateManager: Failed to start minimum visibility timer: \(error)")
+            ProductionLogger.error("UIControlStateManager: Failed to start minimum visibility timer: \(error)")
         }
     }
     
     private func handleSettingsChanged() {
-        print("🎮 UIControlStateManager: Settings changed, updating behavior")
+        ProductionLogger.debug("UIControlStateManager: Settings changed, updating behavior")
         
         // Update detailed info visibility if default changed
         if !hasRecentInteraction {
@@ -437,7 +422,7 @@ public class UIControlStateManager: ObservableObject {
         )
         
         mouseTracker.configuration = newConfig
-        print("🎮 UIControlStateManager: Mouse tracker configuration updated")
+        ProductionLogger.debug("UIControlStateManager: Mouse tracker configuration updated")
     }
     
     // MARK: - Context-Aware Timer Adaptation
@@ -510,11 +495,11 @@ public class UIControlStateManager: ObservableObject {
 
 extension UIControlStateManager: MouseTrackingDelegate {
     public func mouseTrackingDidStart(_ tracker: MouseTracker) {
-        print("🎮 UIControlStateManager: Enhanced mouse tracking started")
+        ProductionLogger.debug("UIControlStateManager: Enhanced mouse tracking started")
     }
     
     public func mouseTrackingDidStop(_ tracker: MouseTracker) {
-        print("🎮 UIControlStateManager: Enhanced mouse tracking stopped")
+        ProductionLogger.debug("UIControlStateManager: Enhanced mouse tracking stopped")
     }
     
     public func mouseTracker(_ tracker: MouseTracker, didUpdatePosition position: CGPoint, velocity: CGVector) {
@@ -543,7 +528,7 @@ extension UIControlStateManager: MouseTrackingDelegate {
         if speed > 50.0 && !isControlsVisible { // Use fixed threshold since velocity is already processed
             // Fast mouse movement detected - show controls immediately
             if uiControlSettings.settings.showOnMouseMovement {
-                print("🎮 UIControlStateManager: Fast mouse movement detected - showing controls")
+                ProductionLogger.debug("UIControlStateManager: Fast mouse movement detected - showing controls")
                 showControls()
             }
         }
@@ -572,7 +557,7 @@ extension UIControlStateManager: MouseTrackingDelegate {
     }
     
     public func mouseTracker(_ tracker: MouseTracker, didUpdateConfiguration configuration: MouseTrackingConfiguration) {
-        print("🎮 UIControlStateManager: Enhanced mouse tracker configuration updated")
+        ProductionLogger.debug("UIControlStateManager: Enhanced mouse tracker configuration updated")
     }
 }
 
@@ -582,49 +567,49 @@ extension UIControlStateManager: AdaptiveTimerDelegate {
     public func timerDidFire(_ timer: AdaptiveTimerProviding) {
         // Determine which timer fired and handle appropriately
         if timer === hideTimer {
-            print("🎮 UIControlStateManager: Hide timer fired - hiding controls")
+            ProductionLogger.debug("UIControlStateManager: Hide timer fired - hiding controls")
             hideControls()
             hideTimer = nil
         } else if timer === interactionClearTimer {
-            print("🎮 UIControlStateManager: Interaction clear timer fired")
+            ProductionLogger.debug("UIControlStateManager: Interaction clear timer fired")
             hasRecentInteraction = false
             interactionClearTimer = nil
         } else if timer === minimumVisibilityTimer {
-            print("🎮 UIControlStateManager: Minimum visibility timer completed")
+            ProductionLogger.debug("UIControlStateManager: Minimum visibility timer completed")
             minimumVisibilityTimer = nil
         }
     }
     
     public func timerDidAdapt(_ timer: AdaptiveTimerProviding, newDuration: TimeInterval, reason: AdaptationReason) {
         if timer === hideTimer {
-            print("🎮 UIControlStateManager: Hide timer adapted to \(String(format: "%.1f", newDuration))s (reason: \(reason.rawValue))")
+            ProductionLogger.debug("UIControlStateManager: Hide timer adapted to \(String(format: "%.1f", newDuration))s (reason: \(reason.rawValue))")
         }
     }
     
     public func timerWasPaused(_ timer: AdaptiveTimerProviding) {
         if timer === hideTimer {
-            print("🎮 UIControlStateManager: Hide timer paused")
+            ProductionLogger.debug("UIControlStateManager: Hide timer paused")
         }
     }
     
     public func timerWasResumed(_ timer: AdaptiveTimerProviding) {
         if timer === hideTimer {
-            print("🎮 UIControlStateManager: Hide timer resumed")
+            ProductionLogger.debug("UIControlStateManager: Hide timer resumed")
         }
     }
     
     public func timerWasStopped(_ timer: AdaptiveTimerProviding) {
         if timer === hideTimer {
-            print("🎮 UIControlStateManager: Hide timer stopped")
+            ProductionLogger.debug("UIControlStateManager: Hide timer stopped")
         }
     }
     
     public func timerDidEncounterError(_ timer: AdaptiveTimerProviding, error: TimerError) {
-        print("🎮 UIControlStateManager: Timer error - \(error.localizedDescription)")
+        ProductionLogger.error("UIControlStateManager: Timer error - \(error.localizedDescription)")
         
         // Handle timer errors gracefully
         if timer === hideTimer {
-            print("🎮 UIControlStateManager: Hide timer error - controls will remain visible")
+            ProductionLogger.warning("UIControlStateManager: Hide timer error - controls will remain visible")
             hideTimer = nil
         } else if timer === interactionClearTimer {
             // Fallback: clear interaction flag immediately
@@ -653,9 +638,9 @@ extension UIControlStateManager: AdaptiveTimerDelegate {
         // Start detection
         do {
             try interactionDetector?.startDetection()
-            print("🎮 UIControlStateManager: Unified interaction detection started")
+            ProductionLogger.debug("UIControlStateManager: Unified interaction detection started")
         } catch {
-            print("🎮 UIControlStateManager: Failed to start unified interaction detection: \(error)")
+            ProductionLogger.error("UIControlStateManager: Failed to start unified interaction detection: \(error)")
         }
     }
 }
@@ -681,11 +666,11 @@ extension UIControlStateManager: InteractionObserver {
     }
     
     public func interactionDetectionFailed(_ error: InteractionError) {
-        print("🎮 UIControlStateManager: Interaction detection failed: \(error.localizedDescription)")
+        ProductionLogger.error("UIControlStateManager: Interaction detection failed: \(error.localizedDescription)")
     }
     
     public func interactionConfigurationDidChange(_ configuration: InteractionConfiguration) {
-        print("🎮 UIControlStateManager: Interaction configuration updated")
+        ProductionLogger.debug("UIControlStateManager: Interaction configuration updated")
     }
 }
 
@@ -698,23 +683,23 @@ extension UIControlStateManager: InteractionDetectorDelegate {
     }
     
     public func detectorDidEncounterError(_ detector: InteractionDetecting, error: InteractionError) {
-        print("🎮 UIControlStateManager: InteractionDetector error: \(error.localizedDescription)")
+        ProductionLogger.error("UIControlStateManager: InteractionDetector error: \(error.localizedDescription)")
         
         // Try to restart detection if possible
         if error == .systemPermissionDenied(permission: "Accessibility permissions required for global event monitoring") {
-            print("🎮 UIControlStateManager: Please grant accessibility permissions in System Preferences")
+            ProductionLogger.warning("UIControlStateManager: Please grant accessibility permissions in System Preferences")
         }
     }
     
     public func detectorDidStartDetection(_ detector: InteractionDetecting) {
-        print("🎮 UIControlStateManager: InteractionDetector started successfully")
+        ProductionLogger.debug("UIControlStateManager: InteractionDetector started successfully")
     }
     
     public func detectorDidStopDetection(_ detector: InteractionDetecting) {
-        print("🎮 UIControlStateManager: InteractionDetector stopped")
+        ProductionLogger.debug("UIControlStateManager: InteractionDetector stopped")
     }
     
     public func detectorDidUpdateConfiguration(_ detector: InteractionDetecting, configuration: InteractionConfiguration) {
-        print("🎮 UIControlStateManager: InteractionDetector configuration updated")
+        ProductionLogger.debug("UIControlStateManager: InteractionDetector configuration updated")
     }
 }

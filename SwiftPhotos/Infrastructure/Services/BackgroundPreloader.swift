@@ -1,9 +1,6 @@
 import Foundation
 import AppKit
 
-// Make NSImage Sendable for Swift concurrency
-extension NSImage: @retroactive @unchecked Sendable {}
-
 /// Background preloader that loads images with priority-based queuing for unlimited collections
 actor BackgroundPreloader {
     private let imageLoader: ImageLoader
@@ -17,7 +14,7 @@ actor BackgroundPreloader {
     private var successfulPreloads: Int = 0
     private var failedPreloads: Int = 0
     
-    struct PreloadItem: Comparable {
+    struct PreloadItem: Comparable, Sendable {
         let photo: Photo
         let priority: Int
         
@@ -32,14 +29,14 @@ actor BackgroundPreloader {
         self.imageLoader = ImageLoader()
         self.priorityQueue = PriorityQueue<PreloadItem>()
         
-        print("🔄 BackgroundPreloader: Initialized with \(maxConcurrentLoads) concurrent loads")
+        ProductionLogger.lifecycle("BackgroundPreloader: Initialized with \(maxConcurrentLoads) concurrent loads")
     }
     
     /// Update performance settings at runtime
     func updateSettings(_ newSettings: PerformanceSettings) {
         self.settings = newSettings
         self.maxConcurrentLoads = newSettings.maxConcurrentLoads
-        print("🔄 BackgroundPreloader: Settings updated - concurrent loads: \(maxConcurrentLoads)")
+        ProductionLogger.debug("BackgroundPreloader: Settings updated - concurrent loads: \(maxConcurrentLoads)")
     }
     
     /// Schedule photos for preloading with priorities - supports unlimited collections
@@ -74,7 +71,7 @@ actor BackgroundPreloader {
             }
         }
         
-        print("🔄 BackgroundPreloader: Scheduled \(priorityQueue.count) photos for preload (range: \(startIndex)-\(endIndex))")
+        ProductionLogger.performance("BackgroundPreloader: Scheduled \(priorityQueue.count) photos for preload (range: \(startIndex)-\(endIndex))")
         
         // Start preloading
         await processPreloadQueue()
@@ -139,7 +136,7 @@ actor BackgroundPreloader {
         } catch {
             failedPreloads += 1
             if !Task.isCancelled {
-                print("Failed to preload image \(photo.id): \(error)")
+                ProductionLogger.warning("Failed to preload image \(photo.id): \(error)")
             }
         }
         

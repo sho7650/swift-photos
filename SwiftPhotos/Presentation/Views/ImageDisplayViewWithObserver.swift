@@ -26,12 +26,12 @@ public struct ImageDisplayViewWithObserver: View {
                     .onAppear {
                         viewportSize = geometry.size
                         // Disable all zoom state updates - use fixed scaling
-                        print("📏 ImageDisplay: Viewport size: \(geometry.size)")
+                        ProductionLogger.debug("ImageDisplay: Viewport size: \(geometry.size)")
                     }
                     .onChange(of: geometry.size) { oldSize, newSize in
                         viewportSize = newSize
                         // Disable all zoom state updates - use fixed scaling
-                        print("📏 ImageDisplay: Viewport size changed: \(newSize)")
+                        ProductionLogger.debug("ImageDisplay: Viewport size changed: \(newSize)")
                     }
                 
                 // Main content layer with transition effects
@@ -99,7 +99,7 @@ public struct ImageDisplayViewWithObserver: View {
         .onChange(of: viewModel.currentPhoto?.id) { oldPhotoID, newPhotoID in
             handlePhotoChange(newPhotoID: newPhotoID)
             // Disable zoom state updates - use fixed scaling
-            print("📏 ImageDisplay: Photo changed: \(newPhotoID?.uuidString ?? "nil")")
+            ProductionLogger.debug("ImageDisplay: Photo changed: \(newPhotoID?.uuidString ?? "nil")")
         }
         .animation(getTransitionAnimation(), value: showImage)
     }
@@ -149,7 +149,7 @@ public struct ImageDisplayViewWithObserver: View {
         currentPhotoID = newID
         
         // Disable zoom state updates - images use fixed scaling
-        print("📏 handlePhotoChange: New photo loaded: \(newID.uuidString)")
+        ProductionLogger.debug("handlePhotoChange: New photo loaded: \(newID.uuidString)")
         
         // Trigger transition if enabled
         if transitionSettings.settings.isEnabled {

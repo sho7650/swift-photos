@@ -1,10 +1,5 @@
 import Foundation
 
-/// Notification name for sort settings changes
-extension Notification.Name {
-    static let sortSettingsChanged = Notification.Name("sortSettingsChanged")
-}
-
 /// File sorting configuration for slideshow photo organization
 public struct SortSettings: Codable, Equatable {
     /// Sort criteria
@@ -91,6 +86,11 @@ public struct SortSettings: Codable, Equatable {
     }
     
     // Predefined presets
+    public static let `default` = SortSettings(
+        order: .fileName,
+        direction: .ascending
+    )
+    
     public static let alphabetical = SortSettings(
         order: .fileName,
         direction: .ascending
@@ -130,22 +130,22 @@ public class SortSettingsManager: ObservableObject {
            let savedSettings = try? JSONDecoder().decode(SortSettings.self, from: data) {
             self.settings = savedSettings
         } else {
-            self.settings = .alphabetical
+            self.settings = .default
         }
-        print("📂 SortSettingsManager: Initialized with order: \(settings.order.displayName), direction: \(settings.direction.displayName)")
+        ProductionLogger.lifecycle("SortSettingsManager: Initialized with order: \(settings.order.displayName), direction: \(settings.direction.displayName)")
     }
     
     public func updateSettings(_ newSettings: SortSettings) {
         settings = newSettings
         saveSettings()
-        print("📂 SortSettingsManager: Updated to order: \(settings.order.displayName), direction: \(settings.direction.displayName)")
+        ProductionLogger.debug("SortSettingsManager: Updated to order: \(settings.order.displayName), direction: \(settings.direction.displayName)")
         
         // Notify observers of settings change
         NotificationCenter.default.post(name: .sortSettingsChanged, object: newSettings)
     }
     
     public func resetToDefault() {
-        settings = .alphabetical
+        settings = .default
         saveSettings()
         
         // Notify observers of settings change

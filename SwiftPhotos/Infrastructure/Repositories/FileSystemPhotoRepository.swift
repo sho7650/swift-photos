@@ -13,21 +13,21 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     }
     
     public func loadPhotos(from folderURL: URL) async throws -> [Photo] {
-        print("🗂️ FileSystemPhotoRepository: Starting loadPhotos for: \(folderURL.path)")
-        NSLog("🗂️ FileSystemPhotoRepository: Starting loadPhotos")
+        ProductionLogger.debug("FileSystemPhotoRepository: Starting loadPhotos for: \(folderURL.path)")
+        ProductionLogger.debug("FileSystemPhotoRepository: Starting loadPhotos")
         
         do {
-            print("🗂️ FileSystemPhotoRepository: Validating file access...")
-            NSLog("🗂️ FileSystemPhotoRepository: About to validate file access")
+            ProductionLogger.debug("FileSystemPhotoRepository: Validating file access...")
+            ProductionLogger.debug("FileSystemPhotoRepository: About to validate file access")
             try await fileAccess.validateFileAccess(for: folderURL)
-            NSLog("🗂️ FileSystemPhotoRepository: File access validation completed")
+            ProductionLogger.debug("FileSystemPhotoRepository: File access validation completed")
             
-            print("🗂️ FileSystemPhotoRepository: Enumerating images...")
-            NSLog("🗂️ FileSystemPhotoRepository: About to enumerate images")
+            ProductionLogger.debug("FileSystemPhotoRepository: Enumerating images...")
+            ProductionLogger.debug("FileSystemPhotoRepository: About to enumerate images")
             let imageURLs = try await fileAccess.enumerateImages(in: folderURL)
-            NSLog("🗂️ FileSystemPhotoRepository: Image enumeration completed with \(imageURLs.count) images")
+            ProductionLogger.debug("FileSystemPhotoRepository: Image enumeration completed with \(imageURLs.count) images")
             
-            print("🗂️ FileSystemPhotoRepository: Creating \(imageURLs.count) photo objects...")
+            ProductionLogger.debug("FileSystemPhotoRepository: Creating \(imageURLs.count) photo objects...")
             var photos: [Photo] = []
             var failedCount = 0
             
@@ -37,22 +37,22 @@ public class FileSystemPhotoRepository: SlideshowRepository {
                     let photo = Photo(imageURL: imageURL)
                     photos.append(photo)
                 } catch {
-                    print("⚠️ Failed to create Photo for \(url.lastPathComponent): \(error)")
+                    ProductionLogger.warning("Failed to create Photo for \(url.lastPathComponent): \(error)")
                     failedCount += 1
                 }
             }
             
-            print("🗂️ FileSystemPhotoRepository: Successfully created \(photos.count) photos, failed: \(failedCount)")
+            ProductionLogger.debug("FileSystemPhotoRepository: Successfully created \(photos.count) photos, failed: \(failedCount)")
             
             // Apply sorting based on current sort settings
             let currentSettings = await sortSettings.settings
             let sortedPhotos = await sortPhotos(photos, using: currentSettings)
-            print("🗂️ FileSystemPhotoRepository: Applied sorting: \(currentSettings.order.displayName) \(currentSettings.direction.displayName)")
+            ProductionLogger.debug("FileSystemPhotoRepository: Applied sorting: \(currentSettings.order.displayName) \(currentSettings.direction.displayName)")
             
             return sortedPhotos
             
         } catch {
-            print("❌ FileSystemPhotoRepository: Failed in loadPhotos: \(error)")
+            ProductionLogger.error("FileSystemPhotoRepository: Failed in loadPhotos: \(error)")
             throw error
         }
     }
@@ -81,7 +81,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     
     /// Sort photos according to the specified sort settings
     private func sortPhotos(_ photos: [Photo], using sortSettings: SortSettings) async -> [Photo] {
-        print("🗂️ FileSystemPhotoRepository: Sorting \(photos.count) photos by \(sortSettings.order.displayName)")
+        ProductionLogger.debug("FileSystemPhotoRepository: Sorting \(photos.count) photos by \(sortSettings.order.displayName)")
         
         switch sortSettings.order {
         case .fileName:
@@ -108,7 +108,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             let name2 = photo2.fileName.lowercased()
             return direction == .ascending ? name1 < name2 : name1 > name2
         }
-        print("🗂️ FileSystemPhotoRepository: Sorted by file name (\(direction.displayName))")
+        ProductionLogger.debug("FileSystemPhotoRepository: Sorted by file name (\(direction.displayName))")
         return sorted
     }
     
@@ -128,7 +128,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             return direction == .ascending ? date1 < date2 : date1 > date2
         }.map { $0.0 }
         
-        print("🗂️ FileSystemPhotoRepository: Sorted by creation date (\(direction.displayName))")
+        ProductionLogger.debug("FileSystemPhotoRepository: Sorted by creation date (\(direction.displayName))")
         return sorted
     }
     
@@ -148,7 +148,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             return direction == .ascending ? date1 < date2 : date1 > date2
         }.map { $0.0 }
         
-        print("🗂️ FileSystemPhotoRepository: Sorted by modification date (\(direction.displayName))")
+        ProductionLogger.debug("FileSystemPhotoRepository: Sorted by modification date (\(direction.displayName))")
         return sorted
     }
     
@@ -166,7 +166,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             return direction == .ascending ? item1.1 < item2.1 : item1.1 > item2.1
         }.map { $0.0 }
         
-        print("🗂️ FileSystemPhotoRepository: Sorted by file size (\(direction.displayName))")
+        ProductionLogger.debug("FileSystemPhotoRepository: Sorted by file size (\(direction.displayName))")
         return sorted
     }
     
@@ -174,7 +174,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     private func sortByRandom(_ photos: [Photo], seed: UInt64) -> [Photo] {
         var generator = SeededRandomNumberGenerator(seed: seed)
         let shuffled = photos.shuffled(using: &generator)
-        print("🗂️ FileSystemPhotoRepository: Sorted randomly with seed \(seed)")
+        ProductionLogger.debug("FileSystemPhotoRepository: Sorted randomly with seed \(seed)")
         return shuffled
     }
     
@@ -186,7 +186,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             let resourceValues = try url.resourceValues(forKeys: [.creationDateKey])
             return resourceValues.creationDate
         } catch {
-            print("⚠️ Failed to get creation date for \(url.lastPathComponent): \(error)")
+            ProductionLogger.warning("Failed to get creation date for \(url.lastPathComponent): \(error)")
             return nil
         }
     }
@@ -197,7 +197,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             let resourceValues = try url.resourceValues(forKeys: [.contentModificationDateKey])
             return resourceValues.contentModificationDate
         } catch {
-            print("⚠️ Failed to get modification date for \(url.lastPathComponent): \(error)")
+            ProductionLogger.warning("Failed to get modification date for \(url.lastPathComponent): \(error)")
             return nil
         }
     }
@@ -208,7 +208,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
             return Int64(resourceValues.fileSize ?? 0)
         } catch {
-            print("⚠️ Failed to get file size for \(url.lastPathComponent): \(error)")
+            ProductionLogger.warning("Failed to get file size for \(url.lastPathComponent): \(error)")
             return 0
         }
     }

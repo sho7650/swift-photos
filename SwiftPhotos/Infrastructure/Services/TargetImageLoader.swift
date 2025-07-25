@@ -14,7 +14,7 @@ actor TargetImageLoader {
     
     init() {
         self.imageLoader = ImageLoader()
-        print("🚨 TargetImageLoader: Initialized for emergency image loading")
+        ProductionLogger.lifecycle("TargetImageLoader: Initialized for emergency image loading")
     }
     
     /// 指定画像を最優先で即座ロード - プログレスバージャンプ専用
@@ -28,7 +28,7 @@ actor TargetImageLoader {
         let startTime = Date()
         emergencyLoads += 1
         
-        print("🚨 TargetImageLoader: Emergency loading photo \(photo.id) (\(photo.imageURL.url.lastPathComponent))")
+        ProductionLogger.debug("TargetImageLoader: Emergency loading photo \(photo.id) (\(photo.imageURL.url.lastPathComponent))")
         
         // 既存の緊急タスクをキャンセル（新しいジャンプが最優先）
         cancelPreviousEmergencyLoads()
@@ -44,10 +44,10 @@ actor TargetImageLoader {
                 let loadTime = Date().timeIntervalSince(startTime)
                 await self?.recordEmergencyLoadTime(loadTime)
                 
-                print("🚨 TargetImageLoader: Emergency load completed in \(String(format: "%.2f", loadTime * 1000))ms")
+                ProductionLogger.performance("TargetImageLoader: Emergency load completed in \(String(format: "%.2f", loadTime * 1000))ms")
                 return image
             } catch {
-                print("❌ TargetImageLoader: Emergency load failed: \(error)")
+                ProductionLogger.error("TargetImageLoader: Emergency load failed: \(error)")
                 throw error
             }
         }
@@ -71,7 +71,7 @@ actor TargetImageLoader {
             }
             
             // クリーンアップ
-            await self.cleanupEmergencyTask(photoId: photo.id)
+            self.cleanupEmergencyTask(photoId: photo.id)
         }
     }
     
@@ -79,7 +79,7 @@ actor TargetImageLoader {
     private func cancelPreviousEmergencyLoads() {
         for (photoId, task) in emergencyTasks {
             task.cancel()
-            print("🚫 TargetImageLoader: Cancelled emergency load for photo \(photoId)")
+            ProductionLogger.debug("TargetImageLoader: Cancelled emergency load for photo \(photoId)")
         }
         emergencyTasks.removeAll()
         completionCallbacks.removeAll()
@@ -91,7 +91,7 @@ actor TargetImageLoader {
             task.cancel()
             emergencyTasks.removeValue(forKey: photoId)
             completionCallbacks.removeValue(forKey: photoId)
-            print("🚫 TargetImageLoader: Cancelled emergency load for photo \(photoId)")
+            ProductionLogger.debug("TargetImageLoader: Cancelled emergency load for photo \(photoId)")
         }
     }
     
@@ -159,9 +159,8 @@ extension TargetImageLoader {
         print("🚨 TargetImageLoader: Loading \(photos.count) images with primary \(primaryPhotoId)")
         
         let startTime = Date()
-        var results: [UUID: NSImage] = [:]
         
-        await withTaskGroup(of: (UUID, NSImage)?.self) { group in
+        let results = await withTaskGroup(of: (UUID, NSImage)?.self, returning: [UUID: NSImage].self) { group in
             for photo in photos {
                 let isPrimary = photo.id == primaryPhotoId
                 let priority = isPrimary ? TaskPriority.userInitiated : TaskPriority.utility
@@ -177,11 +176,13 @@ extension TargetImageLoader {
                 }
             }
             
+            var collectedResults: [UUID: NSImage] = [:]
             for await result in group {
                 if let (photoId, image) = result {
-                    results[photoId] = image
+                    collectedResults[photoId] = image
                 }
             }
+            return collectedResults
         }
         
         let loadTime = Date().timeIntervalSince(startTime)

@@ -129,7 +129,7 @@ public struct SimpleImageDisplayView: View {
         
         currentPhotoID = newID
         
-        print("📏 handlePhotoChange: New photo loaded: \(newID.uuidString)")
+        ProductionLogger.debug("handlePhotoChange: New photo loaded: \(newID.uuidString)")
         
         // Trigger transition if enabled
         if transitionSettings.settings.isEnabled {
