@@ -40,12 +40,6 @@
     "%lld photos" : {
 
     },
-    "• Advanced caching strategies" : {
-
-    },
-    "• Advanced gesture recognition" : {
-
-    },
     "• Advanced memory management and caching" : {
 
     },
@@ -58,16 +52,7 @@
     "• Background preloading ensures smooth navigation" : {
 
     },
-    "• Custom transition effects" : {
-
-    },
     "• Date sorting groups related photos for better caching" : {
-
-    },
-    "• Enhanced memory management algorithms" : {
-
-    },
-    "• Experimental image loading pipelines" : {
 
     },
     "• Fade effects are most performance-friendly" : {
@@ -109,16 +94,10 @@
     "• Supports unlimited photo collections (100k+ photos)" : {
 
     },
-    "• Touch Bar support (MacBook Pro)" : {
-
-    },
     "• VoiceOver support available for all interface elements" : {
 
     },
     "• Zoom effects may impact performance on large images" : {
-
-    },
-    "⚠️ Experimental features may be unstable or incomplete" : {
 
     },
     "⚠️ Position Conflicts Detected" : {
@@ -250,9 +229,6 @@
     "Clear All Recent Folders" : {
 
     },
-    "Clear Cache" : {
-
-    },
     "Clear Menu" : {
 
     },
@@ -263,9 +239,6 @@
 
     },
     "Controls Position from Bottom" : {
-
-    },
-    "Current Performance" : {
 
     },
     "Date Format" : {
@@ -367,9 +340,6 @@
         }
       }
     },
-    "Debug Information" : {
-
-    },
     "Default" : {
 
     },
@@ -455,9 +425,6 @@
 
     },
     "Enable accessibility features for localization" : {
-
-    },
-    "Enable debug logging" : {
 
     },
     "Enable Transition Effects" : {
@@ -731,9 +698,6 @@
         }
       }
     },
-    "Export Logs" : {
-
-    },
     "Export Recent Files..." : {
 
     },
@@ -780,9 +744,6 @@
 
     },
     "Intensity: %@%%" : {
-
-    },
-    "Interface Enhancements" : {
 
     },
     "Japan" : {
@@ -843,9 +804,6 @@
       }
     },
     "Largest First" : {
-
-    },
-    "Load System Information" : {
 
     },
     "Loading image..." : {
@@ -1143,12 +1101,6 @@
     "Order:" : {
 
     },
-    "Performance Optimizations" : {
-
-    },
-    "Performance Report" : {
-
-    },
     "Performance Tip" : {
 
     },
@@ -1248,9 +1200,6 @@
 
     },
     "Recent Folders" : {
-
-    },
-    "Refresh Metrics" : {
 
     },
     "Refresh Statistics" : {
@@ -1834,9 +1783,6 @@
 
     },
     "Show Statistics" : {
-
-    },
-    "Show System Info" : {
 
     },
     "Shows: filename, dimensions, file size, creation date" : {
@@ -2625,9 +2571,6 @@
 
     },
     "United States" : {
-
-    },
-    "Verbose logging (detailed output)" : {
 
     },
     "Version 1.0" : {

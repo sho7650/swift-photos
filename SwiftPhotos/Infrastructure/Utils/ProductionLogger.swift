@@ -11,24 +11,39 @@ public final class ProductionLogger {
     // MARK: - Private Properties
     private let logger = Logger(subsystem: "com.example.SwiftPhotos", category: "production")
     
+    // MARK: - Runtime Debug Control
+    private static var isDebugLoggingEnabled: Bool {
+        UserDefaults.standard.bool(forKey: "DebugLoggingEnabled")
+    }
+    
+    private static var isVerboseLoggingEnabled: Bool {
+        UserDefaults.standard.bool(forKey: "VerboseLoggingEnabled")
+    }
+    
     private init() {}
     
     // MARK: - Debug Logging (Development Only)
     
-    /// Debug logging - only outputs in DEBUG builds
-    /// Safe for App Store submission as it won't appear in production
+    /// Debug logging - controlled by runtime debug settings
+    /// Safe for App Store submission as it respects user preferences
     public static func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         #if DEBUG
-        let fileName = (file as NSString).lastPathComponent
-        shared.logger.debug("[\(fileName):\(line)] \(function): \(message)")
+        if isDebugLoggingEnabled {
+            let fileName = (file as NSString).lastPathComponent
+            shared.logger.debug("[\(fileName):\(line)] \(function): \(message)")
+        }
         #endif
     }
     
-    /// Development-only print statement replacement
-    /// Use this for verbose debugging that should never reach production
+    /// Verbose debugging output controlled by runtime settings
+    /// Use this for detailed debugging that can be toggled by user
     public static func verbose(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         #if DEBUG
-        print("🔍 [\((file as NSString).lastPathComponent):\(line)] \(message)")
+        if isDebugLoggingEnabled && isVerboseLoggingEnabled {
+            let fileName = (file as NSString).lastPathComponent
+            print("🔍 [\(fileName):\(line)] \(function): \(message)")
+            shared.logger.debug("VERBOSE [\(fileName):\(line)] \(function): \(message)")
+        }
         #endif
     }
     
@@ -112,10 +127,55 @@ public final class ProductionLogger {
     /// Conditional debug logging based on feature flags
     public static func conditionalDebug(_ message: String, condition: Bool = true) {
         #if DEBUG
-        if condition {
+        if condition && isDebugLoggingEnabled {
             shared.logger.debug("\(message)")
         }
         #endif
+    }
+    
+    // MARK: - Debug Control Methods
+    
+    /// Enable or disable debug logging at runtime
+    public static func setDebugLogging(enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: "DebugLoggingEnabled")
+        info("Debug logging \(enabled ? "enabled" : "disabled")")
+    }
+    
+    /// Enable or disable verbose logging at runtime
+    public static func setVerboseLogging(enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: "VerboseLoggingEnabled")
+        info("Verbose logging \(enabled ? "enabled" : "disabled")")
+    }
+    
+    /// Get current debug logging state
+    public static func isDebugEnabled() -> Bool {
+        return isDebugLoggingEnabled
+    }
+    
+    /// Get current verbose logging state
+    public static func isVerboseEnabled() -> Bool {
+        return isVerboseLoggingEnabled
+    }
+    
+    /// Export logs to a string (for debugging purposes)
+    /// Note: This is a simplified version - in production you might want to read from system logs
+    public static func exportLogsAsString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .medium
+        
+        return """
+        Swift Photos Debug Log Export
+        Generated: \(dateFormatter.string(from: Date()))
+        Debug Logging: \(isDebugLoggingEnabled ? "Enabled" : "Disabled")
+        Verbose Logging: \(isVerboseLoggingEnabled ? "Enabled" : "Disabled")
+        
+        ===== Recent Log Entries =====
+        [This would contain recent log entries in a production implementation]
+        
+        Note: Full log access requires reading from system unified logging
+        Use Console.app or log stream commands for complete logs.
+        """
     }
 }
 

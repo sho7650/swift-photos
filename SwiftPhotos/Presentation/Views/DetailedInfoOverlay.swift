@@ -265,7 +265,7 @@ public struct DetailedInfoOverlay: View {
                     label: localizationService?.localizedString(for: "ui.actions.folder") ?? "Folder",
                     action: {
                         uiControlStateManager.handleGestureInteraction()
-                        // TODO: Implement reveal in finder
+                        revealCurrentPhotoInFinder()
                         ProductionLogger.userAction("Reveal in Finder action")
                     }
                 )
@@ -300,6 +300,28 @@ public struct DetailedInfoOverlay: View {
         withAnimation(.easeInOut(duration: 0.3)) {
             isExpanded.toggle()
         }
+    }
+    
+    /// Reveal the current photo in Finder
+    private func revealCurrentPhotoInFinder() {
+        guard let slideshow = viewModel.slideshow,
+              !slideshow.isEmpty,
+              let currentPhoto = slideshow.currentPhoto else {
+            ProductionLogger.warning("DetailedInfoOverlay: No current photo to reveal in Finder")
+            return
+        }
+        
+        let fileURL = currentPhoto.imageURL.url
+        
+        // Verify the file exists before trying to reveal it
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            ProductionLogger.error("DetailedInfoOverlay: Photo file does not exist at path: \(fileURL.path)")
+            return
+        }
+        
+        // Use NSWorkspace to reveal the file in Finder
+        NSWorkspace.shared.activateFileViewerSelecting([fileURL])
+        ProductionLogger.info("DetailedInfoOverlay: Revealed photo '\(currentPhoto.fileName)' in Finder")
     }
 }
 
