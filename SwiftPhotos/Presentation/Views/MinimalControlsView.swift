@@ -50,7 +50,13 @@ public struct MinimalControlsView: View {
             languageUpdateTrigger += 1
             ProductionLogger.debug("MinimalControlsView: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
         }
-        .id(languageUpdateTrigger) // Force view recreation when language changes
+        .onChange(of: viewModel.slideshow) { oldValue, newValue in
+            ProductionLogger.debug("MinimalControlsView: Slideshow changed - old: \(oldValue?.count ?? -1) photos, new: \(newValue?.count ?? -1) photos")
+            if let newSlideshow = newValue {
+                ProductionLogger.debug("MinimalControlsView: New slideshow - currentIndex: \(newSlideshow.currentIndex), count: \(newSlideshow.count), isEmpty: \(newSlideshow.isEmpty)")
+            }
+        }
+        // .id(languageUpdateTrigger) // Temporarily disabled to debug photo counter issue
     }
     
     private var welcomeControls: some View {

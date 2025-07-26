@@ -75,13 +75,11 @@ public final class ModernSlideshowViewModel {
     
     /// Safely set a slideshow while ensuring internal state consistency
     public func setSlideshow(_ newSlideshow: Slideshow) {
-        ProductionLogger.debug("ModernSlideshowViewModel: Setting slideshow with \(newSlideshow.photos.count) photos, currentIndex: \(newSlideshow.currentIndex)")
         
         slideshow = newSlideshow
         currentPhoto = newSlideshow.currentPhoto
         refreshCounter += 1
         
-        ProductionLogger.debug("ModernSlideshowViewModel: Slideshow set - currentIndex: \(slideshow?.currentIndex ?? -1), count: \(slideshow?.count ?? 0), currentPhoto: \(currentPhoto?.fileName ?? "nil")")
     }
     
     // MARK: - Initialization
@@ -512,8 +510,8 @@ public final class ModernSlideshowViewModel {
                 try initializedSlideshow.setCurrentIndex(0)
             }
             
-            slideshow = initializedSlideshow
-            ProductionLogger.debug("Slideshow initialized - currentIndex: \(slideshow?.currentIndex ?? -1), count: \(slideshow?.count ?? 0), photos.count: \(initializedSlideshow.photos.count)")
+            ProductionLogger.debug("About to set slideshow in createSlideshow - photos.count: \(initializedSlideshow.photos.count), currentIndex: \(initializedSlideshow.currentIndex), count: \(initializedSlideshow.count), isEmpty: \(initializedSlideshow.isEmpty)")
+            setSlideshow(initializedSlideshow)
             
             if !initializedSlideshow.isEmpty {
                 ProductionLogger.debug("Loading current image from index 0")

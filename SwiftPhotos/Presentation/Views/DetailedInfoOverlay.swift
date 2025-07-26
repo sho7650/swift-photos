@@ -47,7 +47,7 @@ public struct DetailedInfoOverlay: View {
             languageUpdateTrigger += 1
             ProductionLogger.debug("DetailedInfoOverlay: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
         }
-        .id(languageUpdateTrigger) // Force view recreation when language changes
+        // .id(languageUpdateTrigger) // Temporarily disabled to debug photo counter issue
     }
     
     private func detailedInfoPanel(slideshow: Slideshow) -> some View {
@@ -94,7 +94,7 @@ public struct DetailedInfoOverlay: View {
                 Spacer()
                 
                 // Photo counter  
-                Text(String(format: localizationService?.localizedString(for: "ui.photo_counter") ?? "%lld of %lld", slideshow.currentIndex + 1, slideshow.count))
+                Text(String(format: localizationService?.localizedFormatString(for: "ui.photo_counter") ?? "%lld of %lld", slideshow.currentIndex + 1, slideshow.count))
                     .font(.headline)
                     .foregroundColor(.primary)
                 

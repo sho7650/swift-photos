@@ -390,6 +390,7 @@ struct ContentView: View {
             )
             
             ProductionLogger.info("Created slideshow with \(newSlideshow.photos.count) photos")
+            ProductionLogger.debug("ContentView: Created slideshow details - photos.count: \(newSlideshow.photos.count), currentIndex: \(newSlideshow.currentIndex), count: \(newSlideshow.count), isEmpty: \(newSlideshow.isEmpty)")
             viewModel.setSlideshow(newSlideshow)
             
             if !newSlideshow.isEmpty {

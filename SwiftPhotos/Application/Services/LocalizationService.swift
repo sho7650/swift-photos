@@ -109,6 +109,7 @@ public final class LocalizationService: @unchecked Sendable {
     public func localizedString(for key: String, arguments: CVarArg...) -> String {
         ProductionLogger.debug("LocalizationService: Requesting key '\(key)' with locale '\(effectiveLocale.identifier)' (language: \(currentLanguage.rawValue))")
         
+        
         // Try to get the localized string using Bundle localization
         let bundle = Bundle.main
         var format: String
@@ -132,7 +133,20 @@ public final class LocalizationService: @unchecked Sendable {
         
         ProductionLogger.debug("LocalizationService: Key '\(key)' resolved to '\(format)' (locale: \(effectiveLocale.identifier))")
         
+        // Handle special case where localization might return evaluated string instead of format string
+        if key == "ui.photo_counter" && !format.contains("%lld") {
+            // Try direct Bundle access as fallback
+            let directFormat = NSLocalizedString(key, bundle: bundle, comment: "")
+            if directFormat.contains("%lld") {
+                format = directFormat
+            } else {
+                // Ultimate fallback to ensure valid format string
+                format = "%lld of %lld"
+            }
+        }
+        
         let result = String(format: format, arguments: arguments)
+        
         
         // Check if localization actually worked by comparing with English fallback
         let englishFormat = NSLocalizedString(key, bundle: bundle, comment: "")
@@ -151,6 +165,41 @@ public final class LocalizationService: @unchecked Sendable {
     public func localizedString(for key: String, locale: Locale, arguments: CVarArg...) -> String {
         let format = String(localized: String.LocalizationValue(key), locale: locale)
         return String(format: format, arguments: arguments)
+    }
+    
+    /// Get raw localized format string without formatting (useful for format strings with placeholders)
+    public func localizedFormatString(for key: String) -> String {
+        ProductionLogger.debug("LocalizationService: Requesting format string for key '\(key)' with locale '\(effectiveLocale.identifier)' (language: \(currentLanguage.rawValue))")
+        
+        let bundle = Bundle.main
+        var format: String
+        
+        // For runtime language switching, we need to manually load from the appropriate .lproj folder
+        if currentLanguage != .system {
+            let languageCode = currentLanguage.rawValue
+            if let languageBundlePath = bundle.path(forResource: languageCode, ofType: "lproj"),
+               let languageBundle = Bundle(path: languageBundlePath) {
+                format = NSLocalizedString(key, bundle: languageBundle, comment: "")
+                ProductionLogger.debug("LocalizationService: Using language bundle for '\(languageCode)'")
+            } else {
+                // Fallback to standard localization
+                format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
+                ProductionLogger.debug("LocalizationService: Language bundle not found, using standard API")
+            }
+        } else {
+            // Use standard localization for system language
+            format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
+        }
+        
+        ProductionLogger.debug("LocalizationService: Format string for '\(key)' resolved to '\(format)' (locale: \(effectiveLocale.identifier))")
+        
+        // For ui.photo_counter, ensure we have a valid format string
+        if key == "ui.photo_counter" && !format.contains("%lld") {
+            ProductionLogger.debug("⚡ LocalizationService: Format string invalid for '\(key)', using fallback")
+            format = "%lld of %lld"
+        }
+        
+        return format
     }
     
     /// Set language and save to preferences

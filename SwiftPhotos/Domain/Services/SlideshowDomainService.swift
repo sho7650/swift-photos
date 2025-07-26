@@ -24,7 +24,7 @@ public class SlideshowDomainService: ObservableObject {
             
             let slideshow = Slideshow(photos: photos, interval: interval, mode: mode)
             ProductionLogger.debug("SlideshowDomainService: Created slideshow successfully")
-            ProductionLogger.debug("SlideshowDomainService: Created slideshow successfully")
+            ProductionLogger.debug("SlideshowDomainService: Created slideshow details - photos.count: \(slideshow.photos.count), currentIndex: \(slideshow.currentIndex), count: \(slideshow.count), isEmpty: \(slideshow.isEmpty)")
             return slideshow
         } catch {
             ProductionLogger.error("SlideshowDomainService: Error in createSlideshow: \(error)")
