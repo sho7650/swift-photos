@@ -3,6 +3,16 @@ import SwiftUI
 import AppKit
 import Observation
 
+// Note: In Swift, all files in the same module are automatically visible to each other.
+// These types are defined in the following files within our SwiftPhotos module:
+// - Slideshow, Photo, SlideshowDomainService (Domain layer)
+// - SlideshowInterval, PerformanceSettings, SortSettings, WindowLevel (Domain value objects)  
+// - SlideshowError (defined in ImageURL.swift)
+// - SecureFileAccess, VirtualImageLoader, BackgroundPreloader, TargetImageLoader (Infrastructure services)
+// - ProductionLogger, SendableImage (Infrastructure utilities)
+// - ModernPerformanceSettingsManager, ModernSlideshowSettingsManager, ModernSortSettingsManager (Application services)
+// - Notification.Name extensions (defined in ModernSettingsManagers.swift)
+
 /// Loading states for detailed user feedback
 public enum LoadingState: Equatable {
     case notLoading
