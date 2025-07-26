@@ -71,6 +71,19 @@ public final class ModernSlideshowViewModel {
     private let slideshowSettingsManager: ModernSlideshowSettingsManager
     private let sortSettingsManager: ModernSortSettingsManager?
     
+    // MARK: - Public Slideshow Management
+    
+    /// Safely set a slideshow while ensuring internal state consistency
+    public func setSlideshow(_ newSlideshow: Slideshow) {
+        ProductionLogger.debug("ModernSlideshowViewModel: Setting slideshow with \(newSlideshow.photos.count) photos, currentIndex: \(newSlideshow.currentIndex)")
+        
+        slideshow = newSlideshow
+        currentPhoto = newSlideshow.currentPhoto
+        refreshCounter += 1
+        
+        ProductionLogger.debug("ModernSlideshowViewModel: Slideshow set - currentIndex: \(slideshow?.currentIndex ?? -1), count: \(slideshow?.count ?? 0), currentPhoto: \(currentPhoto?.fileName ?? "nil")")
+    }
+    
     // MARK: - Initialization
     
     public init(
@@ -244,6 +257,7 @@ public final class ModernSlideshowViewModel {
         currentSlideshow.nextPhoto()
         ProductionLogger.debug("NextPhoto: After nextPhoto() - new index: \(currentSlideshow.currentIndex)")
         slideshow = currentSlideshow
+        ProductionLogger.debug("NextPhoto: Slideshow updated - currentIndex: \(slideshow?.currentIndex ?? -1), count: \(slideshow?.count ?? 0)")
         currentPhoto = currentSlideshow.currentPhoto
         refreshCounter += 1
         
@@ -265,8 +279,10 @@ public final class ModernSlideshowViewModel {
     public func previousPhoto() {
         guard var currentSlideshow = slideshow else { return }
         
+        ProductionLogger.debug("PreviousPhoto: Current slideshow mode: \(currentSlideshow.mode), current index: \(currentSlideshow.currentIndex)")
         currentSlideshow.previousPhoto()
         slideshow = currentSlideshow
+        ProductionLogger.debug("PreviousPhoto: Slideshow updated - currentIndex: \(slideshow?.currentIndex ?? -1), count: \(slideshow?.count ?? 0)")
         currentPhoto = currentSlideshow.currentPhoto
         refreshCounter += 1
         
@@ -288,9 +304,11 @@ public final class ModernSlideshowViewModel {
     public func goToPhoto(at index: Int) {
         guard var currentSlideshow = slideshow else { return }
         
+        ProductionLogger.debug("GoToPhoto: Current slideshow index: \(currentSlideshow.currentIndex), target index: \(index)")
         do {
             try currentSlideshow.setCurrentIndex(index)
             slideshow = currentSlideshow
+            ProductionLogger.debug("GoToPhoto: Slideshow updated - currentIndex: \(slideshow?.currentIndex ?? -1), count: \(slideshow?.count ?? 0)")
             currentPhoto = currentSlideshow.currentPhoto
             refreshCounter += 1
             
@@ -495,6 +513,7 @@ public final class ModernSlideshowViewModel {
             }
             
             slideshow = initializedSlideshow
+            ProductionLogger.debug("Slideshow initialized - currentIndex: \(slideshow?.currentIndex ?? -1), count: \(slideshow?.count ?? 0), photos.count: \(initializedSlideshow.photos.count)")
             
             if !initializedSlideshow.isEmpty {
                 ProductionLogger.debug("Loading current image from index 0")

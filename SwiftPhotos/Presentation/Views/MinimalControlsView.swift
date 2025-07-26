@@ -32,6 +32,9 @@ public struct MinimalControlsView: View {
                 if uiControlStateManager.isControlsVisible {
                     controlsOverlay(slideshow: slideshow)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .onAppear {
+                            ProductionLogger.debug("MinimalControlsView: Controls shown with slideshow - isEmpty: \(slideshow.isEmpty), currentIndex: \(slideshow.currentIndex), count: \(slideshow.count)")
+                        }
                 }
             } else {
                 // Welcome state - folder selection
@@ -152,6 +155,9 @@ public struct MinimalControlsView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .transition(.opacity)
+                    .onAppear {
+                        ProductionLogger.debug("MinimalControlsView: Photo counter - currentIndex: \(slideshow.currentIndex), count: \(slideshow.count), photos.count: \(slideshow.photos.count)")
+                    }
             }
         }
         .padding(.horizontal, 20)

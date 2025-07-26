@@ -390,7 +390,7 @@ struct ContentView: View {
             )
             
             ProductionLogger.info("Created slideshow with \(newSlideshow.photos.count) photos")
-            viewModel.slideshow = newSlideshow
+            viewModel.setSlideshow(newSlideshow)
             
             if !newSlideshow.isEmpty {
                 // Auto-recommend settings for collection size

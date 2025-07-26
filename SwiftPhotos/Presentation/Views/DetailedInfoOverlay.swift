@@ -36,6 +36,9 @@ public struct DetailedInfoOverlay: View {
                uiControlStateManager.isDetailedInfoVisible {
                 detailedInfoPanel(slideshow: slideshow)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .onAppear {
+                        ProductionLogger.debug("DetailedInfoOverlay: Panel shown with slideshow - isEmpty: \(slideshow.isEmpty), currentIndex: \(slideshow.currentIndex), count: \(slideshow.count)")
+                    }
             }
         }
         .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiControlStateManager.isDetailedInfoVisible)
@@ -97,6 +100,9 @@ public struct DetailedInfoOverlay: View {
                 Text(String(format: localizationService?.localizedString(for: "ui.photo_counter") ?? "%lld of %lld", slideshow.currentIndex + 1, slideshow.count))
                     .font(.headline)
                     .foregroundColor(.primary)
+                    .onAppear {
+                        ProductionLogger.debug("DetailedInfoOverlay: Photo counter - currentIndex: \(slideshow.currentIndex), count: \(slideshow.count), photos.count: \(slideshow.photos.count)")
+                    }
                 
                 Spacer()
                 
