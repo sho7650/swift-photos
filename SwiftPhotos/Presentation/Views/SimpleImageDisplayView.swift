@@ -116,7 +116,7 @@ public struct SimpleImageDisplayView: View {
             initializeTransitionManager()
             setupTransitionNotifications()
         }
-        .onChange(of: viewModel.currentPhoto?.id) { newPhotoID in
+        .onChange(of: viewModel.currentPhoto?.id) { _, newPhotoID in
             handlePhotoChange(newPhotoID: newPhotoID)
         }
         .animation(getTransitionAnimation(), value: showImage)

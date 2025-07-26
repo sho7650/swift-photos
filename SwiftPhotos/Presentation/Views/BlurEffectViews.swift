@@ -77,7 +77,7 @@ public struct AnimatedBlurTransition: ViewModifier {
                     }
                 }
             }
-            .onChange(of: isVisible) { newValue in
+            .onChange(of: isVisible) { _, newValue in
                 withAnimation(.easeInOut(duration: animationDuration)) {
                     currentIntensity = newValue ? 1.0 : 0.0
                 }
