@@ -20,7 +20,7 @@ struct LocalizationIntegrationTests {
         
         // Create services
         let localizationService = LocalizationService()
-        let localizationSettingsManager = ModernLocalizationSettingsManager(localizationService: localizationService)
+        let localizationSettingsManager = ModernLocalizationSettingsManager(localizationService: localizationService as LocalizationService?)
         
         // Test initial state
         #expect(localizationService.currentLanguage == .system)
@@ -64,8 +64,8 @@ struct LocalizationIntegrationTests {
         try? TestUtilities.createTestImages(in: testDir, count: 5)
         
         // Create repository with localization service
-        let fileAccess = MockSecureFileAccess()
-        let imageLoader = MockImageLoader()
+        let fileAccess = LocalizationTestMockSecureFileAccess()
+        let imageLoader = ImageLoader() // Use real ImageLoader for this localization test
         let sortSettings = ModernSortSettingsManager()
         
         let repository = FileSystemPhotoRepository(
@@ -79,7 +79,7 @@ struct LocalizationIntegrationTests {
         fileAccess.shouldFailPrepareAccess = true
         
         do {
-            _ = try await repository.loadPhotosFromFolder(testDir)
+            _ = try await repository.loadPhotos(from: testDir)
             #expect(Bool(false), "Should have thrown an error")
         } catch {
             // Error should be localized (though we can't easily test the actual localization in unit tests)
@@ -101,7 +101,7 @@ struct LocalizationIntegrationTests {
         let localizationService = LocalizationService()
         localizationService.setLanguage(.english)
         
-        let uiControlSettings = UIControlSettingsManager()
+        let uiControlSettings = ModernUIControlSettingsManager()
         let stateManager = UIControlStateManager(
             uiControlSettings: uiControlSettings,
             slideshowViewModel: nil
@@ -130,8 +130,8 @@ struct LocalizationIntegrationTests {
         
         // Create multiple services that should stay in sync
         let localizationService = LocalizationService()
-        let localizationSettings1 = ModernLocalizationSettingsManager(localizationService: localizationService)
-        let localizationSettings2 = ModernLocalizationSettingsManager(localizationService: localizationService)
+        let localizationSettings1 = ModernLocalizationSettingsManager(localizationService: localizationService as LocalizationService?)
+        let localizationSettings2 = ModernLocalizationSettingsManager(localizationService: localizationService as LocalizationService?)
         
         // Change language in one settings manager
         var settings1 = localizationSettings1.settings
@@ -249,7 +249,7 @@ struct LocalizationIntegrationTests {
             group.addTask {
                 for i in 0..<50 {
                     let language: SupportedLanguage = i % 2 == 0 ? .english : .japanese
-                    localizationService.setLanguage(language)
+                    await localizationService.setLanguage(language)
                     await TestUtilities.waitForAsync(timeout: 0.001)
                 }
             }
@@ -257,7 +257,7 @@ struct LocalizationIntegrationTests {
             // Task 2: Continuous string requests
             group.addTask {
                 for _ in 0..<100 {
-                    _ = localizationService.localizedString(for: "button.select_folder")
+                    _ = await localizationService.localizedString(for: "button.select_folder")
                     await TestUtilities.waitForAsync(timeout: 0.001)
                 }
             }
@@ -265,17 +265,16 @@ struct LocalizationIntegrationTests {
             // Task 3: Preferred language management
             group.addTask {
                 for _ in 0..<20 {
-                    localizationService.addPreferredLanguage(.spanish)
-                    localizationService.removePreferredLanguage(.spanish)
+                    await localizationService.addPreferredLanguage(.spanish)
+                    await localizationService.removePreferredLanguage(.spanish)
                     await TestUtilities.waitForAsync(timeout: 0.005)
                 }
             }
         }
         
         // After concurrent operations, service should still be functional
-        let finalString = localizationService.localizedString(for: "button.select_folder")
+        let finalString = await localizationService.localizedString(for: "button.select_folder")
         #expect(finalString.isEmpty == false)
-        #expect(localizationService.currentLanguage != nil)
     }
     
     @Test func testMemoryUsageUnderLoad() async {
@@ -299,5 +298,22 @@ struct LocalizationIntegrationTests {
         // Service should still be responsive
         let responseString = localizationService.localizedString(for: "button.select_folder")
         #expect(responseString.isEmpty == false)
+    }
+}
+
+// MARK: - Test Helper Classes
+
+/// Simple mock for LocalizationIntegrationTests
+private class LocalizationTestMockSecureFileAccess: SecureFileAccess {
+    var shouldFailPrepareAccess = false
+    
+    override init() {
+        super.init()
+    }
+    
+    override func prepareForAccess(url: URL, bookmarkData: Data? = nil) throws {
+        if shouldFailPrepareAccess {
+            throw SlideshowError.folderAccessDenied("Mock access denied for testing")
+        }
     }
 }

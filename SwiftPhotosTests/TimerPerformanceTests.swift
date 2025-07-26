@@ -7,6 +7,7 @@
 
 import Testing
 import Foundation
+import AppKit
 @testable import Swift_Photos
 
 @MainActor
@@ -277,7 +278,7 @@ struct TimerPerformanceTests {
     }
     
     @Test func testUIControlStateManagerTimerPerformance() async {
-        let uiControlSettings = UIControlSettingsManager()
+        let uiControlSettings = ModernUIControlSettingsManager()
         uiControlSettings.updateSettings(UIControlSettings(
             autoHideDelay: 0.1, // Short delay for testing
             playingAutoHideDelay: 0.05,

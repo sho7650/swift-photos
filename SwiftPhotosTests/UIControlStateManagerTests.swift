@@ -14,8 +14,8 @@ struct UIControlStateManagerTests {
     
     // MARK: - Test Helpers
     
-    private func createTestUIControlSettings() -> UIControlSettingsManager {
-        let settings = UIControlSettingsManager()
+    private func createTestUIControlSettings() -> ModernUIControlSettingsManager {
+        let settings = ModernUIControlSettingsManager()
         settings.updateSettings(UIControlSettings(
             autoHideDelay: 2.0,
             playingAutoHideDelay: 1.0,

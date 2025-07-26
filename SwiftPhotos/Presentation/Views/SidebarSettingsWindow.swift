@@ -140,7 +140,7 @@ public struct SidebarSettingsWindow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Swift Photos")
                         .font(.system(size: 12, weight: .medium))
-                    Text("Version 1.0")
+                    Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")")
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
                 }

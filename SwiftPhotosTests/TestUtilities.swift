@@ -7,6 +7,7 @@
 
 import Foundation
 import Testing
+import AppKit
 @testable import Swift_Photos
 
 // MARK: - Test Utilities
@@ -71,37 +72,45 @@ struct TestUtilities {
 // MARK: - Mock Objects
 
 /// Mock SecureFileAccess for testing
-class MockSecureFileAccess: SecureFileAccess {
+class TestUtilityMockSecureFileAccess: SecureFileAccess {
     var shouldFailPrepareAccess = false
-    var shouldFailGrantAccess = false
+    var shouldFailEnumerateImages = false
     var prepareAccessCallCount = 0
-    var grantAccessCallCount = 0
+    var enumerateImagesCallCount = 0
+    
+    override init() {
+        super.init()
+    }
     
     override func prepareForAccess(url: URL, bookmarkData: Data? = nil) throws {
         prepareAccessCallCount += 1
         if shouldFailPrepareAccess {
-            throw SecureFileAccessError.bookmarkResolutionFailed
+            throw SlideshowError.securityError("Mock prepare access failed")
         }
     }
     
-    override func grantAccess(to url: URL) -> Bool {
-        grantAccessCallCount += 1
-        return !shouldFailGrantAccess
+    override func enumerateImages(in folderURL: URL) throws -> [URL] {
+        enumerateImagesCallCount += 1
+        if shouldFailEnumerateImages {
+            throw SlideshowError.folderAccessDenied("Mock enumerate images failed")
+        }
+        // Return empty array by default
+        return []
     }
 }
 
-/// Mock ImageLoader for testing
-class MockImageLoader: ImageLoader {
+/// Mock ImageLoader for testing - actors don't support inheritance
+actor MockImageLoader {
     var shouldFailLoad = false
     var loadCallCount = 0
-    var lastLoadedURL: URL?
+    var lastLoadedImageURL: ImageURL?
     
-    override func loadImage(from url: URL) async throws -> NSImage {
+    func loadImage(from imageURL: ImageURL) async throws -> SendableImage {
         loadCallCount += 1
-        lastLoadedURL = url
+        lastLoadedImageURL = imageURL
         
         if shouldFailLoad {
-            throw ImageLoadingError.fileNotFound
+            throw SlideshowError.loadingFailed(underlying: CocoaError(.fileReadNoSuchFile))
         }
         
         // Return a small test image
@@ -112,19 +121,28 @@ class MockImageLoader: ImageLoader {
         NSRect(origin: .zero, size: size).fill()
         image.unlockFocus()
         
-        return image
+        return SendableImage(image)
+    }
+    
+    func extractMetadata(from url: URL) async throws -> Photo.PhotoMetadata? {
+        return Photo.PhotoMetadata(
+            fileSize: 1024,
+            dimensions: CGSize(width: 100, height: 100),
+            creationDate: Date(),
+            colorSpace: "sRGB"
+        )
     }
 }
 
-/// Mock ImageCache for testing
-class MockImageCache: ImageCache {
-    private var storage: [URL: NSImage] = [:]
+/// Mock ImageCache for testing - actors don't support inheritance
+actor MockImageCache: PhotoCache {
+    private var storage: [ImageURL: SendableImage] = [:]
     var cacheHitCount = 0
     var cacheMissCount = 0
     var storeCount = 0
     
-    override func cachedImage(for url: URL) async -> NSImage? {
-        if let image = storage[url] {
+    func getCachedImage(for imageURL: ImageURL) async -> SendableImage? {
+        if let image = storage[imageURL] {
             cacheHitCount += 1
             return image
         } else {
@@ -133,13 +151,22 @@ class MockImageCache: ImageCache {
         }
     }
     
-    override func store(_ image: NSImage, for url: URL, cost: Int = 0) async {
-        storage[url] = image
+    func setCachedImage(_ image: SendableImage, for imageURL: ImageURL) async {
+        storage[imageURL] = image
         storeCount += 1
     }
     
-    override func removeAll() async {
+    func clearCache() async {
         storage.removeAll()
+    }
+    
+    func getCacheStatistics() async -> CacheStatistics {
+        return CacheStatistics(
+            hitCount: cacheHitCount,
+            missCount: cacheMissCount,
+            totalCost: storage.count * 100,
+            currentCount: storage.count
+        )
     }
     
     func getCacheStats() -> (hits: Int, misses: Int, stores: Int) {
@@ -147,14 +174,15 @@ class MockImageCache: ImageCache {
     }
 }
 
-/// Mock LocalizationService for testing UI components
-@MainActor
-class MockLocalizationService: LocalizationService {
+/// Mock LocalizationService for testing UI components - final classes cannot be inherited
+@MainActor  
+class MockLocalizationService {
     var mockStrings: [String: String] = [:]
     var localizedStringCallCount = 0
     var lastRequestedKey: String?
+    var currentLanguage: SupportedLanguage = .english
     
-    override func localizedString(for key: String, arguments: CVarArg...) -> String {
+    func localizedString(for key: String, arguments: CVarArg...) -> String {
         localizedStringCallCount += 1
         lastRequestedKey = key
         
@@ -170,12 +198,20 @@ class MockLocalizationService: LocalizationService {
         return key
     }
     
+    func setLanguage(_ language: SupportedLanguage) {
+        currentLanguage = language
+    }
+    
     func setMockString(_ string: String, for key: String) {
         mockStrings[key] = string
     }
     
     func clearMockStrings() {
         mockStrings.removeAll()
+    }
+    
+    var effectiveLocale: Locale {
+        return Locale(identifier: currentLanguage.rawValue)
     }
 }
 
