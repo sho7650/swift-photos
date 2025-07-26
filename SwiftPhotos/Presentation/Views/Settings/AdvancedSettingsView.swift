@@ -299,6 +299,14 @@ struct AdvancedSettingsView: View {
     }
     
     private func exportLogs() {
+        // Ensure we're on the main thread for proper dialog presentation
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                self.exportLogs()
+            }
+            return
+        }
+        
         let savePanel = NSSavePanel()
         savePanel.title = "Export Debug Logs"
         savePanel.allowedContentTypes = [.plainText]
@@ -332,6 +340,14 @@ struct AdvancedSettingsView: View {
     }
     
     private func generatePerformanceReport() {
+        // Ensure we're on the main thread for proper dialog presentation
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                self.generatePerformanceReport()
+            }
+            return
+        }
+        
         let savePanel = NSSavePanel()
         savePanel.title = "Export Performance Report"
         savePanel.allowedContentTypes = [.plainText]
