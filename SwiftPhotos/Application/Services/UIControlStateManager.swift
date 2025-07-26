@@ -26,13 +26,16 @@ public class UIControlStateManager: ObservableObject {
     // MARK: - Private Properties
     
     private let uiControlSettings: ModernUIControlSettingsManager
-    private var hideTimer: AdaptiveTimer?
+    private var hideTimer: LightweightAdaptiveTimer?
     private var mouseTrackingArea: NSTrackingArea?
     private var globalMouseMonitor: Any?
     private var lastInteractionTime: Date = Date()
-    private var minimumVisibilityTimer: AdaptiveTimer?
-    private var interactionClearTimer: AdaptiveTimer?
+    private var minimumVisibilityTimer: LightweightAdaptiveTimer?
+    private var interactionClearTimer: UUID?
     private weak var slideshowViewModel: ModernSlideshowViewModel?
+    
+    // Optimized timer pool for better performance
+    private let timerPool = OptimizedTimerPool.shared
     
     // Simple cursor management for image hover
     private var cursorManager: CursorManager?
@@ -351,23 +354,19 @@ public class UIControlStateManager: ObservableObject {
     
     private func scheduleInteractionFlagClear() {
         // Cancel any existing interaction clear timer to avoid accumulation
-        interactionClearTimer?.stop()
+        if let timerId = interactionClearTimer {
+            timerPool.cancelTimer(timerId)
+        }
         
-        let config = TimerConfiguration(
-            baseDuration: uiControlSettings.settings.minimumVisibilityDuration,
-            learningEnabled: false,
-            coalescingEnabled: true
-        )
-        
-        interactionClearTimer = AdaptiveTimer(configuration: config)
-        interactionClearTimer?.delegate = self
-        
-        do {
-            try interactionClearTimer?.start(with: config)
-        } catch {
-            ProductionLogger.error("UIControlStateManager: Failed to start interaction clear timer: \(error)")
-            // Fallback: clear flag immediately
-            hasRecentInteraction = false
+        // Use optimized timer pool for better performance
+        interactionClearTimer = timerPool.relaxedTimer(
+            duration: uiControlSettings.settings.minimumVisibilityDuration
+        ) { [weak self] in
+            Task { @MainActor in
+                self?.hasRecentInteraction = false
+                self?.interactionClearTimer = nil
+                ProductionLogger.debug("UIControlStateManager: Interaction flag cleared")
+            }
         }
     }
     
@@ -392,14 +391,15 @@ public class UIControlStateManager: ObservableObject {
             return
         }
         
-        let config = TimerConfiguration.autoHide(duration: hideDelay)
-        hideTimer = AdaptiveTimer(configuration: config)
+        // Use lightweight adaptive timer for better performance
+        hideTimer = LightweightAdaptiveTimer.forUIControls(baseDuration: hideDelay)
         hideTimer?.delegate = self
         hideTimer?.adaptationEnabled = true // Enable context-aware adaptation
         
         do {
+            let config = TimerConfiguration.autoHide(duration: hideDelay)
             try hideTimer?.start(with: config)
-            ProductionLogger.debug("UIControlStateManager: Adaptive hide timer set for \(hideDelay)s")
+            ProductionLogger.debug("UIControlStateManager: Lightweight adaptive hide timer set for \(hideDelay)s")
         } catch {
             ProductionLogger.error("UIControlStateManager: Failed to start hide timer: \(error)")
         }
@@ -415,9 +415,13 @@ public class UIControlStateManager: ObservableObject {
         hideTimer = nil
         minimumVisibilityTimer?.stop()
         minimumVisibilityTimer = nil
-        interactionClearTimer?.stop()
-        interactionClearTimer = nil
-        ProductionLogger.debug("UIControlStateManager: All adaptive timers stopped")
+        
+        if let timerId = interactionClearTimer {
+            timerPool.cancelTimer(timerId)
+            interactionClearTimer = nil
+        }
+        
+        ProductionLogger.debug("UIControlStateManager: All optimized timers stopped")
     }
     
     private func getCurrentHideDelay() -> Double {
@@ -435,20 +439,22 @@ public class UIControlStateManager: ObservableObject {
     private func ensureMinimumVisibility() {
         minimumVisibilityTimer?.stop()
         
-        let config = TimerConfiguration(
-            baseDuration: uiControlSettings.settings.minimumVisibilityDuration,
-            learningEnabled: false,
-            coalescingEnabled: false,
-            backgroundOptimization: true
+        // Use high-performance timer for minimum visibility (no adaptation needed)
+        minimumVisibilityTimer = LightweightAdaptiveTimer.highPerformance(
+            baseDuration: uiControlSettings.settings.minimumVisibilityDuration
         )
-        
-        minimumVisibilityTimer = AdaptiveTimer(configuration: config)
         minimumVisibilityTimer?.delegate = self
         minimumVisibilityTimer?.adaptationEnabled = false // Keep minimum visibility consistent
         
         do {
+            let config = TimerConfiguration(
+                baseDuration: uiControlSettings.settings.minimumVisibilityDuration,
+                learningEnabled: false,
+                coalescingEnabled: false,
+                backgroundOptimization: true
+            )
             try minimumVisibilityTimer?.start(with: config)
-            ProductionLogger.debug("UIControlStateManager: Minimum visibility timer set for \(config.baseDuration)s")
+            ProductionLogger.debug("UIControlStateManager: High-performance minimum visibility timer set for \(config.baseDuration)s")
         } catch {
             ProductionLogger.error("UIControlStateManager: Failed to start minimum visibility timer: \(error)")
         }
@@ -643,54 +649,56 @@ extension UIControlStateManager: AdaptiveTimerDelegate {
     public func timerDidFire(_ timer: AdaptiveTimerProviding) {
         // Determine which timer fired and handle appropriately
         if timer === hideTimer {
-            ProductionLogger.debug("UIControlStateManager: Hide timer fired - hiding controls")
+            ProductionLogger.debug("UIControlStateManager: Optimized hide timer fired - hiding controls")
             hideControls()
             hideTimer = nil
-        } else if timer === interactionClearTimer {
-            ProductionLogger.debug("UIControlStateManager: Interaction clear timer fired")
-            hasRecentInteraction = false
-            interactionClearTimer = nil
         } else if timer === minimumVisibilityTimer {
-            ProductionLogger.debug("UIControlStateManager: Minimum visibility timer completed")
+            ProductionLogger.debug("UIControlStateManager: Optimized minimum visibility timer completed")
             minimumVisibilityTimer = nil
         }
+        // Note: interactionClearTimer is now handled by timer pool callbacks
     }
     
     public func timerDidAdapt(_ timer: AdaptiveTimerProviding, newDuration: TimeInterval, reason: AdaptationReason) {
         if timer === hideTimer {
-            ProductionLogger.debug("UIControlStateManager: Hide timer adapted to \(String(format: "%.1f", newDuration))s (reason: \(reason.rawValue))")
+            ProductionLogger.debug("UIControlStateManager: Optimized hide timer adapted to \(String(format: "%.1f", newDuration))s (reason: \(reason.rawValue))")
+            
+            // Log timer pool statistics periodically for performance monitoring
+            let stats = timerPool.getPoolStatistics()
+            if stats.totalTimersCreated % 50 == 0 { // Every 50 timers
+                ProductionLogger.info("UIControlStateManager: Timer pool stats - Active: \(stats.activeTimers), Efficiency: \(String(format: "%.1f", stats.efficiency * 100))%")
+            }
         }
     }
     
     public func timerWasPaused(_ timer: AdaptiveTimerProviding) {
         if timer === hideTimer {
-            ProductionLogger.debug("UIControlStateManager: Hide timer paused")
+            ProductionLogger.debug("UIControlStateManager: Optimized hide timer paused")
         }
     }
     
     public func timerWasResumed(_ timer: AdaptiveTimerProviding) {
         if timer === hideTimer {
-            ProductionLogger.debug("UIControlStateManager: Hide timer resumed")
+            ProductionLogger.debug("UIControlStateManager: Optimized hide timer resumed")
         }
     }
     
     public func timerWasStopped(_ timer: AdaptiveTimerProviding) {
         if timer === hideTimer {
-            ProductionLogger.debug("UIControlStateManager: Hide timer stopped")
+            ProductionLogger.debug("UIControlStateManager: Optimized hide timer stopped")
         }
     }
     
     public func timerDidEncounterError(_ timer: AdaptiveTimerProviding, error: TimerError) {
-        ProductionLogger.error("UIControlStateManager: Timer error - \(error.localizedDescription)")
+        ProductionLogger.error("UIControlStateManager: Optimized timer error - \(error.localizedDescription)")
         
         // Handle timer errors gracefully
         if timer === hideTimer {
             ProductionLogger.warning("UIControlStateManager: Hide timer error - controls will remain visible")
             hideTimer = nil
-        } else if timer === interactionClearTimer {
-            // Fallback: clear interaction flag immediately
-            hasRecentInteraction = false
-            interactionClearTimer = nil
+        } else if timer === minimumVisibilityTimer {
+            ProductionLogger.warning("UIControlStateManager: Minimum visibility timer error - continuing normally")
+            minimumVisibilityTimer = nil
         }
     }
     
