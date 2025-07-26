@@ -10,25 +10,44 @@ struct LanguageSettingsView: View {
     @State private var previewNumber = 1234.56
     @State private var languageUpdateTrigger = 0
     
+    // Access the localization service for dynamic strings
+    private var localizationService: LocalizationService {
+        localizationSettings.localizationService
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Language Selection Section
             LanguageSettingsSection(
                 title: String(localized: "settings.language.title"),
                 icon: "globe",
-                description: "Choose your preferred language for the application interface"
+                description: String(localized: "settings.language.description")
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     // Primary Language Selection
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Application Language")
+                        Text(L10n.Settings.applicationLanguage)
                             .font(.headline)
                             .fontWeight(.medium)
                         
                         Picker("Language", selection: Binding(
-                            get: { localizationSettings.settings.language },
-                            set: { newLanguage in
+                            get: { 
+                                let currentLang = localizationSettings.settings.language
+                                ProductionLogger.debug("LanguageSettingsView: Picker get - current language: \(currentLang.rawValue)")
+                                return currentLang
+                            },
+                            set: { (newLanguage: SupportedLanguage) in
+                                ProductionLogger.userAction("LanguageSettingsView: 🌍 User selected language: \(newLanguage.displayName) (\(newLanguage.rawValue))")
+                                
+                                let oldLanguage = localizationSettings.settings.language
+                                ProductionLogger.debug("LanguageSettingsView: Language change request - from \(oldLanguage.rawValue) to \(newLanguage.rawValue)")
+                                
                                 localizationSettings.updateLanguage(newLanguage)
+                                
+                                // Force UI update trigger
+                                languageUpdateTrigger += 1
+                                
+                                ProductionLogger.debug("LanguageSettingsView: Language update completed, trigger: \(languageUpdateTrigger)")
                             }
                         )) {
                             ForEach(SupportedLanguage.allCases, id: \.self) { language in
@@ -39,7 +58,7 @@ struct LanguageSettingsView: View {
                         .pickerStyle(.menu)
                         .frame(maxWidth: 200)
                         
-                        Text("Changes take effect immediately")
+                        Text(L10n.Settings.changesImmediate)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -77,9 +96,9 @@ struct LanguageSettingsView: View {
             
             // Regional Formatting Section
             LanguageSettingsSection(
-                title: "Regional Formatting",
+                title: String(localized: "settings.regional_formatting.title"),
                 icon: "textformat.123",
-                description: "Configure how dates, numbers, and times are displayed"
+                description: String(localized: "settings.regional_formatting.description")
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     // Date Format
@@ -167,9 +186,9 @@ struct LanguageSettingsView: View {
             
             // Measurement System Section
             LanguageSettingsSection(
-                title: "Measurement System",
+                title: String(localized: "settings.measurement_system.title"),
                 icon: "ruler",
-                description: "Choose between metric and imperial units"
+                description: String(localized: "settings.measurement_system.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     Picker("Measurement System", selection: Binding(
@@ -196,9 +215,9 @@ struct LanguageSettingsView: View {
             
             // Accessibility Section
             LanguageSettingsSection(
-                title: "Accessibility",
+                title: String(localized: "settings.accessibility.title"),
                 icon: "accessibility",
-                description: "Language-specific accessibility options"
+                description: String(localized: "settings.accessibility.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     Toggle("Enable accessibility features for localization", isOn: Binding(
@@ -217,9 +236,9 @@ struct LanguageSettingsView: View {
             
             // Preset Configurations Section
             LanguageSettingsSection(
-                title: "Quick Presets",
+                title: String(localized: "settings.quick_presets.title"),
                 icon: "speedometer",
-                description: "Apply optimized settings for specific regions"
+                description: String(localized: "settings.quick_presets.description")
             ) {
                 HStack(spacing: 12) {
                     Button("🇺🇸 US English") {
@@ -241,9 +260,9 @@ struct LanguageSettingsView: View {
             
             // Advanced Options Section
             LanguageSettingsSection(
-                title: "Advanced",
+                title: String(localized: "settings.localization_advanced.title"),
                 icon: "gearshape.2",
-                description: "Advanced localization configuration"
+                description: String(localized: "settings.localization_advanced.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -276,10 +295,10 @@ struct LanguageSettingsView: View {
                 previewDate = Date()
             }
         }
+        .environment(\.locale, localizationSettings.environmentLocale) // Swift 6 native pattern
         .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
             languageUpdateTrigger += 1
         }
-        .id(languageUpdateTrigger) // Force view recreation when language changes
     }
 }
 

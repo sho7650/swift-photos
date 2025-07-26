@@ -9,9 +9,9 @@ struct InterfaceSettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             // Auto-hide Settings Section
             SettingsSectionView(
-                title: "Auto-hide Behavior",
+                title: L10n.SettingsString.autoHide(),
                 icon: "eye.slash",
-                description: "Configure when controls automatically hide"
+                description: L10n.SettingsString.autoHideDescription()
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     // General auto-hide delay
@@ -117,7 +117,7 @@ struct InterfaceSettingsView: View {
                     }
                     
                     // Hide on play toggle
-                    Toggle("Hide controls completely during slideshow", isOn: Binding(
+                    Toggle(L10n.ToggleString.hideControlsCompletely(), isOn: Binding(
                         get: { settings.settings.hideOnPlay },
                         set: { newValue in
                             let newSettings = UIControlSettings(
@@ -143,12 +143,12 @@ struct InterfaceSettingsView: View {
             
             // Mouse Interaction Section
             SettingsSectionView(
-                title: "Mouse Interaction",
+                title: L10n.SettingsString.mouseInteraction(),
                 icon: "cursorarrow",
-                description: "Configure mouse movement behavior"
+                description: L10n.SettingsString.mouseInteractionDescription()
             ) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Toggle("Show controls on mouse movement", isOn: Binding(
+                    Toggle(L10n.ToggleString.showControlsOnMouseMovement(), isOn: Binding(
                         get: { settings.settings.showOnMouseMovement },
                         set: { newValue in
                             let newSettings = UIControlSettings(
@@ -242,9 +242,9 @@ struct InterfaceSettingsView: View {
             
             // Appearance Section
             SettingsSectionView(
-                title: "Appearance",
+                title: L10n.SettingsString.appearance(),
                 icon: "paintbrush",
-                description: "Customize visual appearance of controls"
+                description: L10n.SettingsString.appearanceDescription()
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     // Background blur intensity
@@ -387,12 +387,12 @@ struct InterfaceSettingsView: View {
             
             // Information Display Section
             SettingsSectionView(
-                title: "Information Display",
+                title: L10n.SettingsString.informationDisplay(),
                 icon: "info.circle",
-                description: "Configure photo information display"
+                description: L10n.SettingsString.informationDisplayDescription()
             ) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Toggle("Show detailed photo information by default", isOn: Binding(
+                    Toggle(L10n.ToggleString.showDetailedPhotoInformation(), isOn: Binding(
                         get: { settings.settings.showDetailedInfoByDefault },
                         set: { newValue in
                             let newSettings = UIControlSettings(
@@ -430,27 +430,27 @@ struct InterfaceSettingsView: View {
             
             // Presets Section
             SettingsSectionView(
-                title: "Presets",
+                title: L10n.SettingsString.presets(),
                 icon: "square.grid.2x2",
-                description: "Quick preset configurations"
+                description: L10n.SettingsString.presetsDescription()
             ) {
                 HStack(spacing: 12) {
-                    Button("Default") {
+                    Button(L10n.ButtonString.defaultPreset()) {
                         settings.updateSettings(.default)
                     }
                     .buttonStyle(.bordered)
                     
-                    Button("Minimal") {
+                    Button(L10n.ButtonString.minimal()) {
                         settings.updateSettings(.minimal)
                     }
                     .buttonStyle(.bordered)
                     
-                    Button("Always Visible") {
+                    Button(L10n.ButtonString.alwaysVisible()) {
                         settings.updateSettings(.alwaysVisible)
                     }
                     .buttonStyle(.bordered)
                     
-                    Button("Subtle") {
+                    Button(L10n.ButtonString.subtle()) {
                         settings.updateSettings(.subtle)
                     }
                     .buttonStyle(.bordered)

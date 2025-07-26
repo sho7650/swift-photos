@@ -65,7 +65,7 @@ struct ContentView: View {
                         uiControlSettings: uiControlSettings,
                         localizationService: localizationService
                     )
-                    .shortcutTooltip(localizationService?.localizedString(for: "ui.tooltip.hide_show_controls") ?? "Hide/Show Controls", shortcut: "H")
+                    .shortcutTooltip("Hide/Show Controls", shortcut: "H")
                     
                     // Detailed info overlay (shown when toggled)
                     DetailedInfoOverlay(
@@ -86,8 +86,8 @@ struct ContentView: View {
                 // .onTapGesture {
                 //     uiControlStateManager.handleGestureInteraction()
                 // }
-                .alert(localizationService?.localizedString(for: "ui.error_title") ?? "Error", isPresented: .constant(viewModel.error != nil)) {
-                    Button(localizationService?.localizedString(for: "ui.error_button_ok") ?? "OK") {
+                .alert("Error", isPresented: .constant(viewModel.error != nil)) {
+                    Button("OK") {
                         viewModel.clearError()
                     }
                 } message: {
@@ -109,7 +109,7 @@ struct ContentView: View {
                                     .tint(.white)
                                 
                                 VStack(spacing: 8) {
-                                    Text(localizationService?.localizedString(for: "ui.app_name") ?? "Swift Photos")
+                                    Text("Swift Photos")
                                         .font(.title)
                                         .fontWeight(.semibold)
                                         .foregroundColor(.white)
@@ -131,12 +131,12 @@ struct ContentView: View {
                         .tint(.white)
                     
                     VStack(spacing: 8) {
-                        Text(localizationService?.localizedString(for: "ui.app_name") ?? "Swift Photos")
+                        Text("Swift Photos")
                             .font(.title)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
                         
-                        Text(localizationService?.localizedString(for: "ui.initializing_app") ?? "Initializing application...")
+                        Text("Initializing application...")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -160,7 +160,7 @@ struct ContentView: View {
             languageUpdateTrigger += 1
             ProductionLogger.debug("ContentView: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
         }
-        .onChange(of: localizationService?.effectiveLocale) { oldValue, newValue in
+        .onChange(of: localizationService?.currentLocale) { oldValue, newValue in
             languageUpdateTrigger += 1 
             ProductionLogger.debug("ContentView: Locale changed from \(oldValue?.identifier ?? "nil") to \(newValue?.identifier ?? "nil"), trigger: \(languageUpdateTrigger)")
         }

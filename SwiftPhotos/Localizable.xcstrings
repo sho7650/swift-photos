@@ -40,9 +40,6 @@
     "%lld photos" : {
 
     },
-    "• Advanced memory management and caching" : {
-
-    },
     "• All features are accessible via keyboard for full accessibility" : {
 
     },
@@ -70,13 +67,7 @@
     "• Most shortcuts work both during slideshow and while paused" : {
 
     },
-    "• Native macOS design and integration" : {
-
-    },
     "• Press and hold any navigation key for continuous movement" : {
-
-    },
-    "• Professional-grade performance optimization" : {
 
     },
     "• Push effects provide smooth directional transitions" : {
@@ -88,12 +79,6 @@
     "• Shortcuts work immediately without loading delays" : {
 
     },
-    "• Smooth transition effects and animations" : {
-
-    },
-    "• Supports unlimited photo collections (100k+ photos)" : {
-
-    },
     "• VoiceOver support available for all interface elements" : {
 
     },
@@ -101,9 +86,6 @@
 
     },
     "⚠️ Position Conflicts Detected" : {
-
-    },
-    "⚠️ These actions cannot be undone" : {
 
     },
     "⚡ Performance" : {
@@ -149,16 +131,54 @@
     "Aggressive Memory Management" : {
 
     },
-    "Alphabetical" : {
-
+    "alert.reset_all_settings.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will reset all settings to their default values. This action cannot be undone."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esto restablecerá todas las configuraciones a sus valores predeterminados. Esta acción no se puede deshacer."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これによりすべての設定がデフォルト値にリセットされます。この操作は元に戻すことができません。"
+          }
+        }
+      }
+    },
+    "alert.reset_all_settings.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset All Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer todas las configuraciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての設定をリセット"
+          }
+        }
+      }
     },
     "Always at Bottom" : {
 
     },
     "Always on Top" : {
-
-    },
-    "Always Visible" : {
 
     },
     "Animation Easing" : {
@@ -167,7 +187,211 @@
     "App Sandbox Protection Enabled" : {
 
     },
-    "Application Language" : {
+    "app.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Professional photo slideshow application for macOS"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicación profesional de presentación de fotos para macOS"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS向けプロフェッショナル写真スライドショーアプリケーション"
+          }
+        }
+      }
+    },
+    "app.feature.memory_management" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Advanced memory management and caching"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Gestión avanzada de memoria y caché"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 高度なメモリ管理とキャッシュ機能"
+          }
+        }
+      }
+    },
+    "app.feature.native_macos" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Native macOS design and integration"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Diseño nativo de macOS e integración"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ネイティブmacOSデザインと統合"
+          }
+        }
+      }
+    },
+    "app.feature.performance_optimization" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Professional-grade performance optimization"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Optimización de rendimiento de grado profesional"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• プロフェッショナルレベルのパフォーマンス最適化"
+          }
+        }
+      }
+    },
+    "app.feature.smooth_transitions" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Smooth transition effects and animations"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Efectos de transición suaves y animaciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• スムーズなトランジション効果とアニメーション"
+          }
+        }
+      }
+    },
+    "app.feature.unlimited_photos" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Supports unlimited photo collections (100k+ photos)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Soporta colecciones de fotos ilimitadas (100k+ fotos)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 無制限の写真コレクションをサポート（10万枚以上の写真）"
+          }
+        }
+      }
+    },
+    "app.features_title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Features:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Características:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "機能:"
+          }
+        }
+      }
+    },
+    "app.name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swift Photos"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swift Photos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swift Photos"
+          }
+        }
+      }
+    },
+    "app.version" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versión %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン %@"
+          }
+        }
+      }
+    },
+    "Auto Start" : {
 
     },
     "Automatically remove invalid folders" : {
@@ -182,13 +406,464 @@
     "Balanced" : {
 
     },
-    "button.select_folder" : {
+    "button.advanced.clear_all_caches" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear All Caches"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar Todas las Cachés"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのキャッシュをクリア"
+          }
+        }
+      }
+    },
+    "button.advanced.clear_cache" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Cache"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar Caché"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャッシュをクリア"
+          }
+        }
+      }
+    },
+    "button.advanced.clear_recent_files" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Recent Files"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar Archivos Recientes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近のファイルをクリア"
+          }
+        }
+      }
+    },
+    "button.advanced.export_logs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Logs"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar Registros"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログをエクスポート"
+          }
+        }
+      }
+    },
+    "button.advanced.load_system_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load System Info"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargar Info del Sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム情報を読み込み"
+          }
+        }
+      }
+    },
+    "button.advanced.performance_report" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance Report"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reporte de Rendimiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パフォーマンスレポート"
+          }
+        }
+      }
+    },
+    "button.advanced.refresh_metrics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh Metrics"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar Métricas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メトリクスを更新"
+          }
+        }
+      }
+    },
+    "button.advanced.reset_all_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset All Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer Todas las Configuraciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての設定をリセット"
+          }
+        }
+      }
+    },
+    "button.advanced.reset_window_positions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Window Positions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer Posiciones de Ventana"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウィンドウ位置をリセット"
+          }
+        }
+      }
+    },
+    "button.advanced.show_system_info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show System Info"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar Info del Sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム情報を表示"
+          }
+        }
+      }
+    },
+    "button.cancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
+          }
+        }
+      }
+    },
+    "button.clear_all_caches" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Clear All Caches"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar Todas las Cachés"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのキャッシュをクリア"
+          }
+        }
+      }
+    },
+    "button.clear_recent_files" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Recent Files"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar Archivos Recientes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近のファイルをクリア"
+          }
+        }
+      }
+    },
+    "button.interface.always_visible" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Always Visible"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siempre Visible"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常に表示"
+          }
+        }
+      }
+    },
+    "button.interface.default" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por Defecto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デフォルト"
+          }
+        }
+      }
+    },
+    "button.interface.minimal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimal"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mínimo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ミニマル"
+          }
+        }
+      }
+    },
+    "button.interface.subtle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subtle"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sutil"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サブトル"
+          }
+        }
+      }
+    },
+    "button.reset" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リセット"
+          }
+        }
+      }
+    },
+    "button.reset_all_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset All Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer Todas las Configuraciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての設定をリセット"
+          }
+        }
+      }
+    },
+    "button.reset_window_positions" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Window Positions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer Posiciones de Ventana"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウィンドウ位置をリセット"
+          }
+        }
+      }
+    },
+    "button.save" : {
+
+    },
+    "button.select_folder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "Select Folder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar Carpeta"
           }
         },
         "ja" : {
@@ -199,16 +874,277 @@
         }
       }
     },
+    "button.settings" : {
+
+    },
+    "button.sort.alphabetical" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alphabetical"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alfabético"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アルファベット順"
+          }
+        }
+      }
+    },
+    "button.sort.chronological" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chronological"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cronológico"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時系列順"
+          }
+        }
+      }
+    },
+    "button.sort.largest_first" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Largest First"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más Grande Primero"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大きい順"
+          }
+        }
+      }
+    },
+    "button.sort.new_random_order" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Random Order"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo Orden Aleatorio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいランダム順"
+          }
+        }
+      }
+    },
+    "button.sort.newest_first" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Newest First"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más Reciente Primero"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しい順"
+          }
+        }
+      }
+    },
+    "button.sort.random" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Random"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aleatorio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ランダム"
+          }
+        }
+      }
+    },
     "Cancel" : {
 
     },
-    "Changes take effect immediately" : {
-
+    "category.performance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rendimiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パフォーマンス"
+          }
+        }
+      }
+    },
+    "category.performance.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimize for your collection size"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimizar para el tamaño de tu colección"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コレクションサイズに合わせて最適化"
+          }
+        }
+      }
+    },
+    "category.slideshow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slideshow"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presentación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショー"
+          }
+        }
+      }
+    },
+    "category.slideshow.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure timing and behavior"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar tiempo y comportamiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイミングと動作を設定"
+          }
+        }
+      }
+    },
+    "category.transitions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transitions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transiciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トランジション"
+          }
+        }
+      }
+    },
+    "category.transitions.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up beautiful animations"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar hermosas animaciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "美しいアニメーションを設定"
+          }
+        }
+      }
     },
     "China" : {
-
-    },
-    "Chronological" : {
 
     },
     "Cinematic Push" : {
@@ -223,16 +1159,10 @@
     "Clear All" : {
 
     },
-    "Clear All Caches" : {
-
-    },
     "Clear All Recent Folders" : {
 
     },
     "Clear Menu" : {
-
-    },
-    "Clear Recent Files" : {
 
     },
     "Conservative" : {
@@ -343,6 +1273,12 @@
     "Default" : {
 
     },
+    "dialog.export_debug_logs" : {
+
+    },
+    "dialog.export_performance_report" : {
+
+    },
     "Duration" : {
 
     },
@@ -430,11 +1366,13 @@
     "Enable Transition Effects" : {
 
     },
-    "error.%@" : {
+    "Error" : {
+
+    },
+    "Error Loading Image" : {
 
     },
     "error.file_corrupted" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -467,14 +1405,7 @@
         }
       }
     },
-    "error.file_not_found %@" : {
-
-    },
-    "error.file_operation_failed" : {
-
-    },
     "error.folder_access_denied" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -491,7 +1422,6 @@
       }
     },
     "error.image_load_failed" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -524,10 +1454,8 @@
         }
       }
     },
-    "error.invalid_index %lld" : {
-
-    },
     "error.loading_failed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -543,11 +1471,7 @@
         }
       }
     },
-    "error.loading_failed %@" : {
-
-    },
     "error.memory_warning" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -564,7 +1488,6 @@
       }
     },
     "error.no_images_found" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -598,6 +1521,7 @@
       }
     },
     "error.recovery.general_suggestion" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -665,7 +1589,6 @@
       }
     },
     "error.title" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -682,7 +1605,6 @@
       }
     },
     "error.unsupported_format" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -716,7 +1638,37 @@
     "Failed to load image" : {
 
     },
-    "Features:" : {
+    "features.advanced_memory_management" : {
+
+    },
+    "features.advanced_memory_management_desc" : {
+
+    },
+    "features.advanced_transitions" : {
+
+    },
+    "features.enhanced_gestures" : {
+
+    },
+    "features.native_macos_experience" : {
+
+    },
+    "features.optimized_image_loading" : {
+
+    },
+    "features.performance_optimization" : {
+
+    },
+    "features.smart_caching_system" : {
+
+    },
+    "features.smooth_transitions_and_effects" : {
+
+    },
+    "features.touch_bar_support" : {
+
+    },
+    "features.unlimited_photo_collections" : {
 
     },
     "First Day of Week: %@" : {
@@ -731,9 +1683,6 @@
     "Germany" : {
 
     },
-    "Hide controls completely during slideshow" : {
-
-    },
     "Import Recent Files..." : {
 
     },
@@ -741,6 +1690,9 @@
 
     },
     "Improves screen reader support and keyboard navigation" : {
+
+    },
+    "Initializing application..." : {
 
     },
     "Intensity: %@%%" : {
@@ -755,6 +1707,50 @@
     "Language" : {
 
     },
+    "language.chinese_simplified" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简体中文"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chino simplificado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简体中文"
+          }
+        }
+      }
+    },
+    "language.chinese_traditional" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繁體中文"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chino tradicional"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繁體中文"
+          }
+        }
+      }
+    },
     "language.english" : {
       "localizations" : {
         "en" : {
@@ -767,6 +1763,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "英語"
+          }
+        }
+      }
+    },
+    "language.french" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Francés"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フランス語"
+          }
+        }
+      }
+    },
+    "language.german" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deutsch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alemán"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドイツ語"
+          }
+        }
+      }
+    },
+    "language.italian" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Italiano"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Italiano"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イタリア語"
           }
         }
       }
@@ -787,6 +1849,94 @@
         }
       }
     },
+    "language.korean" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한국어"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coreano"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "韓国語"
+          }
+        }
+      }
+    },
+    "language.portuguese" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Português"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portugués"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ポルトガル語"
+          }
+        }
+      }
+    },
+    "language.russian" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Русский"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロシア語"
+          }
+        }
+      }
+    },
+    "language.spanish" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Español"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Español"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スペイン語"
+          }
+        }
+      }
+    },
     "language.system" : {
       "localizations" : {
         "en" : {
@@ -803,13 +1953,13 @@
         }
       }
     },
-    "Largest First" : {
-
-    },
     "Loading image..." : {
 
     },
-    "loading.%@" : {
+    "Loading images..." : {
+
+    },
+    "Loading..." : {
 
     },
     "loading.first_image" : {
@@ -821,6 +1971,12 @@
             "value" : "Loading first image..."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargando primera imagen..."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -830,12 +1986,17 @@
       }
     },
     "loading.loading_images" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading images..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargando imágenes..."
           }
         },
         "ja" : {
@@ -855,6 +2016,12 @@
             "value" : "Loading..."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargando..."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -864,12 +2031,17 @@
       }
     },
     "loading.preparing_slideshow" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preparing slideshow..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando presentación..."
           }
         },
         "ja" : {
@@ -881,12 +2053,17 @@
       }
     },
     "loading.scanning_folder" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Found %d images..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se encontraron %d imágenes..."
           }
         },
         "ja" : {
@@ -909,6 +2086,12 @@
             "value" : "Opening folder selection..."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abriendo selección de carpeta..."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -916,6 +2099,9 @@
           }
         }
       }
+    },
+    "Loop Slideshow" : {
+
     },
     "Maximum Recent Folders" : {
 
@@ -988,19 +2174,10 @@
         }
       }
     },
-    "Minimal" : {
-
-    },
     "Minimum Visibility Duration" : {
 
     },
     "Mouse Sensitivity" : {
-
-    },
-    "New Random Order" : {
-
-    },
-    "Newest First" : {
 
     },
     "No Recent Folders" : {
@@ -1092,6 +2269,9 @@
         }
       }
     },
+    "OK" : {
+
+    },
     "Open Folder..." : {
 
     },
@@ -1102,6 +2282,9 @@
 
     },
     "Performance Tip" : {
+
+    },
+    "Photo Information" : {
 
     },
     "PhotoSlideshow uses security-scoped bookmarks to maintain safe access to your photos while respecting macOS security requirements." : {
@@ -1184,13 +2367,16 @@
     "Preview: %@" : {
 
     },
-    "Professional photo slideshow application for macOS" : {
+    "Quick" : {
 
     },
     "Quick Actions" : {
 
     },
     "Random" : {
+
+    },
+    "Random Order" : {
 
     },
     "Recent Files" : {
@@ -1208,38 +2394,380 @@
     "Region" : {
 
     },
-    "Reset" : {
-
-    },
-    "Reset All Settings" : {
-
-    },
     "Reset to Defaults" : {
-
-    },
-    "Reset Window Positions" : {
 
     },
     "Right-to-Left Layout: %@" : {
 
     },
-    "Search settings..." : {
-
+    "search.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search settings..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar configuraciones..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を検索..."
+          }
+        }
+      }
     },
     "Seed:" : {
-
-    },
-    "Select a category from the sidebar to configure your slideshow experience" : {
 
     },
     "Select a folder to start" : {
 
     },
+    "Select a folder to start slideshow" : {
+
+    },
+    "Select Folder" : {
+
+    },
     "Settings for %@ will be implemented here." : {
 
     },
-    "settings.%@.title" : {
-
+    "settings.about" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About PhotoSlideshow"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de PhotoSlideshow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PhotoSlideshowについて"
+          }
+        }
+      }
+    },
+    "settings.about.description" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Application information and credits"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Información de la aplicación y créditos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーション情報とクレジット"
+          }
+        }
+      }
+    },
+    "settings.advanced.about" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報"
+          }
+        }
+      }
+    },
+    "settings.advanced.about.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About Swift Photos and application information"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de Swift Photos e información de la aplicación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swift Photosとアプリケーション情報について"
+          }
+        }
+      }
+    },
+    "settings.advanced.debug" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debug Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración de Depuración"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバッグ設定"
+          }
+        }
+      }
+    },
+    "settings.advanced.debug.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced debugging and logging options for troubleshooting"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones avanzadas de depuración y registro para solución de problemas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トラブルシューティング用の高度なデバッグとログオプション"
+          }
+        }
+      }
+    },
+    "settings.advanced.experimental" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental Features"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Características Experimentales"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "実験的機能"
+          }
+        }
+      }
+    },
+    "settings.advanced.experimental.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimental features and beta functionality for testing"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Características experimentales y funcionalidad beta para pruebas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テスト用の実験的機能とベータ機能"
+          }
+        }
+      }
+    },
+    "settings.advanced.maintenance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenance"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantenimiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メンテナンス"
+          }
+        }
+      }
+    },
+    "settings.advanced.maintenance.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset settings, clear caches, and maintenance operations"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer configuración, limpiar cachés y operaciones de mantenimiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定のリセット、キャッシュのクリア、メンテナンス操作"
+          }
+        }
+      }
+    },
+    "settings.advanced.performance_monitoring" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance Monitoring"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitoreo de Rendimiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パフォーマンス監視"
+          }
+        }
+      }
+    },
+    "settings.advanced.performance_monitoring.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitor system performance and application metrics"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitorear el rendimiento del sistema y métricas de la aplicación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムパフォーマンスとアプリケーションメトリクスの監視"
+          }
+        }
+      }
+    },
+    "settings.advanced.system_information" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System Information"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Información del Sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム情報"
+          }
+        }
+      }
+    },
+    "settings.advanced.system_information.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View detailed system and application information"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver información detallada del sistema y la aplicación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細なシステムとアプリケーション情報を表示"
+          }
+        }
+      }
+    },
+    "settings.application_language" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Application Language"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma de la aplicación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーション言語"
+          }
+        }
+      }
     },
     "settings.auto_start" : {
       "extractionState" : "stale",
@@ -1254,6 +2782,254 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フォルダ選択時に自動でスライドショーを開始"
+          }
+        }
+      }
+    },
+    "settings.changes_immediate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes take effect immediately"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los cambios surten efecto inmediatamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更は即座に反映されます"
+          }
+        }
+      }
+    },
+    "settings.current_settings" : {
+
+    },
+    "settings.current_settings.description" : {
+
+    },
+    "settings.interface.appearance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apariencia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外観"
+          }
+        }
+      }
+    },
+    "settings.interface.appearance.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customize control appearance and visual effects"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizar apariencia de controles y efectos visuales"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コントロールの外観と視覚効果をカスタマイズ"
+          }
+        }
+      }
+    },
+    "settings.interface.auto_hide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto Hide"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar Automáticamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動非表示"
+          }
+        }
+      }
+    },
+    "settings.interface.auto_hide.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically hide controls after a delay"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar controles automáticamente después de un retraso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一定時間後にコントロールを自動で非表示"
+          }
+        }
+      }
+    },
+    "settings.interface.information_display" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Information Display"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar Información"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報表示"
+          }
+        }
+      }
+    },
+    "settings.interface.information_display.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure photo information display settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar ajustes de visualización de información de foto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真情報表示設定を構成"
+          }
+        }
+      }
+    },
+    "settings.interface.mouse_interaction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mouse Interaction"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interacción del Ratón"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マウス操作"
+          }
+        }
+      }
+    },
+    "settings.interface.mouse_interaction.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure mouse movement and sensitivity settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar ajustes de movimiento y sensibilidad del ratón"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マウスの動きと感度設定を構成"
+          }
+        }
+      }
+    },
+    "settings.interface.presets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presets"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preajustes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プリセット"
+          }
+        }
+      }
+    },
+    "settings.interface.presets.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick interface configurations for different use cases"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuraciones rápidas de interfaz para diferentes casos de uso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "異なる使用ケース向けのクイックインターフェース設定"
           }
         }
       }
@@ -1292,6 +3068,28 @@
         }
       }
     },
+    "settings.language.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose your preferred language for the application interface"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elija su idioma preferido para la interfaz de la aplicación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションインターフェースの言語を選択してください"
+          }
+        }
+      }
+    },
     "settings.language.title" : {
       "localizations" : {
         "en" : {
@@ -1300,10 +3098,236 @@
             "value" : "Language"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "言語"
+          }
+        }
+      }
+    },
+    "settings.regional_formatting.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure how dates, numbers, and times are displayed"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar cómo se muestran fechas, números y horas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日付、数値、時間の表示方法を設定"
+          }
+        }
+      }
+    },
+    "settings.regional_formatting.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regional Formatting"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato Regional"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地域別フォーマット"
+          }
+        }
+      }
+    },
+    "settings.measurement_system.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose between metric and imperial units"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elija entre unidades métricas e imperiales"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メートル法とヤード・ポンド法を選択"
+          }
+        }
+      }
+    },
+    "settings.measurement_system.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Measurement System"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema de Medidas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "測定システム"
+          }
+        }
+      }
+    },
+    "settings.accessibility.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language-specific accessibility options"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de accesibilidad específicas del idioma"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "言語固有のアクセシビリティオプション"
+          }
+        }
+      }
+    },
+    "settings.accessibility.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accesibilidad"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティ"
+          }
+        }
+      }
+    },
+    "settings.quick_presets.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply optimized settings for specific regions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar configuraciones optimizadas para regiones específicas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特定の地域に最適化された設定を適用"
+          }
+        }
+      }
+    },
+    "settings.quick_presets.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Presets"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preajustes Rápidos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイックプリセット"
+          }
+        }
+      }
+    },
+    "settings.localization_advanced.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced localization configuration"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración avanzada de localización"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高度なローカリゼーション設定"
+          }
+        }
+      }
+    },
+    "settings.localization_advanced.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanzado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細設定"
           }
         }
       }
@@ -1325,13 +3349,116 @@
         }
       }
     },
-    "settings.performance.title" : {
+    "settings.manual_configuration" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Manual Configuration"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración manual"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手動設定"
+          }
+        }
+      }
+    },
+    "settings.manual_configuration.description" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fine-tune performance settings for your specific needs"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar la configuración de rendimiento para sus necesidades específicas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特定のニーズに合わせてパフォーマンス設定を微調整"
+          }
+        }
+      }
+    },
+    "settings.performance_information" : {
+
+    },
+    "settings.performance_information.description" : {
+
+    },
+    "settings.performance_presets" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance Presets"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preajustes de rendimiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パフォーマンスプリセット"
+          }
+        }
+      }
+    },
+    "settings.performance_presets.description" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimize slideshow performance for different collection sizes and system capabilities"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimizar el rendimiento de la presentación para diferentes tamaños de colección y capacidades del sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "異なるコレクションサイズとシステム能力に対してスライドショーのパフォーマンスを最適化"
+          }
+        }
+      }
+    },
+    "settings.performance.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "Performance"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rendimiento"
           }
         },
         "ja" : {
@@ -1393,6 +3520,52 @@
         }
       }
     },
+    "settings.reset_maintenance" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset & Maintenance"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer y Mantenimiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リセットとメンテナンス"
+          }
+        }
+      }
+    },
+    "settings.reset_maintenance.description" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset application state and perform maintenance"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer el estado de la aplicación y realizar mantenimiento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションの状態をリセットしメンテナンスを実行"
+          }
+        }
+      }
+    },
     "settings.slide_duration" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1445,7 +3618,6 @@
       }
     },
     "settings.slideshow.title" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1453,10 +3625,148 @@
             "value" : "Slideshow"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presentación"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "スライドショー"
+          }
+        }
+      }
+    },
+    "settings.sort.direction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort Direction"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección de Ordenación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "並び順の方向"
+          }
+        }
+      }
+    },
+    "settings.sort.direction.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose ascending or descending sort order"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige orden ascendente o descendente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "昇順または降順を選択"
+          }
+        }
+      }
+    },
+    "settings.sort.order" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort Order"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orden de Clasificación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "並び順"
+          }
+        }
+      }
+    },
+    "settings.sort.order.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose how photos are sorted in the slideshow"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige cómo se ordenan las fotos en la presentación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショーでの写真の並び順を選択"
+          }
+        }
+      }
+    },
+    "settings.sort.presets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort Presets"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preajustes de Ordenación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "並び順プリセット"
+          }
+        }
+      }
+    },
+    "settings.sort.presets.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick sort configurations for common use cases"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuraciones rápidas de ordenación para casos comunes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般的な使用例向けのクイック並び順設定"
           }
         }
       }
@@ -1468,6 +3778,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sort"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "並び順"
+          }
+        }
+      }
+    },
+    "settings.sorting.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sorting"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenación"
           }
         },
         "ja" : {
@@ -1529,6 +3861,50 @@
         }
       }
     },
+    "settings.transitions.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transitions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transiciones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トランジション"
+          }
+        }
+      }
+    },
+    "settings.ui_controls.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UI Controls"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controles de UI"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UIコントロール"
+          }
+        }
+      }
+    },
     "settings.window.title" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1545,9 +3921,6 @@
           }
         }
       }
-    },
-    "shortcut.%@" : {
-
     },
     "shortcut.desc.next_photo" : {
       "extractionState" : "stale",
@@ -1770,12 +4143,6 @@
         }
       }
     },
-    "Show controls on mouse movement" : {
-
-    },
-    "Show detailed photo information by default" : {
-
-    },
     "Show full paths in menu" : {
 
     },
@@ -1791,11 +4158,13 @@
     "Simple Fade" : {
 
     },
-    "slideshow.button.%@" : {
+    "Slide Duration" : {
+
+    },
+    "Slideshow Controls" : {
 
     },
     "slideshow.button.pause" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1812,7 +4181,6 @@
       }
     },
     "slideshow.button.play" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1829,7 +4197,6 @@
       }
     },
     "slideshow.button.stop" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1845,11 +4212,7 @@
         }
       }
     },
-    "slideshow.navigation.%@" : {
-
-    },
     "slideshow.navigation.next" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1866,7 +4229,6 @@
       }
     },
     "slideshow.navigation.previous" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1882,19 +4244,16 @@
         }
       }
     },
+    "Slow" : {
+
+    },
     "Smooth Crossfade" : {
 
     },
     "Smooth transitions enhance user experience. Lower intensity and shorter duration improve performance on slower systems." : {
 
     },
-    "Sort Direction" : {
-
-    },
     "Sort Locale: %@" : {
-
-    },
-    "Sort Order" : {
 
     },
     "Sorting files before slideshow improves image caching efficiency. Random sorting with a fixed seed ensures consistent order across sessions." : {
@@ -1903,22 +4262,10 @@
     "Spain" : {
 
     },
-    "Subtle" : {
-
-    },
     "Swift Photos" : {
 
     },
-    "Swift Photos Settings" : {
-
-    },
-    "System Information" : {
-
-    },
     "This will remove all recent folders from the File menu. This action cannot be undone." : {
-
-    },
-    "This will reset all settings to their default values. This action cannot be undone." : {
 
     },
     "Time Format" : {
@@ -1972,8 +4319,117 @@
         }
       }
     },
+    "toggle.enable_debug_logging" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable debug logging"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habilitar registro de depuración"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバッグログを有効化"
+          }
+        }
+      }
+    },
+    "toggle.hide_controls_completely" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide controls completely"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar controles completamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コントロールを完全に非表示"
+          }
+        }
+      }
+    },
+    "toggle.show_controls_on_mouse_movement" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show controls on mouse movement"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar controles con movimiento del ratón"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マウス移動でコントロールを表示"
+          }
+        }
+      }
+    },
+    "toggle.show_detailed_photo_information" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show detailed photo information"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar información detallada de la foto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細な写真情報を表示"
+          }
+        }
+      }
+    },
+    "toggle.verbose_logging" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbose logging"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registro detallado"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細ログ"
+          }
+        }
+      }
+    },
     "tooltip.next" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1989,8 +4445,10 @@
         }
       }
     },
+    "tooltip.play_pause" : {
+
+    },
     "tooltip.previous" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2006,8 +4464,10 @@
         }
       }
     },
+    "tooltip.settings" : {
+
+    },
     "tooltip.tap_for_info" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2091,6 +4551,50 @@
         }
       }
     },
+    "ui.application" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Application"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーション"
+          }
+        }
+      }
+    },
+    "ui.architecture" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Architecture"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquitectura"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アーキテクチャ"
+          }
+        }
+      }
+    },
     "ui.auto_start" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2104,6 +4608,78 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自動開始"
+          }
+        }
+      }
+    },
+    "ui.available_memory" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available Memory"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memoria Disponible"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用可能メモリ"
+          }
+        }
+      }
+    },
+    "ui.background_blur_intensity" : {
+
+    },
+    "ui.background_opacity" : {
+
+    },
+    "ui.build" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビルド"
+          }
+        }
+      }
+    },
+    "ui.bundle_id" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bundle ID"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID del Bundle"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バンドルID"
           }
         }
       }
@@ -2124,6 +4700,9 @@
           }
         }
       }
+    },
+    "ui.controls_position_from_bottom" : {
+
     },
     "ui.controls.next" : {
       "extractionState" : "stale",
@@ -2193,6 +4772,97 @@
         }
       }
     },
+    "ui.cpu_usage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU Usage"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uso de CPU"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU使用量"
+          }
+        }
+      }
+    },
+    "ui.current_performance_metrics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Performance Metrics"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métricas de Rendimiento Actuales"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のパフォーマンスメトリクス"
+          }
+        }
+      }
+    },
+    "ui.debug_information" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debug Information"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Información de Depuración"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバッグ情報"
+          }
+        }
+      }
+    },
+    "ui.disk_usage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disk Usage"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uso de Disco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスク使用量"
+          }
+        }
+      }
+    },
+    "ui.during_slideshow" : {
+
+    },
     "ui.error_button_ok" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2227,6 +4897,31 @@
         }
       }
     },
+    "ui.fade_animation_duration" : {
+
+    },
+    "ui.hardware" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hardware"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hardware"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ハードウェア"
+          }
+        }
+      }
+    },
     "ui.image_error_loading" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2257,6 +4952,31 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アプリケーションを初期化しています..."
+          }
+        }
+      }
+    },
+    "ui.interface_improvements" : {
+
+    },
+    "ui.key_features" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key Features"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Características Principales"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主要機能"
           }
         }
       }
@@ -2308,6 +5028,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スライドショーをループ"
+          }
+        }
+      }
+    },
+    "ui.macos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS"
+          }
+        }
+      }
+    },
+    "ui.memory_usage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memory Usage"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uso de Memoria"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモリ使用量"
           }
         }
       }
@@ -2380,8 +5144,41 @@
         }
       }
     },
+    "ui.minimum_visibility_duration" : {
+
+    },
+    "ui.model" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Model"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "モデル"
+          }
+        }
+      }
+    },
+    "ui.mouse_sensitivity" : {
+
+    },
+    "ui.performance_enhancements" : {
+
+    },
+    "ui.performance_tip" : {
+
+    },
     "ui.photo_counter" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2444,6 +5241,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自動再生オプションを設定"
+          }
+        }
+      }
+    },
+    "ui.processor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Processor"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procesador"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロセッサ"
           }
         }
       }
@@ -2516,6 +5335,28 @@
         }
       }
     },
+    "ui.system" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム"
+          }
+        }
+      }
+    },
     "ui.timing_settings" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2567,6 +5408,56 @@
         }
       }
     },
+    "ui.total_memory" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Memory"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memoria Total"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "総メモリ"
+          }
+        }
+      }
+    },
+    "ui.verbose_logging" : {
+
+    },
+    "ui.version" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versión"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン"
+          }
+        }
+      }
+    },
+    "ui.when_paused" : {
+
+    },
     "United Kingdom" : {
 
     },
@@ -2576,275 +5467,105 @@
     "Version %@" : {
 
     },
+    "warning.actions_cannot_be_undone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️ These actions cannot be undone"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️ Estas acciones no se pueden deshacer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️ これらの操作は元に戻せません"
+          }
+        }
+      }
+    },
+    "warning.experimental_features" : {
+
+    },
     "When Paused" : {
 
     },
     "Window Level" : {
 
     },
-    "language.chinese_simplified" : {
+    "window.quick_actions" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "简体中文"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "简体中文"
+            "value" : "Quick Actions"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chino simplificado"
+            "value" : "Acciones Rápidas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイックアクション"
           }
         }
       }
     },
-    "language.chinese_traditional" : {
+    "window.settings_description" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "繁體中文"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "繁體中文"
+            "value" : "Select a category from the sidebar to configure your slideshow experience"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chino tradicional"
+            "value" : "Selecciona una categoría de la barra lateral para configurar tu experiencia de presentación"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サイドバーからカテゴリを選択してスライドショー体験を設定してください"
           }
         }
       }
     },
-    "language.english" : {
+    "window.settings_title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "English"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "英語"
+            "value" : "Swift Photos Settings"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inglés"
+            "value" : "Configuración de Swift Photos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swift Photos設定"
           }
         }
       }
     },
-    "language.french" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Français"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フランス語"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Francés"
-          }
-        }
-      }
-    },
-    "language.german" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deutsch"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ドイツ語"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alemán"
-          }
-        }
-      }
-    },
-    "language.italian" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Italiano"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "イタリア語"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Italiano"
-          }
-        }
-      }
-    },
-    "language.japanese" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日本語"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日本語"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Japonés"
-          }
-        }
-      }
-    },
-    "language.korean" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "한국어"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "韓国語"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coreano"
-          }
-        }
-      }
-    },
-    "language.portuguese" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Português"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ポルトガル語"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Portugués"
-          }
-        }
-      }
-    },
-    "language.russian" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Русский"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ロシア語"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ruso"
-          }
-        }
-      }
-    },
-    "language.spanish" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Español"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スペイン語"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Español"
-          }
-        }
-      }
-    },
-    "language.system" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System Default"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "システムのデフォルト"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Predeterminado del sistema"
-          }
-        }
-      }
+    "window.system_information" : {
+
     }
   },
   "version" : "1.0"

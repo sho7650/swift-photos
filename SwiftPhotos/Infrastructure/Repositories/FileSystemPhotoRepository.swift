@@ -108,14 +108,14 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     /// Sort photos by file name using locale-aware comparison
     @MainActor
     private func sortByFileName(_ photos: [Photo], direction: SortSettings.SortDirection) -> [Photo] {
-        let locale = localizationService.effectiveLocale
+        let locale = localizationService.currentLocale
         
         let sorted = photos.sorted { photo1, photo2 in
             let name1 = photo1.fileName
             let name2 = photo2.fileName
             
             // Use locale-aware comparison that respects different languages' collation rules
-            let comparisonResult = name1.localizedCompare(name2, locale: locale)
+            let comparisonResult = name1.compare(name2, options: .caseInsensitive, range: nil, locale: locale)
             
             switch direction {
             case .ascending:

@@ -10,31 +10,31 @@ struct SlideshowSettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             // Slideshow Presets Section
             SlideshowSettingsSection(
-                title: localizationService?.localizedString(for: "settings.slideshow_presets") ?? "Slideshow Presets",
+                title: "Slideshow Presets",
                 icon: "play.circle",
-                description: localizationService?.localizedString(for: "settings.slideshow_presets.description") ?? "Quick presets for common slideshow configurations"
+                description: "Quick presets for common slideshow configurations"
             ) {
                 HStack(spacing: 12) {
-                    Button(localizationService?.localizedString(for: "presets.default") ?? "Default") { settings.updateSettings(.default) }
+                    Button("Default") { settings.updateSettings(.default) }
                         .buttonStyle(.bordered)
-                    Button(localizationService?.localizedString(for: "presets.quick") ?? "Quick") { settings.updateSettings(.quick) }
+                    Button("Quick") { settings.updateSettings(.quick) }
                         .buttonStyle(.bordered)
-                    Button(localizationService?.localizedString(for: "presets.slow") ?? "Slow") { settings.updateSettings(.slow) }
+                    Button("Slow") { settings.updateSettings(.slow) }
                         .buttonStyle(.bordered)
-                    Button(localizationService?.localizedString(for: "presets.random") ?? "Random") { settings.updateSettings(.random) }
+                    Button("Random") { settings.updateSettings(.random) }
                         .buttonStyle(.bordered)
                 }
             }
             
             // Timing Settings Section
             SlideshowSettingsSection(
-                title: localizationService?.localizedString(for: "ui.timing_settings") ?? "Timing Settings",
+                title: "Timing Settings",
                 icon: "timer",
-                description: localizationService?.localizedString(for: "ui.timing_settings.description") ?? "Configure slideshow timing and duration"
+                description: "Configure slideshow timing and duration"
             ) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(localizationService?.localizedString(for: "settings.slide_duration") ?? "Slide Duration")
+                        Text("Slide Duration")
                         Spacer()
                         Text(formatDuration(settings.settings.slideDuration))
                             .foregroundColor(.secondary)
@@ -59,12 +59,12 @@ struct SlideshowSettingsView: View {
             
             // Playback Behavior Section
             SlideshowSettingsSection(
-                title: localizationService?.localizedString(for: "ui.playback_behavior") ?? "Playback Behavior",
+                title: "Playback Behavior",
                 icon: "gearshape",
-                description: localizationService?.localizedString(for: "ui.playback_behavior.description") ?? "Configure automatic playback options"
+                description: "Configure automatic playback options"
             ) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Toggle(localizationService?.localizedString(for: "ui.auto_start") ?? "Auto Start", isOn: Binding(
+                    Toggle("Auto Start", isOn: Binding(
                         get: { settings.settings.autoStart },
                         set: { newValue in
                             let newSettings = SlideshowSettings(
@@ -78,7 +78,7 @@ struct SlideshowSettingsView: View {
                     ))
                     .toggleStyle(.switch)
                     
-                    Toggle(localizationService?.localizedString(for: "ui.random_order") ?? "Random Order", isOn: Binding(
+                    Toggle("Random Order", isOn: Binding(
                         get: { settings.settings.randomOrder },
                         set: { newValue in
                             let newSettings = SlideshowSettings(
@@ -92,7 +92,7 @@ struct SlideshowSettingsView: View {
                     ))
                     .toggleStyle(.switch)
                     
-                    Toggle(localizationService?.localizedString(for: "ui.loop_slideshow") ?? "Loop Slideshow", isOn: Binding(
+                    Toggle("Loop Slideshow", isOn: Binding(
                         get: { settings.settings.loopSlideshow },
                         set: { newValue in
                             let newSettings = SlideshowSettings(
@@ -110,17 +110,17 @@ struct SlideshowSettingsView: View {
             
             // Keyboard Controls Section
             SlideshowSettingsSection(
-                title: localizationService?.localizedString(for: "ui.keyboard_controls") ?? "Keyboard Controls",
+                title: "Keyboard Controls",
                 icon: "keyboard",
-                description: localizationService?.localizedString(for: "ui.keyboard_controls.description") ?? "Configure keyboard shortcuts"
+                description: "Configure keyboard shortcuts"
             ) {
                 VStack(alignment: .leading, spacing: 8) {
-                    ShortcutRow(key: "Space", description: localizationService?.localizedString(for: "shortcut.desc.play_pause") ?? "Play/Pause slideshow")
-                    ShortcutRow(key: "→ ↓", description: localizationService?.localizedString(for: "shortcut.desc.next_photo") ?? "Next photo")
-                    ShortcutRow(key: "← ↑", description: localizationService?.localizedString(for: "shortcut.desc.previous_photo") ?? "Previous photo")
-                    ShortcutRow(key: "Esc", description: localizationService?.localizedString(for: "shortcut.desc.stop_slideshow") ?? "Stop slideshow")
-                    ShortcutRow(key: "I", description: localizationService?.localizedString(for: "shortcut.desc.toggle_info") ?? "Toggle info")
-                    ShortcutRow(key: "H", description: localizationService?.localizedString(for: "shortcut.desc.toggle_controls") ?? "Toggle controls")
+                    ShortcutRow(key: "Space", description: "Play/Pause slideshow")
+                    ShortcutRow(key: "→ ↓", description: "Next photo")
+                    ShortcutRow(key: "← ↑", description: "Previous photo")
+                    ShortcutRow(key: "Esc", description: "Stop slideshow")
+                    ShortcutRow(key: "I", description: "Toggle info")
+                    ShortcutRow(key: "H", description: "Toggle controls")
                 }
             }
         }
@@ -131,14 +131,14 @@ struct SlideshowSettingsView: View {
     // Format duration for display
     private func formatDuration(_ seconds: Double) -> String {
         if seconds < 60 {
-            return String(format: "%.1f %@", seconds, localizationService?.localizedString(for: "duration.seconds") ?? "seconds")
+            return String(format: "%.1f %@", seconds, "seconds")
         } else if seconds < 3600 {
             let minutes = Int(seconds) / 60
             let remainingSeconds = Int(seconds) % 60
             if remainingSeconds == 0 {
                 let minuteWord = minutes == 1 ? 
-                    localizationService?.localizedString(for: "duration.minute") ?? "minute" : 
-                    localizationService?.localizedString(for: "duration.minutes") ?? "minutes"
+                    "minute" : 
+                    "minutes"
                 return "\(minutes) \(minuteWord)"
             } else {
                 return String(format: "%d:%02d", minutes, remainingSeconds)

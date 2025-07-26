@@ -10,26 +10,24 @@ struct AdvancedSettingsView: View {
     @State private var showingSystemInfo = false
     @State private var systemInfo: SystemInformation?
     
-    // Localization support
-    @State private var localizationService: LocalizationService? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Debug Settings Section
             AdvancedSettingsSection(
-                title: String.settingsSection("debug", service: localizationService),
+                title: L10n.SettingsString.debugSettings(),
                 icon: "ant",
-                description: String.localized("settings.debug.description", service: localizationService)
+                description: L10n.SettingsString.debugSettingsDescription()
             ) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Toggle(String.localized("settings.debug.enable_logging", service: localizationService), isOn: $isDebugLoggingEnabled)
+                    Toggle(L10n.ToggleString.enableDebugLogging(), isOn: $isDebugLoggingEnabled)
                         .toggleStyle(.switch)
                         .onChange(of: isDebugLoggingEnabled) { _, enabled in
                             configureDebugLogging(enabled)
                         }
                     
                     if isDebugLoggingEnabled {
-                        Toggle(String.localized("settings.debug.verbose_logging", service: localizationService), isOn: $isVerboseLoggingEnabled)
+                        Toggle(String(localized: "toggle.verbose_logging"), isOn: $isVerboseLoggingEnabled)
                             .toggleStyle(.switch)
                             .onChange(of: isVerboseLoggingEnabled) { _, enabled in
                                 configureVerboseLogging(enabled)
@@ -37,23 +35,23 @@ struct AdvancedSettingsView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(String.localized("settings.debug.information", service: localizationService))
+                        Text(L10n.UI.debugInformation)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
                         HStack(spacing: 12) {
-                            Button(String.button("show_system_info", service: localizationService)) {
+                            Button(String(localized: "button.advanced.show_system_info")) {
                                 loadSystemInfo()
                                 showingSystemInfo = true
                             }
                             .buttonStyle(.bordered)
                             
-                            Button(String.button("export_logs", service: localizationService)) {
+                            Button(String(localized: "button.advanced.export_logs")) {
                                 exportLogs()
                             }
                             .buttonStyle(.bordered)
                             
-                            Button(String.button("clear_cache", service: localizationService)) {
+                            Button(String(localized: "button.advanced.clear_cache")) {
                                 clearAllCaches()
                             }
                             .buttonStyle(.bordered)
@@ -64,12 +62,12 @@ struct AdvancedSettingsView: View {
             
             // Experimental Features Section
             AdvancedSettingsSection(
-                title: String.settingsSection("experimental", service: localizationService),
+                title: String(localized: "settings.advanced.experimental"),
                 icon: "flask",
-                description: String.localized("settings.experimental.description", service: localizationService)
+                description: String(localized: "settings.advanced.experimental.description")
             ) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text(String.localized("settings.experimental.warning", service: localizationService))
+                    Text(String(localized: "warning.experimental_features"))
                         .font(.caption)
                         .foregroundColor(.orange)
                         .padding(.horizontal, 8)
@@ -78,25 +76,25 @@ struct AdvancedSettingsView: View {
                         .cornerRadius(4)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(String.localized("settings.experimental.performance_title", service: localizationService))
+                        Text(L10n.UI.performanceEnhancements)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
-                        Text(String.localized("settings.experimental.memory_management", service: localizationService))
-                        Text(String.localized("settings.experimental.image_loading", service: localizationService))
-                        Text(String.localized("settings.experimental.caching", service: localizationService))
+                        Text(L10n.Features.advancedMemoryManagementDesc)
+                        Text(L10n.Features.optimizedImageLoading)
+                        Text(L10n.Features.smartCachingSystem)
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(String.localized("settings.experimental.interface_title", service: localizationService))
+                        Text(L10n.UI.interfaceImprovements)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
-                        Text(String.localized("settings.experimental.touch_bar", service: localizationService))
-                        Text(String.localized("settings.experimental.gestures", service: localizationService))
-                        Text(String.localized("settings.experimental.transitions", service: localizationService))
+                        Text(L10n.Features.touchBarSupport)
+                        Text(L10n.Features.enhancedGestures)
+                        Text(L10n.Features.advancedTransitions)
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -105,39 +103,39 @@ struct AdvancedSettingsView: View {
             
             // Performance Monitoring Section
             AdvancedSettingsSection(
-                title: String.settingsSection("performance", service: localizationService),
+                title: String(localized: "settings.advanced.performance_monitoring"),
                 icon: "speedometer",
-                description: String.localized("settings.performance.description", service: localizationService)
+                description: String(localized: "settings.advanced.performance_monitoring.description")
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     if let systemInfo = systemInfo {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(String.localized("settings.performance.current", service: localizationService))
+                            Text(L10n.UI.currentPerformanceMetrics)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             
                             PerformanceMetricRow(
-                                label: String.localized("settings.performance.memory_usage", service: localizationService), 
+                                label: String(localized: "ui.memory_usage"), 
                                 value: systemInfo.memoryUsage
                             )
                             PerformanceMetricRow(
-                                label: String.localized("settings.performance.cpu_usage", service: localizationService), 
+                                label: String(localized: "ui.cpu_usage"), 
                                 value: systemInfo.cpuUsage
                             )
                             PerformanceMetricRow(
-                                label: String.localized("settings.performance.disk_usage", service: localizationService), 
+                                label: String(localized: "ui.disk_usage"), 
                                 value: systemInfo.diskUsage
                             )
                         }
                     }
                     
                     HStack(spacing: 12) {
-                        Button(String.button("refresh_metrics", service: localizationService)) {
+                        Button(String(localized: "button.advanced.refresh_metrics")) {
                             loadSystemInfo()
                         }
                         .buttonStyle(.bordered)
                         
-                        Button(String.button("performance_report", service: localizationService)) {
+                        Button(String(localized: "button.advanced.performance_report")) {
                             generatePerformanceReport()
                         }
                         .buttonStyle(.bordered)
@@ -147,40 +145,40 @@ struct AdvancedSettingsView: View {
             
             // System Information Section
             AdvancedSettingsSection(
-                title: String.settingsSection("system_info", service: localizationService),
+                title: String(localized: "settings.advanced.system_information"),
                 icon: "info.circle",
-                description: String.localized("settings.system_info.description", service: localizationService)
+                description: String(localized: "settings.advanced.system_information.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     if let systemInfo = systemInfo {
                         SystemInfoSection(
-                            title: String.localized("settings.system_info.application", service: localizationService), 
+                            title: String(localized: "ui.application"), 
                             items: [
-                                (String.localized("settings.system_info.version", service: localizationService), systemInfo.appVersion),
-                                (String.localized("settings.system_info.build", service: localizationService), systemInfo.buildNumber),
-                                (String.localized("settings.system_info.bundle_id", service: localizationService), systemInfo.bundleIdentifier)
+                                (String(localized: "ui.version"), systemInfo.appVersion),
+                                (String(localized: "ui.build"), systemInfo.buildNumber),
+                                (String(localized: "ui.bundle_id"), systemInfo.bundleIdentifier)
                             ]
                         )
                         
                         SystemInfoSection(
-                            title: String.localized("settings.system_info.system", service: localizationService), 
+                            title: String(localized: "ui.system"), 
                             items: [
-                                ("macOS", systemInfo.osVersion),
-                                (String.localized("settings.system_info.architecture", service: localizationService), systemInfo.architecture),
-                                (String.localized("settings.system_info.model", service: localizationService), systemInfo.modelIdentifier)
+                                (String(localized: "ui.macos"), systemInfo.osVersion),
+                                (String(localized: "ui.architecture"), systemInfo.architecture),
+                                (String(localized: "ui.model"), systemInfo.modelIdentifier)
                             ]
                         )
                         
                         SystemInfoSection(
-                            title: String.localized("settings.system_info.hardware", service: localizationService), 
+                            title: String(localized: "ui.hardware"), 
                             items: [
-                                (String.localized("settings.system_info.total_memory", service: localizationService), systemInfo.totalMemory),
-                                (String.localized("settings.system_info.available_memory", service: localizationService), systemInfo.availableMemory),
-                                (String.localized("settings.system_info.processor", service: localizationService), systemInfo.processorInfo)
+                                (String(localized: "ui.total_memory"), systemInfo.totalMemory),
+                                (String(localized: "ui.available_memory"), systemInfo.availableMemory),
+                                (String(localized: "ui.processor"), systemInfo.processorInfo)
                             ]
                         )
                     } else {
-                        Button(String.button("load_system_info", service: localizationService)) {
+                        Button(String(localized: "button.advanced.load_system_info")) {
                             loadSystemInfo()
                         }
                         .buttonStyle(.bordered)
@@ -190,36 +188,36 @@ struct AdvancedSettingsView: View {
             
             // Reset and Maintenance Section
             AdvancedSettingsSection(
-                title: "Reset & Maintenance",
+                title: String(localized: "settings.advanced.maintenance"),
                 icon: "arrow.clockwise",
-                description: "Reset application state and perform maintenance"
+                description: String(localized: "settings.advanced.maintenance.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("⚠️ These actions cannot be undone")
+                    Text(String(localized: "warning.actions_cannot_be_undone"))
                         .font(.caption)
                         .foregroundColor(.orange)
                     
                     VStack(spacing: 8) {
                         HStack(spacing: 12) {
-                            Button("Reset All Settings") {
+                            Button(String(localized: "button.advanced.reset_all_settings")) {
                                 resetAllSettings()
                             }
                             .buttonStyle(.bordered)
                             .foregroundColor(.red)
                             
-                            Button("Clear All Caches") {
+                            Button(String(localized: "button.advanced.clear_all_caches")) {
                                 clearAllCaches()
                             }
                             .buttonStyle(.bordered)
                         }
                         
                         HStack(spacing: 12) {
-                            Button("Reset Window Positions") {
+                            Button(String(localized: "button.advanced.reset_window_positions")) {
                                 resetWindowPositions()
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Clear Recent Files") {
+                            Button(String(localized: "button.advanced.clear_recent_files")) {
                                 clearRecentFiles()
                             }
                             .buttonStyle(.bordered)
@@ -230,9 +228,9 @@ struct AdvancedSettingsView: View {
             
             // About Section
             AdvancedSettingsSection(
-                title: "About PhotoSlideshow",
+                title: String(localized: "settings.advanced.about"),
                 icon: "photo.stack",
-                description: "Application information and credits"
+                description: String(localized: "settings.advanced.about.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
@@ -241,26 +239,26 @@ struct AdvancedSettingsView: View {
                             .foregroundColor(.accentColor)
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Swift Photos")
+                            Text(L10n.App.name)
                                 .font(.title2)
                                 .fontWeight(.bold)
                             
-                            Text("Professional photo slideshow application for macOS")
+                            Text(String(localized: "app.description"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Features:")
+                        Text(L10n.UI.keyFeatures)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
-                        Text("• Supports unlimited photo collections (100k+ photos)")
-                        Text("• Advanced memory management and caching")
-                        Text("• Smooth transition effects and animations")
-                        Text("• Professional-grade performance optimization")
-                        Text("• Native macOS design and integration")
+                        Text(L10n.Features.unlimitedPhotoCollections)
+                        Text(L10n.Features.advancedMemoryManagement)
+                        Text(L10n.Features.smoothTransitionsAndEffects)
+                        Text(L10n.Features.performanceOptimization)
+                        Text(L10n.Features.nativeMacOSExperience)
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -270,7 +268,6 @@ struct AdvancedSettingsView: View {
         .padding(.horizontal, 32)
         .padding(.bottom, 32)
         .onAppear {
-            localizationService = LocalizationService()
             loadSystemInfo()
             loadDebugSettings()
         }
@@ -308,7 +305,7 @@ struct AdvancedSettingsView: View {
         }
         
         let savePanel = NSSavePanel()
-        savePanel.title = "Export Debug Logs"
+        savePanel.title = String(localized: "dialog.export_debug_logs")
         savePanel.allowedContentTypes = [.plainText]
         savePanel.nameFieldStringValue = "Swift-Photos-Logs-\(Int(Date().timeIntervalSince1970)).txt"
         
@@ -349,7 +346,7 @@ struct AdvancedSettingsView: View {
         }
         
         let savePanel = NSSavePanel()
-        savePanel.title = "Export Performance Report"
+        savePanel.title = String(localized: "dialog.export_performance_report")
         savePanel.allowedContentTypes = [.plainText]
         savePanel.nameFieldStringValue = "PhotoSlideshow-Performance-\(Date().timeIntervalSince1970).txt"
         
@@ -631,7 +628,7 @@ private struct SystemInfoDetailView: View {
                     }
                 }
             }
-            .navigationTitle("System Information")
+            .navigationTitle(String(localized: "window.system_information"))
             .frame(width: 600, height: 500)
         }
     }

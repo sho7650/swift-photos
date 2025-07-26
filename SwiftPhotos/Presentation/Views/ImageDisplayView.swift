@@ -96,7 +96,7 @@ public struct ImageDisplayView: View {
                 .progressViewStyle(CircularProgressViewStyle())
                 .scaleEffect(1.5)
             
-            Text(localizationService?.localizedString(for: "loading.loading_short") ?? "Loading...")
+            Text("Loading...")
                 .foregroundColor(.white)
                 .font(.title2)
         }
@@ -172,7 +172,7 @@ public struct ImageDisplayView: View {
                 .font(.system(size: 48))
                 .foregroundColor(.red)
             
-            Text(localizationService?.localizedString(for: "ui.image_error_loading") ?? "Error Loading Image")
+            Text("Error Loading Image")
                 .foregroundColor(.white)
                 .font(.title2)
             
@@ -189,7 +189,7 @@ public struct ImageDisplayView: View {
                 .font(.system(size: 64))
                 .foregroundColor(.gray)
             
-            Text(localizationService?.localizedString(for: "ui.select_folder_start") ?? "Select a folder to start slideshow")
+            Text("Select a folder to start slideshow")
                 .foregroundColor(.gray)
                 .font(.title2)
         }
@@ -279,7 +279,7 @@ extension ImageDisplayView {
         // First try to get formatted date from localization service
         if let service = localizationService {
             let formatter = DateFormatter()
-            formatter.locale = service.effectiveLocale
+            formatter.locale = service.currentLocale
             formatter.dateStyle = .medium
             formatter.timeStyle = .short
             return formatter.string(from: date)

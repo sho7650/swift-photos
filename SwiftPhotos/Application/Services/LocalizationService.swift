@@ -60,9 +60,9 @@ public enum SupportedLanguage: String, CaseIterable, Codable, Sendable {
     }
 }
 
-/// Service for managing application localization and language switching
+/// Simplified Swift 6 compliant LocalizationService using native SwiftUI patterns
 @Observable
-@MainActor
+@MainActor  
 public final class LocalizationService: @unchecked Sendable {
     
     // MARK: - Observable Properties
@@ -71,187 +71,36 @@ public final class LocalizationService: @unchecked Sendable {
     public var currentLanguage: SupportedLanguage = .system {
         didSet {
             if currentLanguage != oldValue {
-                updateApplicationLanguage()
+                ProductionLogger.debug("LocalizationService: Language changed from \(oldValue.rawValue) to \(currentLanguage.rawValue)")
+                saveLanguageSettings()
                 notifyLanguageChange()
             }
         }
     }
     
-    /// List of preferred languages in order of preference
-    public var preferredLanguages: [SupportedLanguage] = []
-    
-    /// Current effective locale being used
-    public private(set) var effectiveLocale: Locale = Locale.current
-    
-    /// Whether the current language uses right-to-left layout
-    public var isRightToLeft: Bool {
-        Locale.Language(identifier: effectiveLocale.language.languageCode?.identifier ?? "en").characterDirection == .rightToLeft
+    /// Current effective locale - this drives SwiftUI's environment
+    public var currentLocale: Locale {
+        currentLanguage.locale
     }
     
     // MARK: - Private Properties
     
     private let userDefaults = UserDefaults.standard
     private let languageKey = "SwiftPhotos.SelectedLanguage"
-    private let preferredLanguagesKey = "SwiftPhotos.PreferredLanguages"
     
     // MARK: - Initialization
     
     public init() {
         loadSavedLanguageSettings()
-        updateApplicationLanguage()
-        
-        ProductionLogger.lifecycle("LocalizationService: Initialized with language: \(currentLanguage.rawValue)")
+        ProductionLogger.lifecycle("LocalizationService: ✅ Initialized with language: \(currentLanguage.rawValue)")
     }
     
     // MARK: - Public Methods
     
-    /// Get localized string for the given key
-    public func localizedString(for key: String, arguments: CVarArg...) -> String {
-        ProductionLogger.debug("LocalizationService: Requesting key '\(key)' with locale '\(effectiveLocale.identifier)' (language: \(currentLanguage.rawValue))")
-        
-        
-        // Try to get the localized string using Bundle localization
-        let bundle = Bundle.main
-        var format: String
-        
-        // For runtime language switching, we need to manually load from the appropriate .lproj folder
-        if currentLanguage != .system {
-            let languageCode = currentLanguage.rawValue
-            if let languageBundlePath = bundle.path(forResource: languageCode, ofType: "lproj"),
-               let languageBundle = Bundle(path: languageBundlePath) {
-                format = NSLocalizedString(key, bundle: languageBundle, comment: "")
-                ProductionLogger.debug("LocalizationService: Using language bundle for '\(languageCode)'")
-            } else {
-                // Fallback to standard localization
-                format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
-                ProductionLogger.debug("LocalizationService: Language bundle not found, using standard API")
-            }
-        } else {
-            // Use standard localization for system language
-            format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
-        }
-        
-        ProductionLogger.debug("LocalizationService: Key '\(key)' resolved to '\(format)' (locale: \(effectiveLocale.identifier))")
-        
-        // Handle special case where localization might return evaluated string instead of format string
-        if key == "ui.photo_counter" && !format.contains("%lld") {
-            // Try direct Bundle access as fallback
-            let directFormat = NSLocalizedString(key, bundle: bundle, comment: "")
-            if directFormat.contains("%lld") {
-                format = directFormat
-            } else {
-                // Ultimate fallback to ensure valid format string
-                format = "%lld of %lld"
-            }
-        }
-        
-        let result = String(format: format, arguments: arguments)
-        
-        
-        // Check if localization actually worked by comparing with English fallback
-        let englishFormat = NSLocalizedString(key, bundle: bundle, comment: "")
-        if format == englishFormat && effectiveLocale.identifier != "en" && format == key {
-            ProductionLogger.debug("⚠️ LocalizationService: String '\(key)' may not be localized - got key back")
-        } else if format == englishFormat && effectiveLocale.identifier != "en" {
-            ProductionLogger.debug("⚠️ LocalizationService: String '\(key)' may not be localized - got same result as English")
-        } else if effectiveLocale.identifier != "en" {
-            ProductionLogger.debug("✅ LocalizationService: String '\(key)' appears to be properly localized")
-        }
-        
-        return result
-    }
-    
-    /// Get localized string with explicit locale
-    public func localizedString(for key: String, locale: Locale, arguments: CVarArg...) -> String {
-        let format = String(localized: String.LocalizationValue(key), locale: locale)
-        return String(format: format, arguments: arguments)
-    }
-    
-    /// Get raw localized format string without formatting (useful for format strings with placeholders)
-    public func localizedFormatString(for key: String) -> String {
-        ProductionLogger.debug("LocalizationService: Requesting format string for key '\(key)' with locale '\(effectiveLocale.identifier)' (language: \(currentLanguage.rawValue))")
-        
-        let bundle = Bundle.main
-        var format: String
-        
-        // For runtime language switching, we need to manually load from the appropriate .lproj folder
-        if currentLanguage != .system {
-            let languageCode = currentLanguage.rawValue
-            if let languageBundlePath = bundle.path(forResource: languageCode, ofType: "lproj"),
-               let languageBundle = Bundle(path: languageBundlePath) {
-                format = NSLocalizedString(key, bundle: languageBundle, comment: "")
-                ProductionLogger.debug("LocalizationService: Using language bundle for '\(languageCode)'")
-            } else {
-                // Fallback to standard localization
-                format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
-                ProductionLogger.debug("LocalizationService: Language bundle not found, using standard API")
-            }
-        } else {
-            // Use standard localization for system language
-            format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
-        }
-        
-        ProductionLogger.debug("LocalizationService: Format string for '\(key)' resolved to '\(format)' (locale: \(effectiveLocale.identifier))")
-        
-        // For ui.photo_counter, ensure we have a valid format string
-        if key == "ui.photo_counter" && !format.contains("%lld") {
-            ProductionLogger.debug("⚡ LocalizationService: Format string invalid for '\(key)', using fallback")
-            format = "%lld of %lld"
-        }
-        
-        return format
-    }
-    
-    /// Set language and save to preferences
-    public func setLanguage(_ language: SupportedLanguage, saveToPreferences: Bool = true) {
+    /// Set language and trigger environment update
+    public func setLanguage(_ language: SupportedLanguage) {
         currentLanguage = language
-        
-        if saveToPreferences {
-            saveLanguageSettings()
-        }
-        
         ProductionLogger.userAction("Language changed to: \(language.displayName)")
-    }
-    
-    /// Add language to preferred languages list
-    public func addPreferredLanguage(_ language: SupportedLanguage) {
-        if !preferredLanguages.contains(language) {
-            preferredLanguages.append(language)
-            saveLanguageSettings()
-        }
-    }
-    
-    /// Remove language from preferred languages list  
-    public func removePreferredLanguage(_ language: SupportedLanguage) {
-        preferredLanguages.removeAll { $0 == language }
-        saveLanguageSettings()
-    }
-    
-    /// Get the best available language for the current system
-    public func bestAvailableLanguage() -> SupportedLanguage {
-        // If system language is selected, try to match system locale
-        if currentLanguage == .system {
-            let systemLanguageCode = Locale.current.language.languageCode?.identifier ?? "en"
-            
-            // Try to find exact match
-            for language in SupportedLanguage.allCases {
-                if language.rawValue == systemLanguageCode {
-                    return language
-                }
-            }
-            
-            // Try to find language family match (e.g., "zh" for Chinese)
-            for language in SupportedLanguage.allCases {
-                if language.rawValue.hasPrefix(systemLanguageCode) {
-                    return language
-                }
-            }
-            
-            // Fallback to English
-            return .english
-        }
-        
-        return currentLanguage
     }
     
     /// Check if a specific language is supported
@@ -261,74 +110,25 @@ public final class LocalizationService: @unchecked Sendable {
     
     // MARK: - Private Methods
     
-    private func updateApplicationLanguage() {
-        let effectiveLanguage = bestAvailableLanguage()
-        let oldLocale = effectiveLocale
-        effectiveLocale = effectiveLanguage.locale
-        
-        ProductionLogger.debug("LocalizationService: Language change - from '\(oldLocale.identifier)' to '\(effectiveLocale.identifier)'")
-        ProductionLogger.debug("LocalizationService: Current language setting: \(currentLanguage.rawValue)")
-        ProductionLogger.debug("LocalizationService: Effective language: \(effectiveLanguage.rawValue)")
-        ProductionLogger.debug("LocalizationService: Effective locale: \(effectiveLocale.identifier)")
-        
-        // Update bundle localization if needed
-        if effectiveLanguage != .system {
-            updateBundleLocalization(for: effectiveLanguage)
-        }
-        
-        // Test a known string to verify localization is working
-        let testKey = "button.select_folder"
-        let testString = String(localized: String.LocalizationValue(testKey), locale: effectiveLocale)
-        ProductionLogger.debug("LocalizationService: Test string '\(testKey)' = '\(testString)' (should be Japanese if locale is 'ja')")
-        
-        ProductionLogger.debug("LocalizationService: Updated to language: \(effectiveLanguage.displayName), locale: \(effectiveLocale.identifier)")
-    }
-    
-    private func updateBundleLocalization(for language: SupportedLanguage) {
-        // For runtime language switching, we primarily rely on the effectiveLocale
-        // and pass it to String(localized:locale:) calls
-        
-        // Note: Full bundle localization switching requires app restart in most cases
-        // Our approach using effectiveLocale provides runtime switching without restart
-    }
-    
     private func loadSavedLanguageSettings() {
-        // Load current language
         if let savedLanguageString = userDefaults.string(forKey: languageKey),
            let savedLanguage = SupportedLanguage(rawValue: savedLanguageString) {
             currentLanguage = savedLanguage
-        }
-        
-        // Load preferred languages
-        if let savedPreferredLanguages = userDefaults.array(forKey: preferredLanguagesKey) as? [String] {
-            preferredLanguages = savedPreferredLanguages.compactMap { SupportedLanguage(rawValue: $0) }
-        }
-        
-        // Initialize with system preferences if no saved preferences
-        if preferredLanguages.isEmpty {
-            preferredLanguages = [.system, .english]
         }
     }
     
     private func saveLanguageSettings() {
         userDefaults.set(currentLanguage.rawValue, forKey: languageKey)
-        userDefaults.set(preferredLanguages.map { $0.rawValue }, forKey: preferredLanguagesKey)
-        
         ProductionLogger.debug("LocalizationService: Saved language settings")
     }
     
     private func notifyLanguageChange() {
-        // Clear the localized string cache when language changes
-        LocalizedStringCache.clearCache()
-        
-        // Post notification for components that need to react to language changes
         NotificationCenter.default.post(
             name: .languageChanged,
             object: currentLanguage,
-            userInfo: ["effectiveLocale": effectiveLocale]
+            userInfo: ["locale": currentLocale]
         )
-        
-        ProductionLogger.debug("LocalizationService: Cleared string cache and notified language change")
+        ProductionLogger.debug("LocalizationService: ✅ Posted languageChanged notification - language: \(currentLanguage.rawValue)")
     }
 }
 
@@ -339,28 +139,19 @@ extension Notification.Name {
     public static let languageChanged = Notification.Name("SwiftPhotos.LanguageChanged")
 }
 
-// MARK: - String Extensions for Localization
+// MARK: - Environment Support
 
-extension String {
-    /// Convenience initializer for localized strings
-    init(localizedKey key: String) {
-        // Use the default localization without requiring async access
-        let format = String(localized: String.LocalizationValue(key))
-        self = format
-    }
-    
-    /// Convenience method for formatted localized strings
-    static func localized(_ key: String, _ arguments: CVarArg...) -> String {
-        let format = String(localized: String.LocalizationValue(key))
-        return String(format: format, arguments: arguments)
-    }
+/// Environment key for LocalizationService
+private struct LocalizationServiceKey: EnvironmentKey {
+    static let defaultValue: LocalizationService? = nil
 }
 
-// MARK: - SwiftUI Integration
-
 extension EnvironmentValues {
-    /// Environment key for LocalizationService
-    @Entry var localizationService: LocalizationService? = nil
+    /// Access to LocalizationService through SwiftUI environment
+    var localizationService: LocalizationService? {
+        get { self[LocalizationServiceKey.self] }
+        set { self[LocalizationServiceKey.self] = newValue }
+    }
 }
 
 extension View {

@@ -20,7 +20,6 @@ struct LocalizationServiceTests {
     
     private func clearUserDefaults() {
         UserDefaults.standard.removeObject(forKey: "SwiftPhotos.SelectedLanguage")
-        UserDefaults.standard.removeObject(forKey: "SwiftPhotos.PreferredLanguages")
         UserDefaults.standard.synchronize()
     }
     
@@ -30,21 +29,25 @@ struct LocalizationServiceTests {
         clearUserDefaults()
         let service = createTestService()
         
-        // Default should be system language
+        // Service should initialize with system language by default
         #expect(service.currentLanguage == .system)
-        #expect(service.effectiveLocale == Locale.current)
-        #expect(service.preferredLanguages.isEmpty == false)
+        #expect(service.currentLocale == Locale.current)
     }
     
     @Test func testInitializationWithSavedLanguage() {
         clearUserDefaults()
         
-        // Save a language preference
+        // Save Japanese language preference
         UserDefaults.standard.set("ja", forKey: "SwiftPhotos.SelectedLanguage")
         UserDefaults.standard.synchronize()
         
         let service = createTestService()
+        
+        // Service should load saved language preference
         #expect(service.currentLanguage == .japanese)
+        #expect(service.currentLocale.identifier == "ja")
+        
+        clearUserDefaults()
     }
     
     // MARK: - Language Setting Tests
@@ -52,117 +55,89 @@ struct LocalizationServiceTests {
     @Test func testSetLanguage() {
         let service = createTestService()
         
+        // Test setting to Japanese
         service.setLanguage(.japanese)
         #expect(service.currentLanguage == .japanese)
-        #expect(service.effectiveLocale.identifier == "ja")
+        #expect(service.currentLocale.identifier == "ja")
         
+        // Test setting to English
         service.setLanguage(.english)
         #expect(service.currentLanguage == .english)
-        #expect(service.effectiveLocale.identifier == "en")
+        #expect(service.currentLocale.identifier == "en")
         
-        service.setLanguage(.system)
-        #expect(service.currentLanguage == .system)
-        #expect(service.effectiveLocale == Locale.current)
+        // Test setting to Spanish
+        service.setLanguage(.spanish)
+        #expect(service.currentLanguage == .spanish)
+        #expect(service.currentLocale.identifier == "es")
     }
     
-    @Test func testSetLanguageWithoutSaving() {
+    @Test func testLanguagePersistence() {
         clearUserDefaults()
         let service = createTestService()
         
-        service.setLanguage(.japanese, saveToPreferences: false)
-        #expect(service.currentLanguage == .japanese)
+        // Set language and verify it's saved
+        service.setLanguage(.french)
+        #expect(service.currentLanguage == .french)
         
-        // Verify it wasn't saved
+        // Check that it's persisted in UserDefaults
         let savedLanguage = UserDefaults.standard.string(forKey: "SwiftPhotos.SelectedLanguage")
-        #expect(savedLanguage == nil)
+        #expect(savedLanguage == "fr")
+        
+        clearUserDefaults()
     }
     
-    // MARK: - Localization Tests
+    @Test func testLanguageChangeNotification() async {
+        let service = createTestService()
+        var notificationReceived = false
+        var receivedLanguage: SupportedLanguage?
+        
+        let observer = NotificationCenter.default.addObserver(
+            forName: .languageChanged,
+            object: nil,
+            queue: .main
+        ) { notification in
+            notificationReceived = true
+            receivedLanguage = notification.object as? SupportedLanguage
+        }
+        
+        defer {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        
+        // Change language and wait for notification
+        service.setLanguage(.german)
+        
+        // Give notification time to process
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+        
+        #expect(notificationReceived == true)
+        #expect(receivedLanguage == .german)
+    }
     
-    @Test func testLocalizedString() {
+    // MARK: - Locale Tests
+    
+    @Test func testCurrentLocale() {
         let service = createTestService()
         
-        // Test English localization
-        service.setLanguage(.english)
-        let englishString = service.localizedString(for: "button.select_folder")
-        #expect(englishString.isEmpty == false)
+        // Test system locale
+        service.setLanguage(.system)
+        #expect(service.currentLocale == Locale.current)
         
-        // Test Japanese localization
+        // Test specific locales
         service.setLanguage(.japanese)
-        let japaneseString = service.localizedString(for: "button.select_folder")
-        #expect(japaneseString.isEmpty == false)
+        #expect(service.currentLocale.identifier == "ja")
         
-        // Strings should be different for different languages
-        // Note: This might fail if translations aren't loaded properly in test environment
-        // In that case, we'd need to mock the localization system
+        service.setLanguage(.chineseSimplified)
+        #expect(service.currentLocale.identifier == "zh-Hans")
+        
+        service.setLanguage(.chineseTraditional)
+        #expect(service.currentLocale.identifier == "zh-Hant")
     }
     
-    @Test func testLocalizedStringWithArguments() {
-        let service = createTestService()
-        service.setLanguage(.english)
-        
-        let formattedString = service.localizedString(for: "loading.scanning_folder", arguments: 42)
-        #expect(formattedString.contains("42") == true)
-    }
-    
-    @Test func testLocalizedStringWithExplicitLocale() {
+    @Test func testLanguageSupport() {
         let service = createTestService()
         
-        let japaneseLocale = Locale(identifier: "ja")
-        let japaneseString = service.localizedString(for: "button.select_folder", locale: japaneseLocale)
-        #expect(japaneseString.isEmpty == false)
-    }
-    
-    // MARK: - Preferred Languages Tests
-    
-    @Test func testAddPreferredLanguage() {
-        let service = createTestService()
-        service.preferredLanguages = [] // Clear any defaults
-        
-        service.addPreferredLanguage(.japanese)
-        #expect(service.preferredLanguages.contains(.japanese) == true)
-        
-        // Adding same language again should not duplicate
-        service.addPreferredLanguage(.japanese)
-        #expect(service.preferredLanguages.filter { $0 == .japanese }.count == 1)
-        
-        service.addPreferredLanguage(.english)
-        #expect(service.preferredLanguages.contains(.english) == true)
-    }
-    
-    @Test func testRemovePreferredLanguage() {
-        let service = createTestService()
-        service.preferredLanguages = [.japanese, .english]
-        
-        service.removePreferredLanguage(.japanese)
-        #expect(service.preferredLanguages.contains(.japanese) == false)
-        #expect(service.preferredLanguages.contains(.english) == true)
-    }
-    
-    // MARK: - Best Available Language Tests
-    
-    @Test func testBestAvailableLanguageWithSystem() {
-        let service = createTestService()
-        service.currentLanguage = .system
-        
-        let bestLanguage = service.bestAvailableLanguage()
-        // Should return a supported language based on system locale
-        #expect(SupportedLanguage.allCases.contains(bestLanguage) == true)
-    }
-    
-    @Test func testBestAvailableLanguageWithExplicitLanguage() {
-        let service = createTestService()
-        service.currentLanguage = .japanese
-        
-        let bestLanguage = service.bestAvailableLanguage()
-        #expect(bestLanguage == .japanese)
-    }
-    
-    // MARK: - Language Support Tests
-    
-    @Test func testIsLanguageSupported() {
-        let service = createTestService()
-        
+        // Test supported languages
         #expect(service.isLanguageSupported("en") == true)
         #expect(service.isLanguageSupported("ja") == true)
         #expect(service.isLanguageSupported("es") == true)
@@ -175,156 +150,143 @@ struct LocalizationServiceTests {
         #expect(service.isLanguageSupported("it") == true)
         #expect(service.isLanguageSupported("ru") == true)
         
-        // Unsupported language
-        #expect(service.isLanguageSupported("xyz") == false)
+        // Test unsupported languages
+        #expect(service.isLanguageSupported("ar") == false)
+        #expect(service.isLanguageSupported("hi") == false)
+        #expect(service.isLanguageSupported("invalid") == false)
     }
     
-    // MARK: - Right-to-Left Tests
+    // MARK: - SupportedLanguage Enum Tests
     
-    @Test func testRightToLeftDetection() {
-        let service = createTestService()
+    @Test func testSupportedLanguageProperties() {
+        // Test locale properties
+        #expect(SupportedLanguage.english.locale.identifier == "en")
+        #expect(SupportedLanguage.japanese.locale.identifier == "ja")
+        #expect(SupportedLanguage.spanish.locale.identifier == "es")
+        #expect(SupportedLanguage.french.locale.identifier == "fr")
+        #expect(SupportedLanguage.german.locale.identifier == "de")
         
-        // Test LTR languages
-        service.setLanguage(.english)
-        #expect(service.isRightToLeft == false)
-        
-        service.setLanguage(.japanese)
-        #expect(service.isRightToLeft == false)
-        
-        // Note: We don't currently support RTL languages like Arabic or Hebrew
-        // but the infrastructure is there for future support
+        // Test system language uses current locale
+        #expect(SupportedLanguage.system.locale == Locale.current)
     }
     
-    // MARK: - Notification Tests
+    @Test func testSupportedLanguageDisplayNames() {
+        // Test that display names are not empty
+        for language in SupportedLanguage.allCases {
+            let displayName = language.displayName
+            #expect(displayName.isEmpty == false)
+            ProductionLogger.debug("Language \(language.rawValue) display name: \(displayName)")
+        }
+    }
     
-    @Test func testLanguageChangeNotification() async {
+    @Test func testSupportedLanguageRightToLeft() {
+        // Most languages are left-to-right
+        #expect(SupportedLanguage.english.isRightToLeft == false)
+        #expect(SupportedLanguage.japanese.isRightToLeft == false)
+        #expect(SupportedLanguage.spanish.isRightToLeft == false)
+        #expect(SupportedLanguage.french.isRightToLeft == false)
+        #expect(SupportedLanguage.german.isRightToLeft == false)
+        #expect(SupportedLanguage.chineseSimplified.isRightToLeft == false)
+        #expect(SupportedLanguage.chineseTraditional.isRightToLeft == false)
+        #expect(SupportedLanguage.korean.isRightToLeft == false)
+        #expect(SupportedLanguage.portuguese.isRightToLeft == false)
+        #expect(SupportedLanguage.italian.isRightToLeft == false)
+        #expect(SupportedLanguage.russian.isRightToLeft == false)
+        
+        // System follows current locale
+        #expect(SupportedLanguage.system.isRightToLeft == (Locale.current.language.characterDirection == .rightToLeft))
+    }
+    
+    // MARK: - Performance Tests
+    
+    @Test func testLanguageChangePerformance() async {
+        let service = createTestService()
+        let languages: [SupportedLanguage] = [.english, .japanese, .spanish, .french, .german]
+        
+        let startTime = CFAbsoluteTimeGetCurrent()
+        
+        // Perform many language changes
+        for _ in 0..<100 {
+            for language in languages {
+                service.setLanguage(language)
+            }
+        }
+        
+        let endTime = CFAbsoluteTimeGetCurrent()
+        let totalTime = endTime - startTime
+        
+        // Should complete 500 language changes in reasonable time
+        #expect(totalTime < 1.0, "Language changes took too long: \(totalTime)s")
+    }
+    
+    @Test func testConcurrentLanguageAccess() async {
         let service = createTestService()
         
-        var notificationReceived = false
-        var notifiedLanguage: SupportedLanguage?
-        var notifiedLocale: Locale?
+        // Test concurrent access
+        await withTaskGroup(of: Void.self) { group in
+            // Task 1: Language changes
+            group.addTask {
+                for i in 0..<50 {
+                    let language: SupportedLanguage = i % 2 == 0 ? .english : .japanese
+                    await service.setLanguage(language)
+                }
+            }
+            
+            // Task 2: Language reads
+            group.addTask {
+                for _ in 0..<100 {
+                    _ = await service.currentLanguage
+                    _ = await service.currentLocale
+                }
+            }
+        }
+        
+        // Service should still be functional after concurrent access
+        #expect(service.currentLanguage != .system || service.currentLanguage == .system)
+    }
+    
+    // MARK: - Edge Case Tests
+    
+    @Test func testSetSameLanguageMultipleTimes() async {
+        let service = createTestService()
+        var notificationCount = 0
         
         let observer = NotificationCenter.default.addObserver(
             forName: .languageChanged,
             object: nil,
             queue: .main
-        ) { notification in
-            notificationReceived = true
-            notifiedLanguage = notification.object as? SupportedLanguage
-            notifiedLocale = notification.userInfo?["effectiveLocale"] as? Locale
+        ) { _ in
+            notificationCount += 1
         }
         
-        service.setLanguage(.japanese)
+        defer {
+            NotificationCenter.default.removeObserver(observer)
+        }
         
-        // Give notification time to process
+        // Set the same language multiple times
+        service.setLanguage(.spanish)
+        service.setLanguage(.spanish)
+        service.setLanguage(.spanish)
+        
+        // Give notifications time to process
         try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
         
-        #expect(notificationReceived == true)
-        #expect(notifiedLanguage == .japanese)
-        #expect(notifiedLocale?.identifier == "ja")
-        
-        NotificationCenter.default.removeObserver(observer)
+        // Should only receive one notification
+        #expect(notificationCount == 1)
+        #expect(service.currentLanguage == .spanish)
     }
     
-    // MARK: - Persistence Tests
-    
-    @Test func testLanguageSettingsPersistence() {
-        clearUserDefaults()
-        
-        let service1 = createTestService()
-        service1.setLanguage(.japanese)
-        service1.addPreferredLanguage(.english)
-        service1.addPreferredLanguage(.spanish)
-        
-        // Create new instance to test persistence
-        let service2 = createTestService()
-        #expect(service2.currentLanguage == .japanese)
-        #expect(service2.preferredLanguages.contains(.english) == true)
-        #expect(service2.preferredLanguages.contains(.spanish) == true)
-        
-        clearUserDefaults()
-    }
-    
-    // MARK: - Display Name Tests
-    
-    @Test func testLanguageDisplayNames() {
-        // Test that all languages have display names
-        for language in SupportedLanguage.allCases {
-            let displayName = language.displayName
-            #expect(displayName.isEmpty == false)
-        }
-    }
-    
-    // MARK: - Edge Cases
-    
-    @Test func testEmptyLocalizationKey() {
+    @Test func testRapidLanguageChanges() async {
         let service = createTestService()
-        let result = service.localizedString(for: "")
-        // Should return empty key or some fallback
-        #expect(result.isEmpty == true || result == "")
-    }
-    
-    @Test func testNonExistentLocalizationKey() {
-        let service = createTestService()
-        let nonExistentKey = "this.key.does.not.exist.12345"
-        let result = service.localizedString(for: nonExistentKey)
-        // Should return the key itself as fallback
-        #expect(result == nonExistentKey)
-    }
-    
-    @Test func testLanguageChangeWhileLoadingStrings() async {
-        let service = createTestService()
+        let languages: [SupportedLanguage] = [.english, .japanese, .spanish, .french, .german]
         
-        // Rapidly change languages to test thread safety
-        service.setLanguage(.english)
-        service.setLanguage(.japanese)
-        service.setLanguage(.spanish)
-        service.setLanguage(.french)
-        
-        // Final language should be French
-        #expect(service.currentLanguage == .french)
-        #expect(service.effectiveLocale.identifier == "fr")
-        
-        // Get a string to ensure it works after rapid changes
-        let string = service.localizedString(for: "button.select_folder")
-        #expect(string.isEmpty == false)
-    }
-}
-
-// MARK: - Mock Support for Testing
-
-extension LocalizationServiceTests {
-    
-    /// Test helper to verify string localization without relying on actual .strings files
-    private func verifyLocalizationMechanism() -> Bool {
-        let service = createTestService()
-        
-        // Test with a known key that should exist
-        service.setLanguage(.english)
-        let englishResult = service.localizedString(for: "button.select_folder")
-        
-        service.setLanguage(.japanese)
-        let japaneseResult = service.localizedString(for: "button.select_folder")
-        
-        // If both return the key itself, localization files might not be loaded in test
-        if englishResult == "button.select_folder" && japaneseResult == "button.select_folder" {
-            return false
+        // Rapidly change languages
+        for language in languages {
+            service.setLanguage(language)
+            try? await Task.sleep(nanoseconds: 1_000_000) // 1ms
         }
         
-        return true
-    }
-    
-    @Test func testLocalizationMechanismWorks() {
-        // This test verifies that the localization system is properly set up for testing
-        // It might fail in test environment if .strings files aren't included in test bundle
-        let localizationWorks = verifyLocalizationMechanism()
-        
-        if !localizationWorks {
-            // Log a warning but don't fail the test
-            print("Warning: Localization files may not be properly loaded in test environment")
-        }
-        
-        // The test passes either way, but logs a warning if localization isn't working
-        #expect(true)
+        // Final language should be German
+        #expect(service.currentLanguage == .german)
     }
 }

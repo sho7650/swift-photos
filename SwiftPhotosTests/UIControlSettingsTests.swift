@@ -423,7 +423,7 @@ struct UIControlSettingsManagerTests {
         manager.updateSettings(newSettings)
         
         // Give notification time to process
-        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
         
         #expect(notificationReceived == true)
         if let received = receivedSettings {

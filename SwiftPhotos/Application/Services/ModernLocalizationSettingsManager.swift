@@ -162,18 +162,23 @@ public enum MeasurementSystem: String, CaseIterable, Codable, Sendable {
     }
 }
 
-/// Modern Swift 6 compliant LocalizationSettingsManager using @Observable pattern
+/// Modern Swift 6 compliant LocalizationSettingsManager using native SwiftUI patterns
 @Observable
 @MainActor
 public final class ModernLocalizationSettingsManager {
     
-    // MARK: - Published Properties
+    // MARK: - Observable Properties
     
     /// Current localization settings
     public private(set) var settings: LocalizationSettings
     
     /// Integration with LocalizationService
     public let localizationService: LocalizationService
+    
+    /// Current environment locale for SwiftUI
+    public var environmentLocale: Locale {
+        localizationService.currentLocale
+    }
     
     // MARK: - Private Properties
     
@@ -200,14 +205,17 @@ public final class ModernLocalizationSettingsManager {
     
     // MARK: - Public Methods
     
-    /// Update localization settings
+    /// Update localization settings using Swift 6 native patterns
     public func updateSettings(_ newSettings: LocalizationSettings) {
+        ProductionLogger.debug("ModernLocalizationSettingsManager: updateSettings called")
+        
         let oldSettings = settings
         settings = newSettings
         
-        // Update LocalizationService if language changed
+        // Update LocalizationService if language changed - this triggers environment updates
         if oldSettings.language != newSettings.language {
-            self.localizationService.setLanguage(newSettings.language)
+            ProductionLogger.debug("ModernLocalizationSettingsManager: Language changed from \(oldSettings.language.rawValue) to \(newSettings.language.rawValue)")
+            localizationService.setLanguage(newSettings.language)
         }
         
         saveSettings()
@@ -218,6 +226,8 @@ public final class ModernLocalizationSettingsManager {
     
     /// Update only the language setting
     public func updateLanguage(_ language: SupportedLanguage) {
+        ProductionLogger.debug("ModernLocalizationSettingsManager: updateLanguage called with \(language.rawValue)")
+        
         var newSettings = settings
         newSettings.language = language
         updateSettings(newSettings)
@@ -297,7 +307,7 @@ public final class ModernLocalizationSettingsManager {
     public func sortComparator() -> (String, String) -> ComparisonResult {
         let locale = Locale(identifier: settings.sortLocale)
         return { string1, string2 in
-            string1.localizedCompare(string2, locale: locale)
+            string1.compare(string2, options: .caseInsensitive, range: nil, locale: locale)
         }
     }
     

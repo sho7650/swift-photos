@@ -9,28 +9,28 @@ struct SortSettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             // Sort Presets Section
             SortSettingsSection(
-                title: "Sort Presets",
+                title: L10n.SettingsString.sortPresets(),
                 icon: "arrow.up.arrow.down",
-                description: "Quick sorting configurations for common use cases"
+                description: L10n.SettingsString.sortPresetsDescription()
             ) {
                 VStack(spacing: 8) {
                     HStack(spacing: 12) {
-                        Button("Alphabetical") { settings.updateSettings(.alphabetical) }
+                        Button(L10n.ButtonString.alphabetical()) { settings.updateSettings(.alphabetical) }
                             .buttonStyle(.bordered)
-                        Button("Chronological") { settings.updateSettings(.chronological) }
+                        Button(L10n.ButtonString.chronological()) { settings.updateSettings(.chronological) }
                             .buttonStyle(.bordered)
-                        Button("Newest First") { settings.updateSettings(.newestFirst) }
+                        Button(L10n.ButtonString.newestFirst()) { settings.updateSettings(.newestFirst) }
                             .buttonStyle(.bordered)
-                        Button("Largest First") { settings.updateSettings(.largestFirst) }
+                        Button(L10n.ButtonString.largestFirst()) { settings.updateSettings(.largestFirst) }
                             .buttonStyle(.bordered)
                     }
                     
                     HStack {
-                        Button("Random") { settings.updateSettings(.randomized) }
+                        Button(L10n.ButtonString.random()) { settings.updateSettings(.randomized) }
                             .buttonStyle(.bordered)
                         
                         if settings.settings.order == .random {
-                            Button("New Random Order") {
+                            Button(L10n.ButtonString.newRandomOrder()) {
                                 settings.regenerateRandomSeed()
                             }
                             .buttonStyle(.borderedProminent)
@@ -41,12 +41,12 @@ struct SortSettingsView: View {
             
             // Sort Order Section
             SortSettingsSection(
-                title: "Sort Order",
+                title: L10n.SettingsString.sortOrder(),
                 icon: "list.bullet",
-                description: "Choose how photos are ordered in the slideshow"
+                description: L10n.SettingsString.sortOrderDescription()
             ) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Picker("Sort Order", selection: Binding(
+                    Picker(L10n.SettingsString.sortOrder(), selection: Binding(
                         get: { settings.settings.order },
                         set: { newOrder in
                             let newSettings = SortSettings(
@@ -74,12 +74,12 @@ struct SortSettingsView: View {
             // Sort Direction Section (not applicable for random)
             if settings.settings.order != .random {
                 SortSettingsSection(
-                    title: "Sort Direction",
+                    title: L10n.SettingsString.sortDirection(),
                     icon: "arrow.up.down",
-                    description: "Choose ascending or descending order"
+                    description: L10n.SettingsString.sortDirectionDescription()
                 ) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Picker("Sort Direction", selection: Binding(
+                        Picker(L10n.SettingsString.sortDirection(), selection: Binding(
                             get: { settings.settings.direction },
                             set: { newDirection in
                                 let newSettings = SortSettings(
@@ -105,9 +105,9 @@ struct SortSettingsView: View {
             
             // Current Settings Summary Section
             SortSettingsSection(
-                title: "Current Settings",
+                title: L10n.SettingsString.currentSettings(),
                 icon: "info.circle",
-                description: "Summary of your current sort configuration"
+                description: L10n.SettingsString.currentSettingsDescription()
             ) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -131,14 +131,14 @@ struct SortSettingsView: View {
             
             // Performance Information Section
             SortSettingsSection(
-                title: "Performance Information",
+                title: L10n.SettingsString.performanceInformation(),
                 icon: "speedometer",
-                description: "How sorting affects slideshow performance"
+                description: L10n.SettingsString.performanceInformationDescription()
             ) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("💡")
-                        Text("Performance Tip")
+                        Text(L10n.UI.performanceTip)
                             .fontWeight(.medium)
                             .foregroundColor(.blue)
                     }

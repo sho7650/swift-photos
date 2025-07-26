@@ -56,12 +56,12 @@ public struct MinimalControlsView: View {
                 ProductionLogger.debug("MinimalControlsView: New slideshow - currentIndex: \(newSlideshow.currentIndex), count: \(newSlideshow.count), isEmpty: \(newSlideshow.isEmpty)")
             }
         }
-        // .id(languageUpdateTrigger) // Temporarily disabled to debug photo counter issue
+        .id(languageUpdateTrigger) // Force view refresh when language changes
     }
     
     private var welcomeControls: some View {
         VStack(spacing: 16) {
-            Button(localizationService?.localizedString(for: "button.select_folder") ?? "Select Folder") {
+            Button("Select Folder") {
                 ProductionLogger.userAction("MinimalControlsView: Select Folder button pressed")
                 uiControlStateManager.handleGestureInteraction()
                 Task {
@@ -76,7 +76,7 @@ public struct MinimalControlsView: View {
                 HStack(spacing: 8) {
                     ProgressView()
                         .scaleEffect(0.6)
-                    Text(localizationService?.localizedString(for: "loading.loading_short") ?? "Loading...")
+                    Text("Loading...")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -123,7 +123,7 @@ public struct MinimalControlsView: View {
                         viewModel.previousPhoto()
                     }
                 )
-                .shortcutTooltip(localizationService?.localizedString(for: "tooltip.previous") ?? "Previous", shortcut: "←")
+                .shortcutTooltip("Previous", shortcut: "←")
                 
                 // Play/Pause button (larger)
                 ControlButton(
@@ -138,7 +138,7 @@ public struct MinimalControlsView: View {
                         }
                     }
                 )
-                .shortcutTooltip(slideshow.isPlaying ? (localizationService?.localizedString(for: "slideshow.button.pause") ?? "Pause") : (localizationService?.localizedString(for: "slideshow.button.play") ?? "Play"), shortcut: "Space")
+                .shortcutTooltip(slideshow.isPlaying ? "Pause" : "Play", shortcut: "Space")
                 
                 // Next button
                 ControlButton(
@@ -149,7 +149,7 @@ public struct MinimalControlsView: View {
                         viewModel.nextPhoto()
                     }
                 )
-                .shortcutTooltip(localizationService?.localizedString(for: "tooltip.next") ?? "Next", shortcut: "→")
+                .shortcutTooltip("Next", shortcut: "→")
             }
             
             // Photo counter (minimal)
@@ -181,7 +181,7 @@ public struct MinimalControlsView: View {
         .onTapGesture {
             uiControlStateManager.toggleDetailedInfo()
         }
-        .shortcutTooltip(localizationService?.localizedString(for: "tooltip.tap_for_info") ?? "Tap for info", shortcut: "I")
+        .shortcutTooltip("Tap for info", shortcut: "I")
         .animation(.easeInOut(duration: 0.2), value: isHovering)
         .animation(.easeInOut(duration: 0.2), value: uiControlStateManager.isDetailedInfoVisible)
     }

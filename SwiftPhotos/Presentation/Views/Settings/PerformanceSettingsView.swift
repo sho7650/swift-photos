@@ -5,6 +5,7 @@ import SwiftUI
 struct PerformanceSettingsView: View {
     var settings: ModernPerformanceSettingsManager
     @State private var selectedPreset: String = "Custom"
+    @Environment(\.localizationService) private var localizationService
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
