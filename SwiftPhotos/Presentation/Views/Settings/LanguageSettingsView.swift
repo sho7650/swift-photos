@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 /// Language and localization settings view for configuring multi-language support
 /// Integrates with ModernLocalizationSettingsManager for comprehensive language preferences
@@ -7,6 +8,7 @@ struct LanguageSettingsView: View {
     
     @State private var previewDate = Date()
     @State private var previewNumber = 1234.56
+    @State private var languageUpdateTrigger = 0
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -274,6 +276,10 @@ struct LanguageSettingsView: View {
                 previewDate = Date()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+        }
+        .id(languageUpdateTrigger) // Force view recreation when language changes
     }
 }
 

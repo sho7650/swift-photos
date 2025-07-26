@@ -62,12 +62,12 @@ public enum SupportedLanguage: String, CaseIterable, Codable, Sendable {
 
 /// Service for managing application localization and language switching
 @Observable
+@MainActor
 public final class LocalizationService: @unchecked Sendable {
     
-    // MARK: - Published Properties
+    // MARK: - Observable Properties
     
     /// Current selected language for the application
-    @MainActor
     public var currentLanguage: SupportedLanguage = .system {
         didSet {
             if currentLanguage != oldValue {
@@ -78,15 +78,12 @@ public final class LocalizationService: @unchecked Sendable {
     }
     
     /// List of preferred languages in order of preference
-    @MainActor
     public var preferredLanguages: [SupportedLanguage] = []
     
     /// Current effective locale being used
-    @MainActor
     public private(set) var effectiveLocale: Locale = Locale.current
     
     /// Whether the current language uses right-to-left layout
-    @MainActor
     public var isRightToLeft: Bool {
         Locale.Language(identifier: effectiveLocale.language.languageCode?.identifier ?? "en").characterDirection == .rightToLeft
     }
@@ -99,7 +96,6 @@ public final class LocalizationService: @unchecked Sendable {
     
     // MARK: - Initialization
     
-    @MainActor
     public init() {
         loadSavedLanguageSettings()
         updateApplicationLanguage()
@@ -110,10 +106,45 @@ public final class LocalizationService: @unchecked Sendable {
     // MARK: - Public Methods
     
     /// Get localized string for the given key
-    @MainActor
     public func localizedString(for key: String, arguments: CVarArg...) -> String {
-        let format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
-        return String(format: format, arguments: arguments)
+        ProductionLogger.debug("LocalizationService: Requesting key '\(key)' with locale '\(effectiveLocale.identifier)' (language: \(currentLanguage.rawValue))")
+        
+        // Try to get the localized string using Bundle localization
+        let bundle = Bundle.main
+        var format: String
+        
+        // For runtime language switching, we need to manually load from the appropriate .lproj folder
+        if currentLanguage != .system {
+            let languageCode = currentLanguage.rawValue
+            if let languageBundlePath = bundle.path(forResource: languageCode, ofType: "lproj"),
+               let languageBundle = Bundle(path: languageBundlePath) {
+                format = NSLocalizedString(key, bundle: languageBundle, comment: "")
+                ProductionLogger.debug("LocalizationService: Using language bundle for '\(languageCode)'")
+            } else {
+                // Fallback to standard localization
+                format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
+                ProductionLogger.debug("LocalizationService: Language bundle not found, using standard API")
+            }
+        } else {
+            // Use standard localization for system language
+            format = String(localized: String.LocalizationValue(key), locale: effectiveLocale)
+        }
+        
+        ProductionLogger.debug("LocalizationService: Key '\(key)' resolved to '\(format)' (locale: \(effectiveLocale.identifier))")
+        
+        let result = String(format: format, arguments: arguments)
+        
+        // Check if localization actually worked by comparing with English fallback
+        let englishFormat = NSLocalizedString(key, bundle: bundle, comment: "")
+        if format == englishFormat && effectiveLocale.identifier != "en" && format == key {
+            ProductionLogger.debug("⚠️ LocalizationService: String '\(key)' may not be localized - got key back")
+        } else if format == englishFormat && effectiveLocale.identifier != "en" {
+            ProductionLogger.debug("⚠️ LocalizationService: String '\(key)' may not be localized - got same result as English")
+        } else if effectiveLocale.identifier != "en" {
+            ProductionLogger.debug("✅ LocalizationService: String '\(key)' appears to be properly localized")
+        }
+        
+        return result
     }
     
     /// Get localized string with explicit locale
@@ -123,7 +154,6 @@ public final class LocalizationService: @unchecked Sendable {
     }
     
     /// Set language and save to preferences
-    @MainActor
     public func setLanguage(_ language: SupportedLanguage, saveToPreferences: Bool = true) {
         currentLanguage = language
         
@@ -135,7 +165,6 @@ public final class LocalizationService: @unchecked Sendable {
     }
     
     /// Add language to preferred languages list
-    @MainActor
     public func addPreferredLanguage(_ language: SupportedLanguage) {
         if !preferredLanguages.contains(language) {
             preferredLanguages.append(language)
@@ -144,14 +173,12 @@ public final class LocalizationService: @unchecked Sendable {
     }
     
     /// Remove language from preferred languages list  
-    @MainActor
     public func removePreferredLanguage(_ language: SupportedLanguage) {
         preferredLanguages.removeAll { $0 == language }
         saveLanguageSettings()
     }
     
     /// Get the best available language for the current system
-    @MainActor
     public func bestAvailableLanguage() -> SupportedLanguage {
         // If system language is selected, try to match system locale
         if currentLanguage == .system {
@@ -185,15 +212,25 @@ public final class LocalizationService: @unchecked Sendable {
     
     // MARK: - Private Methods
     
-    @MainActor
     private func updateApplicationLanguage() {
         let effectiveLanguage = bestAvailableLanguage()
+        let oldLocale = effectiveLocale
         effectiveLocale = effectiveLanguage.locale
+        
+        ProductionLogger.debug("LocalizationService: Language change - from '\(oldLocale.identifier)' to '\(effectiveLocale.identifier)'")
+        ProductionLogger.debug("LocalizationService: Current language setting: \(currentLanguage.rawValue)")
+        ProductionLogger.debug("LocalizationService: Effective language: \(effectiveLanguage.rawValue)")
+        ProductionLogger.debug("LocalizationService: Effective locale: \(effectiveLocale.identifier)")
         
         // Update bundle localization if needed
         if effectiveLanguage != .system {
             updateBundleLocalization(for: effectiveLanguage)
         }
+        
+        // Test a known string to verify localization is working
+        let testKey = "button.select_folder"
+        let testString = String(localized: String.LocalizationValue(testKey), locale: effectiveLocale)
+        ProductionLogger.debug("LocalizationService: Test string '\(testKey)' = '\(testString)' (should be Japanese if locale is 'ja')")
         
         ProductionLogger.debug("LocalizationService: Updated to language: \(effectiveLanguage.displayName), locale: \(effectiveLocale.identifier)")
     }
@@ -206,7 +243,6 @@ public final class LocalizationService: @unchecked Sendable {
         // Our approach using effectiveLocale provides runtime switching without restart
     }
     
-    @MainActor
     private func loadSavedLanguageSettings() {
         // Load current language
         if let savedLanguageString = userDefaults.string(forKey: languageKey),
@@ -225,7 +261,6 @@ public final class LocalizationService: @unchecked Sendable {
         }
     }
     
-    @MainActor
     private func saveLanguageSettings() {
         userDefaults.set(currentLanguage.rawValue, forKey: languageKey)
         userDefaults.set(preferredLanguages.map { $0.rawValue }, forKey: preferredLanguagesKey)
@@ -233,14 +268,18 @@ public final class LocalizationService: @unchecked Sendable {
         ProductionLogger.debug("LocalizationService: Saved language settings")
     }
     
-    @MainActor
     private func notifyLanguageChange() {
+        // Clear the localized string cache when language changes
+        LocalizedStringCache.clearCache()
+        
         // Post notification for components that need to react to language changes
         NotificationCenter.default.post(
             name: .languageChanged,
             object: currentLanguage,
             userInfo: ["effectiveLocale": effectiveLocale]
         )
+        
+        ProductionLogger.debug("LocalizationService: Cleared string cache and notified language change")
     }
 }
 

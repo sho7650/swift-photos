@@ -1,206 +1,132 @@
 import Foundation
 import SwiftUI
 
-// MARK: - Localized String Constants
+// MARK: - Dynamic Localized String Helpers
 
 extension String {
     
-    // MARK: - Slideshow Controls
+    // MARK: - Dynamic Localization Methods
+    
+    /// Get localized string using current system locale
+    static func localized(_ key: String) -> String {
+        return String(localized: String.LocalizationValue(key))
+    }
+    
+    /// Get localized string using specific locale
+    static func localized(_ key: String, locale: Locale) -> String {
+        return String(localized: String.LocalizationValue(key), locale: locale)
+    }
+    
+    /// Get localized string using LocalizationService (preferred method for runtime switching)
+    @MainActor
+    static func localized(_ key: String, service: LocalizationService?) -> String {
+        ProductionLogger.debug("String+Localization: Requesting key '\(key)' via service=\(service != nil ? "available" : "nil")")
+        
+        if let service = service {
+            let result = service.localizedString(for: key)
+            ProductionLogger.debug("String+Localization: Service returned '\(result)' for key '\(key)'")
+            return result
+        } else {
+            let fallback = String(localized: String.LocalizationValue(key))
+            ProductionLogger.debug("String+Localization: Using fallback '\(fallback)' for key '\(key)' (no service)")
+            return fallback
+        }
+    }
+    
+    // MARK: - Convenience Methods for Common UI Elements
+    
+    /// Get localized string for slideshow controls
+    @MainActor
+    static func slideshowControl(_ action: String, service: LocalizationService? = nil) -> String {
+        return localized("slideshow.button.\(action)", service: service)
+    }
+    
+    /// Get localized string for navigation actions
+    @MainActor
+    static func navigation(_ action: String, service: LocalizationService? = nil) -> String {
+        return localized("slideshow.navigation.\(action)", service: service)
+    }
+    
+    /// Get localized string for settings sections
+    @MainActor
+    static func settingsSection(_ section: String, service: LocalizationService? = nil) -> String {
+        return localized("settings.\(section).title", service: service)
+    }
+    
+    /// Get localized string for keyboard shortcuts
+    @MainActor
+    static func keyboardShortcut(_ action: String, service: LocalizationService? = nil) -> String {
+        return localized("shortcut.\(action)", service: service)
+    }
+    
+    /// Get localized string for tooltips
+    @MainActor
+    static func tooltip(_ type: String, service: LocalizationService? = nil) -> String {
+        return localized("tooltip.\(type)", service: service)
+    }
+    
+    /// Get localized string for buttons
+    @MainActor
+    static func button(_ type: String, service: LocalizationService? = nil) -> String {
+        return localized("button.\(type)", service: service)
+    }
+    
+    /// Get localized string for loading states
+    @MainActor
+    static func loading(_ state: String, service: LocalizationService? = nil) -> String {
+        return localized("loading.\(state)", service: service)
+    }
+    
+    /// Get localized string for error messages
+    @MainActor
+    static func error(_ type: String, service: LocalizationService? = nil) -> String {
+        return localized("error.\(type)", service: service)
+    }
+    
+    /// Get localized string for presets
+    @MainActor
+    static func preset(_ type: String, service: LocalizationService? = nil) -> String {
+        return localized("presets.\(type)", service: service)
+    }
+    
+    /// Get localized string for duration formatting
+    @MainActor
+    static func duration(_ type: String, service: LocalizationService? = nil) -> String {
+        return localized("duration.\(type)", service: service)
+    }
+    
+    /// Get localized string for language names
+    @MainActor
+    static func language(_ type: String, service: LocalizationService? = nil) -> String {
+        return localized("language.\(type)", service: service)
+    }
+    
+    // MARK: - Backward Compatibility Properties (Deprecated)
+    // These provide fallback for existing code, but should be replaced with dynamic methods
+    
+    @available(*, deprecated, message: "Use String.slideshowControl('play', service: localizationService) instead")
+    static var playButton: String { localized("slideshow.button.play") }
     
-    /// Localized string for play button
-    static let playButton = String(localized: "slideshow.button.play")
+    @available(*, deprecated, message: "Use String.slideshowControl('pause', service: localizationService) instead")
+    static var pauseButton: String { localized("slideshow.button.pause") }
     
-    /// Localized string for pause button  
-    static let pauseButton = String(localized: "slideshow.button.pause")
+    @available(*, deprecated, message: "Use String.slideshowControl('stop', service: localizationService) instead")
+    static var stopButton: String { localized("slideshow.button.stop") }
     
-    /// Localized string for stop button
-    static let stopButton = String(localized: "slideshow.button.stop")
+    @available(*, deprecated, message: "Use String.button('select_folder', service: localizationService) instead")
+    static var selectFolderButton: String { localized("button.select_folder") }
     
-    /// Localized string for next photo navigation
-    static let nextPhoto = String(localized: "slideshow.navigation.next")
+    @available(*, deprecated, message: "Use String.tooltip('tap_for_info', service: localizationService) instead")
+    static var tooltipTapForInfo: String { localized("tooltip.tap_for_info") }
     
-    /// Localized string for previous photo navigation
-    static let previousPhoto = String(localized: "slideshow.navigation.previous")
+    @available(*, deprecated, message: "Use String.tooltip('previous', service: localizationService) instead")
+    static var tooltipPrevious: String { localized("tooltip.previous") }
     
-    // MARK: - Menu Items
+    @available(*, deprecated, message: "Use String.tooltip('next', service: localizationService) instead")
+    static var tooltipNext: String { localized("tooltip.next") }
     
-    /// Localized string for open folder menu item
-    static let openFolder = String(localized: "menu.file.open_folder")
-    
-    // MARK: - Settings UI
-    
-    /// Localized string for settings window title
-    static let settingsTitle = String(localized: "settings.window.title")
-    
-    /// Localized string for performance settings tab
-    static let performanceSettings = String(localized: "settings.performance.title")
-    
-    /// Localized string for slideshow settings tab
-    static let slideshowSettings = String(localized: "settings.slideshow.title")
-    
-    /// Localized string for sort settings tab
-    static let sortSettings = String(localized: "settings.sort.title")
-    
-    /// Localized string for transition settings tab
-    static let transitionSettings = String(localized: "settings.transition.title")
-    
-    /// Localized string for language settings tab
-    static let languageSettings = String(localized: "settings.language.title")
-    
-    // MARK: - Language Names
-    
-    /// Localized string for English language
-    static let languageEnglish = String(localized: "language.english")
-    
-    /// Localized string for Japanese language
-    static let languageJapanese = String(localized: "language.japanese")
-    
-    /// Localized string for system language option
-    static let languageSystem = String(localized: "language.system")
-    
-    // MARK: - Keyboard Shortcuts
-    
-    /// Localized string for play/pause shortcut
-    static let shortcutPlayPause = String(localized: "shortcut.play_pause")
-    
-    /// Localized string for next photo shortcut
-    static let shortcutNextPhoto = String(localized: "shortcut.next_photo")
-    
-    /// Localized string for previous photo shortcut
-    static let shortcutPreviousPhoto = String(localized: "shortcut.previous_photo")
-    
-    /// Localized string for toggle info shortcut
-    static let shortcutToggleInfo = String(localized: "shortcut.toggle_info")
-    
-    /// Localized string for toggle controls shortcut
-    static let shortcutToggleControls = String(localized: "shortcut.toggle_controls")
-    
-    /// Localized string for stop shortcut
-    static let shortcutStop = String(localized: "shortcut.stop")
-    
-    /// Localized string for open settings shortcut
-    static let shortcutOpenSettings = String(localized: "shortcut.open_settings")
-    
-    // MARK: - Buttons
-    
-    /// Localized string for select folder button
-    static let selectFolderButton = String(localized: "button.select_folder")
-    
-    // MARK: - Loading States
-    
-    /// Localized string for folder selection loading
-    static let loadingSelectingFolder = String(localized: "loading.selecting_folder")
-    
-    /// Localized string for first image loading
-    static let loadingFirstImage = String(localized: "loading.first_image")
-    
-    /// Localized string for slideshow preparation
-    static let loadingPreparingSlideshow = String(localized: "loading.preparing_slideshow")
-    
-    /// Localized string for loading images
-    static let loadingImages = String(localized: "loading.loading_images")
-    
-    /// Localized string for short loading text
-    static let loadingShort = String(localized: "loading.loading_short")
-    
-    // MARK: - Error Messages
-    
-    /// Localized string for error title
-    static let errorTitle = String(localized: "error.title")
-    
-    // MARK: - Tooltips
-    
-    /// Localized string for previous tooltip
-    static let tooltipPrevious = String(localized: "tooltip.previous")
-    
-    /// Localized string for next tooltip
-    static let tooltipNext = String(localized: "tooltip.next")
-    
-    /// Localized string for tap for info tooltip
-    static let tooltipTapForInfo = String(localized: "tooltip.tap_for_info")
-    
-    // MARK: - Settings Sections
-    
-    /// Localized string for slideshow presets section
-    static let settingsSlideshowPresets = String(localized: "settings.slideshow_presets")
-    
-    /// Localized string for slideshow presets description
-    static let settingsSlideshowPresetsDescription = String(localized: "settings.slideshow_presets.description")
-    
-    /// Localized string for timing settings section
-    static let settingsTimingSettings = String(localized: "settings.timing_settings")
-    
-    /// Localized string for timing settings description
-    static let settingsTimingSettingsDescription = String(localized: "settings.timing_settings.description")
-    
-    /// Localized string for playback behavior section
-    static let settingsPlaybackBehavior = String(localized: "settings.playback_behavior")
-    
-    /// Localized string for playback behavior description
-    static let settingsPlaybackBehaviorDescription = String(localized: "settings.playback_behavior.description")
-    
-    /// Localized string for keyboard controls section
-    static let settingsKeyboardControls = String(localized: "settings.keyboard_controls")
-    
-    /// Localized string for keyboard controls description
-    static let settingsKeyboardControlsDescription = String(localized: "settings.keyboard_controls.description")
-    
-    /// Localized string for slide duration setting
-    static let settingsSlideDuration = String(localized: "settings.slide_duration")
-    
-    /// Localized string for auto start setting
-    static let settingsAutoStart = String(localized: "settings.auto_start")
-    
-    /// Localized string for random order setting
-    static let settingsRandomOrder = String(localized: "settings.random_order")
-    
-    /// Localized string for loop slideshow setting
-    static let settingsLoopSlideshow = String(localized: "settings.loop_slideshow")
-    
-    // MARK: - Presets
-    
-    /// Localized string for default preset
-    static let presetDefault = String(localized: "presets.default")
-    
-    /// Localized string for quick preset
-    static let presetQuick = String(localized: "presets.quick")
-    
-    /// Localized string for slow preset
-    static let presetSlow = String(localized: "presets.slow")
-    
-    /// Localized string for random preset
-    static let presetRandom = String(localized: "presets.random")
-    
-    // MARK: - Duration Formatting
-    
-    /// Localized string for seconds
-    static let durationSeconds = String(localized: "duration.seconds")
-    
-    /// Localized string for minute (singular)
-    static let durationMinute = String(localized: "duration.minute")
-    
-    /// Localized string for minutes (plural)
-    static let durationMinutes = String(localized: "duration.minutes")
-    
-    // MARK: - Shortcut Descriptions
-    
-    /// Localized string for play/pause shortcut description
-    static let shortcutDescPlayPause = String(localized: "shortcut.desc.play_pause")
-    
-    /// Localized string for next photo shortcut description
-    static let shortcutDescNextPhoto = String(localized: "shortcut.desc.next_photo")
-    
-    /// Localized string for previous photo shortcut description
-    static let shortcutDescPreviousPhoto = String(localized: "shortcut.desc.previous_photo")
-    
-    /// Localized string for stop slideshow shortcut description
-    static let shortcutDescStopSlideshow = String(localized: "shortcut.desc.stop_slideshow")
-    
-    /// Localized string for toggle info shortcut description
-    static let shortcutDescToggleInfo = String(localized: "shortcut.desc.toggle_info")
-    
-    /// Localized string for toggle controls shortcut description
-    static let shortcutDescToggleControls = String(localized: "shortcut.desc.toggle_controls")
+    @available(*, deprecated, message: "Use String.error('title', service: localizationService) instead")
+    static var errorTitle: String { localized("error.title") }
     
     // MARK: - Error Messages with Parameters
     
@@ -365,22 +291,89 @@ extension AlertError {
 
 // MARK: - Supporting Types
 
-/// Helper struct for creating localized alerts
+/// Helper struct for creating localized alerts with recovery suggestions
 public struct AlertError: LocalizedError {
     public let title: String
     public let message: String
     public let underlying: Error?
+    public let recoveryKey: String?
     
-    public init(title: String, message: String, underlying: Error? = nil) {
+    public init(title: String, message: String, underlying: Error? = nil, recoveryKey: String? = nil) {
         self.title = title
         self.message = message
         self.underlying = underlying
+        self.recoveryKey = recoveryKey
     }
     
     public var errorDescription: String? { message }
     public var failureReason: String? { underlying?.localizedDescription }
     public var recoverySuggestion: String? { 
-        String(localized: "error.recovery.general_suggestion")
+        if let recoveryKey = recoveryKey {
+            return String(localized: String.LocalizationValue(recoveryKey))
+        }
+        return String(localized: String.LocalizationValue("error.recovery.general_suggestion"))
+    }
+    
+    // MARK: - Convenience Factory Methods
+    
+    /// Create error for no images found in folder
+    @MainActor
+    public static func noImagesFound(service: LocalizationService? = nil) -> AlertError {
+        AlertError(
+            title: String.error("title", service: service),
+            message: String.localized("error.no_images_found", service: service),
+            recoveryKey: "error.recovery.no_images"
+        )
+    }
+    
+    /// Create error for folder access denied
+    @MainActor
+    public static func folderAccessDenied(service: LocalizationService? = nil) -> AlertError {
+        AlertError(
+            title: String.error("title", service: service),
+            message: String.localized("error.folder_access_denied", service: service),
+            recoveryKey: "error.recovery.folder_access"
+        )
+    }
+    
+    /// Create error for image loading failure
+    @MainActor
+    public static func imageLoadFailed(fileName: String, service: LocalizationService? = nil) -> AlertError {
+        AlertError(
+            title: String.error("title", service: service),
+            message: String.localized("error.image_load_failed", service: service),
+            recoveryKey: "error.recovery.general_suggestion"
+        )
+    }
+    
+    /// Create error for memory warning
+    @MainActor
+    public static func memoryWarning(service: LocalizationService? = nil) -> AlertError {
+        AlertError(
+            title: String.error("title", service: service),
+            message: String.localized("error.memory_warning", service: service),
+            recoveryKey: "error.recovery.memory_low"
+        )
+    }
+    
+    /// Create error for unsupported format
+    @MainActor
+    public static func unsupportedFormat(fileName: String, service: LocalizationService? = nil) -> AlertError {
+        AlertError(
+            title: String.error("title", service: service),
+            message: String.localized("error.unsupported_format", service: service),
+            recoveryKey: "error.recovery.general_suggestion"
+        )
+    }
+    
+    /// Create error for corrupted file
+    @MainActor
+    public static func fileCorrupted(fileName: String, service: LocalizationService? = nil) -> AlertError {
+        AlertError(
+            title: String.error("title", service: service),
+            message: String.localized("error.file_corrupted", service: service),
+            recoveryKey: "error.recovery.restart_app"
+        )
     }
 }
 

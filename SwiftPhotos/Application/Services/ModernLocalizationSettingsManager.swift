@@ -191,9 +191,7 @@ public final class ModernLocalizationSettingsManager {
         self.settings = Self.loadSettings()
         
         // Sync with LocalizationService
-        Task { @MainActor in
-            self.localizationService.currentLanguage = self.settings.language
-        }
+        self.localizationService.currentLanguage = settings.language
         
         setupNotificationObservers()
         
@@ -209,9 +207,7 @@ public final class ModernLocalizationSettingsManager {
         
         // Update LocalizationService if language changed
         if oldSettings.language != newSettings.language {
-            Task { @MainActor in
-                self.localizationService.setLanguage(newSettings.language)
-            }
+            self.localizationService.setLanguage(newSettings.language)
         }
         
         saveSettings()

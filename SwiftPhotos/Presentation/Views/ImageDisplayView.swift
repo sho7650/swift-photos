@@ -8,6 +8,7 @@ public struct ImageDisplayView: View {
     @State private var scale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
     @State private var lastScaleValue: CGFloat = 1.0
+    @Environment(\.localizationService) private var localizationService
     
     public init(photo: Photo?, refreshCounter: Int = 0) {
         self.photo = photo
@@ -95,7 +96,7 @@ public struct ImageDisplayView: View {
                 .progressViewStyle(CircularProgressViewStyle())
                 .scaleEffect(1.5)
             
-            Text("Loading...")
+            Text(localizationService?.localizedString(for: "loading.loading_short") ?? "Loading...")
                 .foregroundColor(.white)
                 .font(.title2)
         }
@@ -171,7 +172,7 @@ public struct ImageDisplayView: View {
                 .font(.system(size: 48))
                 .foregroundColor(.red)
             
-            Text("Error Loading Image")
+            Text(localizationService?.localizedString(for: "ui.image_error_loading") ?? "Error Loading Image")
                 .foregroundColor(.white)
                 .font(.title2)
             
@@ -188,7 +189,7 @@ public struct ImageDisplayView: View {
                 .font(.system(size: 64))
                 .foregroundColor(.gray)
             
-            Text("Select a folder to start slideshow")
+            Text(localizationService?.localizedString(for: "ui.select_folder_start") ?? "Select a folder to start slideshow")
                 .foregroundColor(.gray)
                 .font(.title2)
         }
@@ -213,7 +214,7 @@ public struct ImageDisplayView: View {
                         .foregroundColor(.gray)
                     
                     if let creationDate = metadata.creationDate {
-                        Text(DateFormatter.slideshow.string(from: creationDate))
+                        Text(formatDate(creationDate))
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -270,11 +271,24 @@ struct DirectNSImageViewWrapper: NSViewRepresentable {
     }
 }
 
-extension DateFormatter {
-    static let slideshow: DateFormatter = {
+// MARK: - Helper Methods
+
+extension ImageDisplayView {
+    /// Format date using current localization settings
+    private func formatDate(_ date: Date) -> String {
+        // First try to get formatted date from localization service
+        if let service = localizationService {
+            let formatter = DateFormatter()
+            formatter.locale = service.effectiveLocale
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            return formatter.string(from: date)
+        }
+        
+        // Fallback to system locale
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        return formatter
-    }()
+        return formatter.string(from: date)
+    }
 }

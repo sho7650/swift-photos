@@ -5,13 +5,16 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     private let fileAccess: SecureFileAccess
     private let imageLoader: ImageLoader
     private let sortSettings: ModernSortSettingsManager
+    private let localizationService: LocalizationService
     
-    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: ModernSortSettingsManager) {
+    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: ModernSortSettingsManager, localizationService: LocalizationService) {
         self.fileAccess = fileAccess
         self.imageLoader = imageLoader
         self.sortSettings = sortSettings
+        self.localizationService = localizationService
     }
     
+    @MainActor
     public func loadPhotos(from folderURL: URL) async throws -> [Photo] {
         ProductionLogger.debug("FileSystemPhotoRepository: Starting loadPhotos for: \(folderURL.path)")
         ProductionLogger.debug("FileSystemPhotoRepository: Starting loadPhotos")
@@ -80,6 +83,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     }
     
     /// Sort photos according to the specified sort settings
+    @MainActor
     private func sortPhotos(_ photos: [Photo], using sortSettings: SortSettings) async -> [Photo] {
         ProductionLogger.debug("FileSystemPhotoRepository: Sorting \(photos.count) photos by \(sortSettings.order.displayName)")
         
@@ -101,14 +105,27 @@ public class FileSystemPhotoRepository: SlideshowRepository {
         }
     }
     
-    /// Sort photos by file name
+    /// Sort photos by file name using locale-aware comparison
+    @MainActor
     private func sortByFileName(_ photos: [Photo], direction: SortSettings.SortDirection) -> [Photo] {
+        let locale = localizationService.effectiveLocale
+        
         let sorted = photos.sorted { photo1, photo2 in
-            let name1 = photo1.fileName.lowercased()
-            let name2 = photo2.fileName.lowercased()
-            return direction == .ascending ? name1 < name2 : name1 > name2
+            let name1 = photo1.fileName
+            let name2 = photo2.fileName
+            
+            // Use locale-aware comparison that respects different languages' collation rules
+            let comparisonResult = name1.localizedCompare(name2, locale: locale)
+            
+            switch direction {
+            case .ascending:
+                return comparisonResult == .orderedAscending
+            case .descending:
+                return comparisonResult == .orderedDescending
+            }
         }
-        ProductionLogger.debug("FileSystemPhotoRepository: Sorted by file name (\(direction.displayName))")
+        
+        ProductionLogger.debug("FileSystemPhotoRepository: Sorted by file name (\(direction.displayName)) using locale: \(locale.identifier)")
         return sorted
     }
     

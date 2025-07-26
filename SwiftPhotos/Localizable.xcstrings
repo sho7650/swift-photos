@@ -37,16 +37,6 @@
         }
       }
     },
-    "%lld of %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld of %2$lld"
-          }
-        }
-      }
-    },
     "%lld photos" : {
 
     },
@@ -140,6 +130,15 @@
     "⚡ Performance" : {
 
     },
+    "🇪🇺 European" : {
+
+    },
+    "🇯🇵 Japanese" : {
+
+    },
+    "🇺🇸 US English" : {
+
+    },
     "✅ SHOULD DISPLAY: %@ | Refresh: %lld" : {
       "localizations" : {
         "en" : {
@@ -157,6 +156,15 @@
 
     },
     "💡 Quick Tips" : {
+
+    },
+    "Affects file size and dimension displays" : {
+
+    },
+    "Affects number and date formatting" : {
+
+    },
+    "Affects time display in photo metadata" : {
 
     },
     "Aggressive Memory Management" : {
@@ -180,6 +188,9 @@
     "App Sandbox Protection Enabled" : {
 
     },
+    "Application Language" : {
+
+    },
     "Automatically remove invalid folders" : {
 
     },
@@ -193,6 +204,7 @@
 
     },
     "button.select_folder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -209,6 +221,12 @@
       }
     },
     "Cancel" : {
+
+    },
+    "Changes take effect immediately" : {
+
+    },
+    "China" : {
 
     },
     "Chronological" : {
@@ -248,6 +266,9 @@
 
     },
     "Current Performance" : {
+
+    },
+    "Date Format" : {
 
     },
     "date_format.automatic" : {
@@ -359,6 +380,7 @@
 
     },
     "duration.minute" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -375,6 +397,7 @@
       }
     },
     "duration.minutes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -391,6 +414,7 @@
       }
     },
     "duration.seconds" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -430,20 +454,34 @@
     "Elegant Slide" : {
 
     },
+    "Enable accessibility features for localization" : {
+
+    },
     "Enable debug logging" : {
 
     },
     "Enable Transition Effects" : {
 
     },
-    "Error" : {
-
-    },
-    "Error Loading Image" : {
-
-    },
     "error.%@" : {
 
+    },
+    "error.file_corrupted" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The image file appears to be corrupted."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像ファイルが破損している可能性があります。"
+          }
+        }
+      }
     },
     "error.file_not_found" : {
       "extractionState" : "stale",
@@ -467,6 +505,40 @@
     },
     "error.file_operation_failed" : {
 
+    },
+    "error.folder_access_denied" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access to the selected folder was denied."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択されたフォルダへのアクセスが拒否されました。"
+          }
+        }
+      }
+    },
+    "error.image_load_failed" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load image file."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像ファイルの読み込みに失敗しました。"
+          }
+        }
+      }
     },
     "error.invalid_index" : {
       "extractionState" : "stale",
@@ -507,10 +579,126 @@
     "error.loading_failed %@" : {
 
     },
+    "error.memory_warning" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low memory warning - some images may not display properly."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモリ不足警告 - 一部の画像が正常に表示されない可能性があります。"
+          }
+        }
+      }
+    },
+    "error.no_images_found" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No image files found in the selected folder."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択されたフォルダに画像ファイルが見つかりません。"
+          }
+        }
+      }
+    },
+    "error.recovery.folder_access" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grant access to the folder in System Preferences > Security & Privacy > Files and Folders."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム環境設定 > セキュリティとプライバシー > ファイルとフォルダでフォルダへのアクセスを許可してください。"
+          }
+        }
+      }
+    },
     "error.recovery.general_suggestion" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try selecting a different folder or check your file permissions."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別のフォルダを選択するか、ファイルのアクセス権限を確認してください。"
+          }
+        }
+      }
+    },
+    "error.recovery.memory_low" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close other applications or reduce image cache size in Performance Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "他のアプリケーションを閉じるか、パフォーマンス設定で画像キャッシュサイズを縮小してください。"
+          }
+        }
+      }
+    },
+    "error.recovery.no_images" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a folder that contains image files (JPEG, PNG, HEIC, etc.)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像ファイル（JPEG、PNG、HEICなど）が含まれるフォルダを選択してください。"
+          }
+        }
+      }
+    },
+    "error.recovery.restart_app" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try restarting the application."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションを再起動してください。"
+          }
+        }
+      }
     },
     "error.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -522,6 +710,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "エラー"
+          }
+        }
+      }
+    },
+    "error.unsupported_format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unsupported image format."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サポートされていない画像形式です。"
           }
         }
       }
@@ -550,7 +755,16 @@
     "Features:" : {
 
     },
+    "First Day of Week: %@" : {
+
+    },
+    "France" : {
+
+    },
     "General Auto-hide Delay" : {
+
+    },
+    "Germany" : {
 
     },
     "Hide controls completely during slideshow" : {
@@ -562,13 +776,22 @@
     "Import Recent Folders..." : {
 
     },
-    "Initializing application..." : {
+    "Improves screen reader support and keyboard navigation" : {
 
     },
     "Intensity: %@%%" : {
 
     },
     "Interface Enhancements" : {
+
+    },
+    "Japan" : {
+
+    },
+    "Korea" : {
+
+    },
+    "Language" : {
 
     },
     "language.english" : {
@@ -628,13 +851,11 @@
     "Loading image..." : {
 
     },
-    "Loading..." : {
-
-    },
     "loading.%@" : {
 
     },
     "loading.first_image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -651,6 +872,7 @@
       }
     },
     "loading.loading_images" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -667,6 +889,7 @@
       }
     },
     "loading.loading_short" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -683,6 +906,7 @@
       }
     },
     "loading.preparing_slideshow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -719,6 +943,7 @@
 
     },
     "loading.selecting_folder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -735,6 +960,9 @@
       }
     },
     "Maximum Recent Folders" : {
+
+    },
+    "Measurement System" : {
 
     },
     "measurement.automatic" : {
@@ -786,6 +1014,7 @@
       }
     },
     "menu.file.open_folder" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -820,6 +1049,9 @@
 
     },
     "Normal" : {
+
+    },
+    "Number Format" : {
 
     },
     "number_format.automatic" : {
@@ -902,9 +1134,6 @@
         }
       }
     },
-    "OK" : {
-
-    },
     "Open Folder..." : {
 
     },
@@ -923,9 +1152,6 @@
     "Performance Tip" : {
 
     },
-    "Photo Information" : {
-
-    },
     "PhotoSlideshow uses security-scoped bookmarks to maintain safe access to your photos while respecting macOS security requirements." : {
 
     },
@@ -933,6 +1159,7 @@
 
     },
     "presets.default" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -949,6 +1176,7 @@
       }
     },
     "presets.quick" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -965,6 +1193,7 @@
       }
     },
     "presets.random" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -981,6 +1210,7 @@
       }
     },
     "presets.slow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -997,6 +1227,9 @@
       }
     },
     "Press 'I' to toggle detailed information during slideshow" : {
+
+    },
+    "Preview: %@" : {
 
     },
     "Professional photo slideshow application for macOS" : {
@@ -1023,13 +1256,22 @@
     "Refresh Statistics" : {
 
     },
+    "Region" : {
+
+    },
     "Reset" : {
 
     },
     "Reset All Settings" : {
 
     },
+    "Reset to Defaults" : {
+
+    },
     "Reset Window Positions" : {
+
+    },
+    "Right-to-Left Layout: %@" : {
 
     },
     "Search settings..." : {
@@ -1044,9 +1286,6 @@
     "Select a folder to start" : {
 
     },
-    "Select a folder to start slideshow" : {
-
-    },
     "Settings for %@ will be implemented here." : {
 
     },
@@ -1054,6 +1293,7 @@
 
     },
     "settings.auto_start" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1070,6 +1310,7 @@
       }
     },
     "settings.keyboard_controls" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1086,6 +1327,7 @@
       }
     },
     "settings.keyboard_controls.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1118,6 +1360,7 @@
       }
     },
     "settings.loop_slideshow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1134,6 +1377,7 @@
       }
     },
     "settings.performance.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1150,6 +1394,7 @@
       }
     },
     "settings.playback_behavior" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1166,6 +1411,7 @@
       }
     },
     "settings.playback_behavior.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1182,6 +1428,7 @@
       }
     },
     "settings.random_order" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1198,6 +1445,7 @@
       }
     },
     "settings.slide_duration" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1214,6 +1462,7 @@
       }
     },
     "settings.slideshow_presets" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1230,6 +1479,7 @@
       }
     },
     "settings.slideshow_presets.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1246,6 +1496,7 @@
       }
     },
     "settings.slideshow.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1262,6 +1513,7 @@
       }
     },
     "settings.sort.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1278,6 +1530,7 @@
       }
     },
     "settings.timing_settings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1294,6 +1547,7 @@
       }
     },
     "settings.timing_settings.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1310,6 +1564,7 @@
       }
     },
     "settings.transition.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1326,6 +1581,7 @@
       }
     },
     "settings.window.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1345,6 +1601,7 @@
 
     },
     "shortcut.desc.next_photo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1361,6 +1618,7 @@
       }
     },
     "shortcut.desc.play_pause" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1377,6 +1635,7 @@
       }
     },
     "shortcut.desc.previous_photo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1393,6 +1652,7 @@
       }
     },
     "shortcut.desc.stop_slideshow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1409,6 +1669,7 @@
       }
     },
     "shortcut.desc.toggle_controls" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1425,6 +1686,7 @@
       }
     },
     "shortcut.desc.toggle_info" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1441,6 +1703,7 @@
       }
     },
     "shortcut.next_photo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1457,6 +1720,7 @@
       }
     },
     "shortcut.open_settings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1473,6 +1737,7 @@
       }
     },
     "shortcut.play_pause" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1489,6 +1754,7 @@
       }
     },
     "shortcut.previous_photo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1505,6 +1771,7 @@
       }
     },
     "shortcut.stop" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1521,6 +1788,7 @@
       }
     },
     "shortcut.toggle_controls" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1537,6 +1805,7 @@
       }
     },
     "shortcut.toggle_info" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1576,13 +1845,11 @@
     "Simple Fade" : {
 
     },
-    "Slideshow Controls" : {
-
-    },
     "slideshow.button.%@" : {
 
     },
     "slideshow.button.pause" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1599,6 +1866,7 @@
       }
     },
     "slideshow.button.play" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1615,6 +1883,7 @@
       }
     },
     "slideshow.button.stop" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1634,6 +1903,7 @@
 
     },
     "slideshow.navigation.next" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1650,6 +1920,7 @@
       }
     },
     "slideshow.navigation.previous" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1674,10 +1945,16 @@
     "Sort Direction" : {
 
     },
+    "Sort Locale: %@" : {
+
+    },
     "Sort Order" : {
 
     },
     "Sorting files before slideshow improves image caching efficiency. Random sorting with a fixed seed ensures consistent order across sessions." : {
+
+    },
+    "Spain" : {
 
     },
     "Subtle" : {
@@ -1696,6 +1973,9 @@
 
     },
     "This will reset all settings to their default values. This action cannot be undone." : {
+
+    },
+    "Time Format" : {
 
     },
     "time_format.12_hour" : {
@@ -1747,6 +2027,7 @@
       }
     },
     "tooltip.next" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1763,6 +2044,7 @@
       }
     },
     "tooltip.previous" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1779,6 +2061,7 @@
       }
     },
     "tooltip.tap_for_info" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1793,6 +2076,556 @@
           }
         }
       }
+    },
+    "ui.actions.folder" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォルダ"
+          }
+        }
+      }
+    },
+    "ui.actions.info" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Info"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報"
+          }
+        }
+      }
+    },
+    "ui.actions.settings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        }
+      }
+    },
+    "ui.app_name" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swift Photos"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swift Photos"
+          }
+        }
+      }
+    },
+    "ui.auto_start" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto Start"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動開始"
+          }
+        }
+      }
+    },
+    "ui.close_info" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Info"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報を閉じる"
+          }
+        }
+      }
+    },
+    "ui.controls.next" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次へ"
+          }
+        }
+      }
+    },
+    "ui.controls.pause" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止"
+          }
+        }
+      }
+    },
+    "ui.controls.play" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生"
+          }
+        }
+      }
+    },
+    "ui.controls.previous" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前へ"
+          }
+        }
+      }
+    },
+    "ui.error_button_ok" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "ui.error_title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エラー"
+          }
+        }
+      }
+    },
+    "ui.image_error_loading" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error Loading Image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像読み込みエラー"
+          }
+        }
+      }
+    },
+    "ui.initializing_app" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Initializing application..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションを初期化しています..."
+          }
+        }
+      }
+    },
+    "ui.keyboard_controls" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keyboard Controls"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーボード操作"
+          }
+        }
+      }
+    },
+    "ui.keyboard_controls.description" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure keyboard shortcuts"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーボードショートカットを設定"
+          }
+        }
+      }
+    },
+    "ui.loop_slideshow" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loop Slideshow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショーをループ"
+          }
+        }
+      }
+    },
+    "ui.metadata.color_space" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color Space"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カラースペース"
+          }
+        }
+      }
+    },
+    "ui.metadata.created" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作成日"
+          }
+        }
+      }
+    },
+    "ui.metadata.dimensions" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サイズ"
+          }
+        }
+      }
+    },
+    "ui.metadata.file_size" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Size"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイルサイズ"
+          }
+        }
+      }
+    },
+    "ui.photo_counter" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld / %lld"
+          }
+        }
+      }
+    },
+    "ui.photo_information" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo Information"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真情報"
+          }
+        }
+      }
+    },
+    "ui.playback_behavior" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playback Behavior"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生動作"
+          }
+        }
+      }
+    },
+    "ui.playback_behavior.description" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure automatic playback options"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動再生オプションを設定"
+          }
+        }
+      }
+    },
+    "ui.quick_actions" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Actions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイックアクション"
+          }
+        }
+      }
+    },
+    "ui.random_order" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Random Order"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ランダム順序"
+          }
+        }
+      }
+    },
+    "ui.select_folder_start" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a folder to start slideshow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショーを開始するフォルダを選択してください"
+          }
+        }
+      }
+    },
+    "ui.slideshow_controls" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slideshow Controls"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショーコントロール"
+          }
+        }
+      }
+    },
+    "ui.timing_settings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timing Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイミング設定"
+          }
+        }
+      }
+    },
+    "ui.timing_settings.description" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure slideshow timing and duration"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スライドショーのタイミングと継続時間を設定"
+          }
+        }
+      }
+    },
+    "ui.tooltip.hide_show_controls" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide/Show Controls"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コントロール表示/非表示"
+          }
+        }
+      }
+    },
+    "United Kingdom" : {
+
+    },
+    "United States" : {
+
     },
     "Verbose logging (detailed output)" : {
 

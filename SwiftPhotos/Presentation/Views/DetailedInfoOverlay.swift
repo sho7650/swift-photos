@@ -1,11 +1,16 @@
 import SwiftUI
 import AppKit
+import Combine
 
 /// Expandable detailed information overlay with photo metadata and enhanced controls
 public struct DetailedInfoOverlay: View {
     var viewModel: ModernSlideshowViewModel
     @ObservedObject var uiControlStateManager: UIControlStateManager
     var uiControlSettings: ModernUIControlSettingsManager
+    var localizationService: LocalizationService?
+    
+    // Add state to force UI updates when language changes
+    @State private var languageUpdateTrigger = 0
     
     @State private var isExpanded = false
     @State private var showMetadata = false
@@ -13,11 +18,13 @@ public struct DetailedInfoOverlay: View {
     public init(
         viewModel: ModernSlideshowViewModel,
         uiControlStateManager: UIControlStateManager,
-        uiControlSettings: ModernUIControlSettingsManager
+        uiControlSettings: ModernUIControlSettingsManager,
+        localizationService: LocalizationService?
     ) {
         self.viewModel = viewModel
         self.uiControlStateManager = uiControlStateManager
         self.uiControlSettings = uiControlSettings
+        self.localizationService = localizationService
     }
     
     public var body: some View {
@@ -32,6 +39,15 @@ public struct DetailedInfoOverlay: View {
             }
         }
         .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiControlStateManager.isDetailedInfoVisible)
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("DetailedInfoOverlay: Received language change notification, trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLanguage) { oldValue, newValue in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("DetailedInfoOverlay: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .id(languageUpdateTrigger) // Force view recreation when language changes
     }
     
     private func detailedInfoPanel(slideshow: Slideshow) -> some View {
@@ -77,8 +93,8 @@ public struct DetailedInfoOverlay: View {
                 
                 Spacer()
                 
-                // Photo counter
-                Text("\(slideshow.currentIndex + 1) of \(slideshow.count)")
+                // Photo counter  
+                Text(String(format: localizationService?.localizedString(for: "ui.photo_counter") ?? "%lld of %lld", slideshow.currentIndex + 1, slideshow.count))
                     .font(.headline)
                     .foregroundColor(.primary)
                 
@@ -93,7 +109,7 @@ public struct DetailedInfoOverlay: View {
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
-                .shortcutTooltip("Close Info", shortcut: "I")
+                .shortcutTooltip(localizationService?.localizedString(for: "ui.close_info") ?? "Close Info", shortcut: "I")
             }
             
             // Photo title
@@ -145,7 +161,7 @@ public struct DetailedInfoOverlay: View {
         VStack(alignment: .leading, spacing: 8) {
             // Section header
             HStack {
-                Text("Photo Information")
+                Text(localizationService?.localizedString(for: "ui.photo_information") ?? "Photo Information")
                     .font(.headline)
                     .foregroundColor(.primary)
                 
@@ -161,15 +177,16 @@ public struct DetailedInfoOverlay: View {
             
             if showMetadata, let metadata = photo.metadata {
                 VStack(alignment: .leading, spacing: 4) {
-                    metadataRow("Dimensions", metadata.dimensionsString)
-                    metadataRow("File Size", metadata.fileSizeString)
+                    metadataRow(localizationService?.localizedString(for: "ui.metadata.dimensions") ?? "Dimensions", metadata.dimensionsString)
+                    metadataRow(localizationService?.localizedString(for: "ui.metadata.file_size") ?? "File Size", metadata.fileSizeString)
                     
                     if let colorSpace = metadata.colorSpace {
-                        metadataRow("Color Space", colorSpace)
+                        metadataRow(localizationService?.localizedString(for: "ui.metadata.color_space") ?? "Color Space", colorSpace)
                     }
                     
                     if let creationDate = metadata.creationDate {
-                        metadataRow("Created", DateFormatter.shortDateTime.string(from: creationDate))
+                        let formattedDate = formatDate(creationDate)
+                        metadataRow(localizationService?.localizedString(for: "ui.metadata.created") ?? "Created", formattedDate)
                     }
                 }
                 .font(.caption)
@@ -192,7 +209,7 @@ public struct DetailedInfoOverlay: View {
     
     private func slideshowControlsSection(slideshow: Slideshow) -> some View {
         VStack(spacing: 8) {
-            Text("Slideshow Controls")
+            Text(localizationService?.localizedString(for: "ui.slideshow_controls") ?? "Slideshow Controls")
                 .font(.headline)
                 .foregroundColor(.primary)
             
@@ -200,7 +217,7 @@ public struct DetailedInfoOverlay: View {
                 // Previous photo
                 DetailedControlButton(
                     systemName: "backward.fill",
-                    label: "Previous",
+                    label: localizationService?.localizedString(for: "ui.controls.previous") ?? "Previous",
                     action: {
                         uiControlStateManager.handleGestureInteraction()
                         viewModel.previousPhoto()
@@ -210,7 +227,7 @@ public struct DetailedInfoOverlay: View {
                 // Play/Pause
                 DetailedControlButton(
                     systemName: slideshow.isPlaying ? "pause.fill" : "play.fill",
-                    label: slideshow.isPlaying ? "Pause" : "Play",
+                    label: slideshow.isPlaying ? (localizationService?.localizedString(for: "ui.controls.pause") ?? "Pause") : (localizationService?.localizedString(for: "ui.controls.play") ?? "Play"),
                     action: {
                         uiControlStateManager.handleGestureInteraction()
                         if slideshow.isPlaying {
@@ -224,7 +241,7 @@ public struct DetailedInfoOverlay: View {
                 // Next photo
                 DetailedControlButton(
                     systemName: "forward.fill",
-                    label: "Next",
+                    label: localizationService?.localizedString(for: "ui.controls.next") ?? "Next",
                     action: {
                         uiControlStateManager.handleGestureInteraction()
                         viewModel.nextPhoto()
@@ -237,7 +254,7 @@ public struct DetailedInfoOverlay: View {
     
     private func quickActionsSection() -> some View {
         VStack(spacing: 8) {
-            Text("Quick Actions")
+            Text(localizationService?.localizedString(for: "ui.quick_actions") ?? "Quick Actions")
                 .font(.headline)
                 .foregroundColor(.primary)
             
@@ -245,7 +262,7 @@ public struct DetailedInfoOverlay: View {
                 // Reveal in Finder (if possible)
                 DetailedControlButton(
                     systemName: "folder",
-                    label: "Folder",
+                    label: localizationService?.localizedString(for: "ui.actions.folder") ?? "Folder",
                     action: {
                         uiControlStateManager.handleGestureInteraction()
                         // TODO: Implement reveal in finder
@@ -256,7 +273,7 @@ public struct DetailedInfoOverlay: View {
                 // Settings
                 DetailedControlButton(
                     systemName: "gear",
-                    label: "Settings",
+                    label: localizationService?.localizedString(for: "ui.actions.settings") ?? "Settings",
                     action: {
                         uiControlStateManager.handleGestureInteraction()
                         // TODO: Open settings window
@@ -267,7 +284,7 @@ public struct DetailedInfoOverlay: View {
                 // Info toggle
                 DetailedControlButton(
                     systemName: showMetadata ? "info.circle.fill" : "info.circle",
-                    label: "Info",
+                    label: localizationService?.localizedString(for: "ui.actions.info") ?? "Info",
                     action: {
                         uiControlStateManager.handleGestureInteraction()
                         showMetadata.toggle()
@@ -409,13 +426,68 @@ private struct BlurredDetailedBackground: View {
     }
 }
 
-// MARK: - Extensions
+// MARK: - Helper Methods
 
-private extension DateFormatter {
-    static let shortDateTime: DateFormatter = {
+extension DetailedInfoOverlay {
+    /// Format date using current localization settings
+    private func formatDate(_ date: Date) -> String {
+        // First try to get formatted date from localization service
+        if let service = localizationService {
+            let formatter = DateFormatter()
+            formatter.locale = service.effectiveLocale
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            return formatter.string(from: date)
+        }
+        
+        // Fallback to system locale
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        return formatter
-    }()
+        return formatter.string(from: date)
+    }
+    
+    /// Format file size with locale-aware number formatting
+    private func formatFileSize(_ bytes: Int64) -> String {
+        let units = ["B", "KB", "MB", "GB", "TB"]
+        var size = Double(bytes)
+        var unitIndex = 0
+        
+        while size >= 1024 && unitIndex < units.count - 1 {
+            size /= 1024
+            unitIndex += 1
+        }
+        
+        // Use localization service for number formatting if available
+        if let service = localizationService {
+            let formatter = NumberFormatter()
+            formatter.locale = service.effectiveLocale
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = unitIndex == 0 ? 0 : 1
+            
+            if let formattedSize = formatter.string(from: NSNumber(value: size)) {
+                return "\(formattedSize) \(units[unitIndex])"
+            }
+        }
+        
+        // Fallback formatting
+        return String(format: "%.1f %@", size, units[unitIndex])
+    }
+    
+    /// Format dimensions with locale-aware number formatting
+    private func formatDimensions(width: Int, height: Int) -> String {
+        if let service = localizationService {
+            let formatter = NumberFormatter()
+            formatter.locale = service.effectiveLocale
+            formatter.numberStyle = .decimal
+            
+            if let widthStr = formatter.string(from: NSNumber(value: width)),
+               let heightStr = formatter.string(from: NSNumber(value: height)) {
+                return "\(widthStr) × \(heightStr)"
+            }
+        }
+        
+        // Fallback formatting
+        return "\(width) × \(height)"
+    }
 }

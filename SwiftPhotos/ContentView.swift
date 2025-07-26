@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import Combine
 
 struct ContentView: View {
     @State private var viewModel: ModernSlideshowViewModel?
@@ -19,8 +20,23 @@ struct ContentView: View {
     @State private var sortSettings = ModernSortSettingsManager()
     @State private var transitionSettings = ModernTransitionSettingsManager()
     @State private var uiControlSettings = ModernUIControlSettingsManager()
+    @State private var localizationSettings: ModernLocalizationSettingsManager?
     @StateObject private var settingsWindowManager = SettingsWindowManager()
     @EnvironmentObject private var recentFilesManager: RecentFilesManager
+    @Environment(\.localizationService) private var localizationService
+    
+    // Add a computed property to ensure SwiftUI observes the LocalizationService
+    private var observedLanguage: String {
+        localizationService?.currentLanguage.rawValue ?? "system"
+    }
+    @State private var languageUpdateTrigger = 0
+    
+    // Add direct observation of the LocalizationService
+    @State private var currentLanguageObserver: String = ""
+    
+    init() {
+        // Initialize is now moved to onAppear to ensure environment values are available
+    }
     
     var body: some View {
         Group {
@@ -46,15 +62,17 @@ struct ContentView: View {
                     MinimalControlsView(
                         viewModel: viewModel,
                         uiControlStateManager: uiControlStateManager,
-                        uiControlSettings: uiControlSettings
+                        uiControlSettings: uiControlSettings,
+                        localizationService: localizationService
                     )
-                    .shortcutTooltip("Hide/Show Controls", shortcut: "H")
+                    .shortcutTooltip(localizationService?.localizedString(for: "ui.tooltip.hide_show_controls") ?? "Hide/Show Controls", shortcut: "H")
                     
                     // Detailed info overlay (shown when toggled)
                     DetailedInfoOverlay(
                         viewModel: viewModel,
                         uiControlStateManager: uiControlStateManager,
-                        uiControlSettings: uiControlSettings
+                        uiControlSettings: uiControlSettings,
+                        localizationService: localizationService
                     )
                 }
                 .keyboardHandler(keyboardHandler)
@@ -68,8 +86,8 @@ struct ContentView: View {
                 // .onTapGesture {
                 //     uiControlStateManager.handleGestureInteraction()
                 // }
-                .alert("Error", isPresented: .constant(viewModel.error != nil)) {
-                    Button("OK") {
+                .alert(localizationService?.localizedString(for: "ui.error_title") ?? "Error", isPresented: .constant(viewModel.error != nil)) {
+                    Button(localizationService?.localizedString(for: "ui.error_button_ok") ?? "OK") {
                         viewModel.clearError()
                     }
                 } message: {
@@ -91,7 +109,7 @@ struct ContentView: View {
                                     .tint(.white)
                                 
                                 VStack(spacing: 8) {
-                                    Text("Swift Photos")
+                                    Text(localizationService?.localizedString(for: "ui.app_name") ?? "Swift Photos")
                                         .font(.title)
                                         .fontWeight(.semibold)
                                         .foregroundColor(.white)
@@ -113,12 +131,12 @@ struct ContentView: View {
                         .tint(.white)
                     
                     VStack(spacing: 8) {
-                        Text("Swift Photos")
+                        Text(localizationService?.localizedString(for: "ui.app_name") ?? "Swift Photos")
                             .font(.title)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
                         
-                        Text("Initializing application...")
+                        Text(localizationService?.localizedString(for: "ui.initializing_app") ?? "Initializing application...")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                     }
@@ -134,6 +152,19 @@ struct ContentView: View {
                 setupMenuNotificationObserver()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("ContentView: Received language change notification, trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLanguage) { oldValue, newValue in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("ContentView: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.effectiveLocale) { oldValue, newValue in
+            languageUpdateTrigger += 1 
+            ProductionLogger.debug("ContentView: Locale changed from \(oldValue?.identifier ?? "nil") to \(newValue?.identifier ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .id(languageUpdateTrigger) // Force view recreation when language changes
     }
     
     private func initializeApp() {
@@ -145,10 +176,13 @@ struct ContentView: View {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
             
             ProductionLogger.debug("Creating dependencies")
+            // Create localization settings with global service
+            let createdLocalizationSettings = ModernLocalizationSettingsManager(localizationService: localizationService)
+            
             // Create dependencies safely using persistent SecureFileAccess
             let imageLoader = ImageLoader()
             let imageCache = ImageCache()
-            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings)
+            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
             // Create view model and UI managers
@@ -166,6 +200,7 @@ struct ContentView: View {
                     sortSettings: sortSettings,
                     transitionSettings: transitionSettings,
                     uiControlSettings: uiControlSettings,
+                    localizationSettings: createdLocalizationSettings,
                     recentFilesManager: recentFilesManager
                 )
             }
@@ -196,6 +231,7 @@ struct ContentView: View {
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
             self.uiControlStateManager = createdUIControlStateManager
+            self.localizationSettings = createdLocalizationSettings
             self.isInitialized = true
             
             ProductionLogger.lifecycle("Initialization completed successfully")
@@ -339,7 +375,7 @@ struct ContentView: View {
             
             let imageLoader = ImageLoader()
             let imageCache = ImageCache()
-            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings)
+            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
             // Apply slideshow settings

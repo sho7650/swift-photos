@@ -1,22 +1,27 @@
 import SwiftUI
 import AppKit
+import Combine
 
 /// Minimal, compact controls overlay positioned at bottom-center with blur background
 public struct MinimalControlsView: View {
     var viewModel: ModernSlideshowViewModel
     @ObservedObject var uiControlStateManager: UIControlStateManager
     var uiControlSettings: ModernUIControlSettingsManager
+    var localizationService: LocalizationService?
     
     @State private var isHovering = false
+    @State private var languageUpdateTrigger = 0
     
     public init(
         viewModel: ModernSlideshowViewModel,
         uiControlStateManager: UIControlStateManager,
-        uiControlSettings: ModernUIControlSettingsManager
+        uiControlSettings: ModernUIControlSettingsManager,
+        localizationService: LocalizationService?
     ) {
         self.viewModel = viewModel
         self.uiControlStateManager = uiControlStateManager
         self.uiControlSettings = uiControlSettings
+        self.localizationService = localizationService
     }
     
     public var body: some View {
@@ -37,11 +42,20 @@ public struct MinimalControlsView: View {
             }
         }
         .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiControlStateManager.isControlsVisible)
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("MinimalControlsView: Received language change notification, trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLanguage) { oldValue, newValue in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("MinimalControlsView: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .id(languageUpdateTrigger) // Force view recreation when language changes
     }
     
     private var welcomeControls: some View {
         VStack(spacing: 16) {
-            Button(String.selectFolderButton) {
+            Button(localizationService?.localizedString(for: "button.select_folder") ?? "Select Folder") {
                 ProductionLogger.userAction("MinimalControlsView: Select Folder button pressed")
                 uiControlStateManager.handleGestureInteraction()
                 Task {
@@ -56,7 +70,7 @@ public struct MinimalControlsView: View {
                 HStack(spacing: 8) {
                     ProgressView()
                         .scaleEffect(0.6)
-                    Text(String.loadingShort)
+                    Text(localizationService?.localizedString(for: "loading.loading_short") ?? "Loading...")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -103,7 +117,7 @@ public struct MinimalControlsView: View {
                         viewModel.previousPhoto()
                     }
                 )
-                .shortcutTooltip(String.tooltipPrevious, shortcut: "←")
+                .shortcutTooltip(localizationService?.localizedString(for: "tooltip.previous") ?? "Previous", shortcut: "←")
                 
                 // Play/Pause button (larger)
                 ControlButton(
@@ -118,7 +132,7 @@ public struct MinimalControlsView: View {
                         }
                     }
                 )
-                .shortcutTooltip(slideshow.isPlaying ? String.pauseButton : String.playButton, shortcut: "Space")
+                .shortcutTooltip(slideshow.isPlaying ? (localizationService?.localizedString(for: "slideshow.button.pause") ?? "Pause") : (localizationService?.localizedString(for: "slideshow.button.play") ?? "Play"), shortcut: "Space")
                 
                 // Next button
                 ControlButton(
@@ -129,7 +143,7 @@ public struct MinimalControlsView: View {
                         viewModel.nextPhoto()
                     }
                 )
-                .shortcutTooltip(String.tooltipNext, shortcut: "→")
+                .shortcutTooltip(localizationService?.localizedString(for: "tooltip.next") ?? "Next", shortcut: "→")
             }
             
             // Photo counter (minimal)
@@ -161,7 +175,7 @@ public struct MinimalControlsView: View {
         .onTapGesture {
             uiControlStateManager.toggleDetailedInfo()
         }
-        .shortcutTooltip(String.tooltipTapForInfo, shortcut: "I")
+        .shortcutTooltip(localizationService?.localizedString(for: "tooltip.tap_for_info") ?? "Tap for info", shortcut: "I")
         .animation(.easeInOut(duration: 0.2), value: isHovering)
         .animation(.easeInOut(duration: 0.2), value: uiControlStateManager.isDetailedInfoVisible)
     }

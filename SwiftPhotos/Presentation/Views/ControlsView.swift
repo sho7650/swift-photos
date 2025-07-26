@@ -3,6 +3,7 @@ import AppKit
 
 public struct ControlsView: View {
     var viewModel: ModernSlideshowViewModel
+    @Environment(\.localizationService) private var localizationService
     
     public init(viewModel: ModernSlideshowViewModel) {
         self.viewModel = viewModel
@@ -22,7 +23,7 @@ public struct ControlsView: View {
     
     private var welcomeControls: some View {
         VStack(spacing: 24) {
-            Button(String.selectFolderButton) {
+            Button(localizationService?.localizedString(for: "button.select_folder") ?? "Select Folder") {
                 ProductionLogger.userAction("ControlsView: Select Folder button pressed")
                 Task { @MainActor in
                     await viewModel.selectFolder()
@@ -36,14 +37,14 @@ public struct ControlsView: View {
                 HStack(spacing: 12) {
                     ProgressView()
                         .scaleEffect(0.8)
-                    Text(String.loadingImages)
+                    Text(localizationService?.localizedString(for: "loading.loading_images") ?? "Loading images...")
                         .foregroundColor(.secondary)
                 }
             }
             
             if let error = viewModel.error {
                 VStack(spacing: 8) {
-                    Text(String.errorTitle)
+                    Text(localizationService?.localizedString(for: "error.title") ?? "Error")
                         .font(.headline)
                         .foregroundColor(.red)
                     Text(error.localizedDescription)
