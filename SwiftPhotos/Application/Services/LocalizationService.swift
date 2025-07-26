@@ -26,23 +26,23 @@ public enum SupportedLanguage: String, CaseIterable, Codable, Sendable {
         case .japanese:
             return String(localized: "language.japanese")
         case .spanish:
-            return "Español"
+            return String(localized: "language.spanish")
         case .french:
-            return "Français"
+            return String(localized: "language.french")  
         case .german:
-            return "Deutsch"
+            return String(localized: "language.german")
         case .chineseSimplified:
-            return "简体中文"
+            return String(localized: "language.chinese_simplified")
         case .chineseTraditional:
-            return "繁體中文"
+            return String(localized: "language.chinese_traditional")
         case .korean:
-            return "한국어"
+            return String(localized: "language.korean")
         case .portuguese:
-            return "Português"
+            return String(localized: "language.portuguese")
         case .italian:
-            return "Italiano"
+            return String(localized: "language.italian")
         case .russian:
-            return "Русский"
+            return String(localized: "language.russian")
         }
     }
     
