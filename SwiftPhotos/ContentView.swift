@@ -40,10 +40,10 @@ struct ContentView: View {
     
     var body: some View {
         Group {
-            if isInitialized, 
-               let viewModel = viewModel, 
-               let keyboardHandler = keyboardHandler,
-               let uiControlStateManager = uiControlStateManager {
+            if isInitialized {
+                if let viewModel = viewModel, 
+                   let keyboardHandler = keyboardHandler,
+                   let uiControlStateManager = uiControlStateManager {
                 ZStack {
                     // Main content with image hover cursor control
                     SimpleImageDisplayView(
@@ -121,6 +121,19 @@ struct ContentView: View {
                                 }
                             }
                         }
+                    }
+                }
+                } else {
+                    // Loading state when components are not initialized
+                    VStack(spacing: 20) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .scaleEffect(2.0)
+                            .tint(.white)
+                        
+                        Text("Loading components...")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
                     }
                 }
             } else {
