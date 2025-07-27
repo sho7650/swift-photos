@@ -22,12 +22,12 @@ public class FileSystemPhotoRepository: SlideshowRepository {
         do {
             ProductionLogger.debug("FileSystemPhotoRepository: Validating file access...")
             ProductionLogger.debug("FileSystemPhotoRepository: About to validate file access")
-            try await fileAccess.validateFileAccess(for: folderURL)
+            try fileAccess.validateFileAccess(for: folderURL)
             ProductionLogger.debug("FileSystemPhotoRepository: File access validation completed")
             
             ProductionLogger.debug("FileSystemPhotoRepository: Enumerating images...")
             ProductionLogger.debug("FileSystemPhotoRepository: About to enumerate images")
-            let imageURLs = try await fileAccess.enumerateImages(in: folderURL)
+            let imageURLs = try fileAccess.enumerateImages(in: folderURL)
             ProductionLogger.debug("FileSystemPhotoRepository: Image enumeration completed with \(imageURLs.count) images")
             
             ProductionLogger.debug("FileSystemPhotoRepository: Creating \(imageURLs.count) photo objects...")
@@ -48,7 +48,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             ProductionLogger.debug("FileSystemPhotoRepository: Successfully created \(photos.count) photos, failed: \(failedCount)")
             
             // Apply sorting based on current sort settings
-            let currentSettings = await sortSettings.settings
+            let currentSettings = sortSettings.settings
             let sortedPhotos = await sortPhotos(photos, using: currentSettings)
             ProductionLogger.debug("FileSystemPhotoRepository: Applied sorting: \(currentSettings.order.displayName) \(currentSettings.direction.displayName)")
             

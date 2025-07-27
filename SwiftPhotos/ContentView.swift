@@ -41,9 +41,45 @@ struct ContentView: View {
     var body: some View {
         Group {
             if isInitialized {
-                if let viewModel = viewModel, 
-                   let keyboardHandler = keyboardHandler,
-                   let uiControlStateManager = uiControlStateManager {
+                mainContentView
+            } else {
+                loadingView
+            }
+        }
+        .onAppear {
+            if !isInitialized {
+                initializeApp()
+                setupMenuNotificationObserver()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("ContentView: Received language change notification, trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLanguage) { oldValue, newValue in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("ContentView: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLocale) { oldValue, newValue in
+            languageUpdateTrigger += 1 
+            ProductionLogger.debug("ContentView: Locale changed from \(oldValue?.identifier ?? "nil") to \(newValue?.identifier ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .id(languageUpdateTrigger) // Force view recreation when language changes
+    }
+    
+    @ViewBuilder
+    private var mainContentView: some View {
+        if let viewModel = viewModel, 
+           let keyboardHandler = keyboardHandler,
+           let uiControlStateManager = uiControlStateManager {
+            slideshowContentView(viewModel: viewModel, keyboardHandler: keyboardHandler, uiControlStateManager: uiControlStateManager)
+        } else {
+            componentLoadingView
+        }
+    }
+    
+    @ViewBuilder
+    private func slideshowContentView(viewModel: ModernSlideshowViewModel, keyboardHandler: KeyboardHandler, uiControlStateManager: UIControlStateManager) -> some View {
                 ZStack {
                     // Main content with image hover cursor control
                     SimpleImageDisplayView(
@@ -76,6 +112,11 @@ struct ContentView: View {
                     )
                 }
                 .keyboardHandler(keyboardHandler)
+                .onKeyPress("f") {
+                    ProductionLogger.userAction("ContentView: F key pressed - toggling fullscreen")
+                    toggleFullscreen()
+                    return .handled
+                }
                 .onHover { hovering in
                     if hovering {
                         uiControlStateManager.handleMouseInteraction(at: NSEvent.mouseLocation)
@@ -123,61 +164,44 @@ struct ContentView: View {
                         }
                     }
                 }
-                } else {
-                    // Loading state when components are not initialized
-                    VStack(spacing: 20) {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .scaleEffect(2.0)
-                            .tint(.white)
-                        
-                        Text("Loading components...")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                }
-            } else {
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .scaleEffect(2.0)
-                        .tint(.white)
-                    
-                    VStack(spacing: 8) {
-                        Text("Swift Photos")
-                            .font(.title)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                        
-                        Text("Initializing application...")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .onAppear {
-                    ProductionLogger.lifecycle("ContentView loading screen appeared")
-                }
+    }
+    
+    @ViewBuilder
+    private var componentLoadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle())
+                .scaleEffect(2.0)
+                .tint(.white)
+            
+            Text("Loading components...")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+        }
+    }
+    
+    @ViewBuilder
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle())
+                .scaleEffect(2.0)
+                .tint(.white)
+            
+            VStack(spacing: 8) {
+                Text("Swift Photos")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                
+                Text("Initializing application...")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
             }
         }
         .onAppear {
-            if !isInitialized {
-                initializeApp()
-                setupMenuNotificationObserver()
-            }
+            ProductionLogger.lifecycle("ContentView loading screen appeared")
         }
-        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
-            languageUpdateTrigger += 1
-            ProductionLogger.debug("ContentView: Received language change notification, trigger: \(languageUpdateTrigger)")
-        }
-        .onChange(of: localizationService?.currentLanguage) { oldValue, newValue in
-            languageUpdateTrigger += 1
-            ProductionLogger.debug("ContentView: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
-        }
-        .onChange(of: localizationService?.currentLocale) { oldValue, newValue in
-            languageUpdateTrigger += 1 
-            ProductionLogger.debug("ContentView: Locale changed from \(oldValue?.identifier ?? "nil") to \(newValue?.identifier ?? "nil"), trigger: \(languageUpdateTrigger)")
-        }
-        .id(languageUpdateTrigger) // Force view recreation when language changes
     }
     
     private func initializeApp() {
@@ -365,6 +389,27 @@ struct ContentView: View {
         }
         
         viewModel.loadingState = .notLoading
+    }
+    
+    // MARK: - Fullscreen Management
+    
+    private func toggleFullscreen() {
+        ProductionLogger.userAction("ContentView: Toggling fullscreen")
+        
+        DispatchQueue.main.async {
+            guard let window = NSApplication.shared.mainWindow else {
+                ProductionLogger.error("ContentView: No main window found for fullscreen toggle")
+                return
+            }
+            
+            if window.styleMask.contains(.fullScreen) {
+                ProductionLogger.debug("ContentView: Exiting fullscreen")
+                window.toggleFullScreen(nil)
+            } else {
+                ProductionLogger.debug("ContentView: Entering fullscreen")
+                window.toggleFullScreen(nil)
+            }
+        }
     }
     
     private func createSlideshowForMenuSelection(from folderURL: URL) async throws {
