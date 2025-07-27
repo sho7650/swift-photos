@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 /// Performance settings view for slideshow optimization and memory management
 /// Provides controls for adjusting performance parameters for different collection sizes
@@ -6,14 +7,14 @@ struct PerformanceSettingsView: View {
     var settings: ModernPerformanceSettingsManager
     @State private var selectedPreset: String = "Custom"
     @Environment(\.localizationService) private var localizationService
-    
-    var body: some View {
+
+        var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Performance Presets Section
             PerformanceSettingsSection(
                 title: "Performance Presets",
                 icon: "gauge.high",
-                description: "Optimize slideshow performance for different collection sizes and system capabilities"
+                description: "Adjust performance settings based on collection size"
             ) {
                 VStack(spacing: 8) {
                     PresetButton(title: "Default (0-100 images)", preset: .default, current: settings.settings) {

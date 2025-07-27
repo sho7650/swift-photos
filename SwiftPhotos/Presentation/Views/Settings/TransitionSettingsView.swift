@@ -25,7 +25,7 @@ struct TransitionSettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             // Enable/Disable Section
             TransitionSettingsSection(
-                title: "Transition Effects",
+                title: String(localized: "transitions.effects"),
                 icon: "arrow.triangle.2.circlepath",
                 description: "Configure smooth transition effects between photos during slideshow"
             ) {
@@ -41,35 +41,35 @@ struct TransitionSettingsView: View {
             if settings.settings.isEnabled {
                 // Presets Section
                 TransitionSettingsSection(
-                    title: "Effect Presets",
+                    title: String(localized: "transitions.presets"),
                     icon: "square.grid.2x2",
                     description: "Quick configurations for different transition styles"
                 ) {
                     VStack(spacing: 8) {
                         HStack(spacing: 12) {
-                            Button("Simple Fade") { 
+                            Button(L10n.Transitions.simpleFade) { 
                                 settings.updateSettings(.simpleFade) 
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Elegant Slide") { 
+                            Button(L10n.Transitions.elegantSlide) { 
                                 settings.updateSettings(.elegantSlide) 
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Dynamic Zoom") { 
+                            Button(L10n.Transitions.dynamicZoom) { 
                                 settings.updateSettings(.dynamicZoom) 
                             }
                             .buttonStyle(.bordered)
                         }
                         
                         HStack(spacing: 12) {
-                            Button("Smooth Crossfade") { 
+                            Button(L10n.Transitions.smoothCrossfade) { 
                                 settings.updateSettings(.smoothCrossfade) 
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Cinematic Push") { 
+                            Button(L10n.Transitions.cinematicPush) { 
                                 settings.updateSettings(.cinematicPush) 
                             }
                             .buttonStyle(.bordered)
@@ -79,7 +79,7 @@ struct TransitionSettingsView: View {
                 
                 // Effect Type Section
                 TransitionSettingsSection(
-                    title: "Effect Type",
+                    title: String(localized: "transitions.effect_type"),
                     icon: "wand.and.stars",
                     description: "Choose the type of transition effect"
                 ) {
@@ -102,7 +102,7 @@ struct TransitionSettingsView: View {
                 
                 // Timing Settings Section
                 TransitionSettingsSection(
-                    title: "Timing Settings",
+                    title: String(localized: "transitions.timing_settings"),
                     icon: "timer",
                     description: "Control transition duration and animation curve"
                 ) {
@@ -110,7 +110,7 @@ struct TransitionSettingsView: View {
                         // Duration Slider
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
-                                Text("Duration")
+                                Text(L10n.Transitions.duration)
                                     .fontWeight(.medium)
                                 Spacer()
                                 Text(String(format: "%.1f seconds", settings.settings.duration))
@@ -130,7 +130,7 @@ struct TransitionSettingsView: View {
                         
                         // Easing Function Selection
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Animation Easing")
+                            Text(L10n.Transitions.animationEasing)
                                 .fontWeight(.medium)
                             
                             Picker("Easing", selection: Binding(
@@ -151,13 +151,13 @@ struct TransitionSettingsView: View {
                 
                 // Effect Intensity Section
                 TransitionSettingsSection(
-                    title: "Effect Intensity",
+                    title: String(localized: "transitions.effect_intensity"),
                     icon: "dial.high",
                     description: "Adjust the strength of the transition effect"
                 ) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("Effect Intensity")
+                            Text(L10n.Transitions.effectIntensity)
                                 .fontWeight(.medium)
                             Spacer()
                             Text(String(format: "%.0f%%", settings.settings.intensity * 100))
@@ -178,7 +178,7 @@ struct TransitionSettingsView: View {
                 
                 // Current Settings Summary Section
                 TransitionSettingsSection(
-                    title: "Current Settings",
+                    title: String(localized: "transitions.current_settings"),
                     icon: "info.circle",
                     description: "Summary of your current transition configuration"
                 ) {
@@ -186,17 +186,17 @@ struct TransitionSettingsView: View {
                         HStack {
                             Image(systemName: settings.settings.effectType.icon)
                                 .foregroundColor(.blue)
-                            Text("Effect: \(settings.settings.effectType.displayName)")
+                            Text(String(localized: "transitions.effect_label").replacingOccurrences(of: "%@", with: settings.settings.effectType.displayName))
                         }
                         .font(.caption)
                         
-                        Text("Duration: \(String(format: "%.1f", settings.settings.duration)) seconds")
+                        Text(String(localized: "transitions.duration_label").replacingOccurrences(of: "%@", with: String(format: "%.1f", settings.settings.duration)))
                             .font(.caption)
                         
-                        Text("Easing: \(settings.settings.easing.displayName)")
+                        Text(String(localized: "transitions.easing_label").replacingOccurrences(of: "%@", with: settings.settings.easing.displayName))
                             .font(.caption)
                         
-                        Text("Intensity: \(String(format: "%.0f", settings.settings.intensity * 100))%")
+                        Text(String(localized: "transitions.intensity_label").replacingOccurrences(of: "%@", with: String(format: "%.0f", settings.settings.intensity * 100)))
                             .font(.caption)
                     }
                     .foregroundColor(.secondary)
@@ -204,32 +204,32 @@ struct TransitionSettingsView: View {
                 
                 // Performance Information Section
                 TransitionSettingsSection(
-                    title: "Performance Information",
+                    title: String(localized: "transitions.performance_information"),
                     icon: "speedometer",
                     description: "How transition settings affect performance"
                 ) {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Text("💡")
-                            Text("Performance Tip")
+                            Text(L10n.Transitions.performanceTip)
                                 .fontWeight(.medium)
                                 .foregroundColor(.blue)
                         }
                         
-                        Text("Smooth transitions enhance user experience. Lower intensity and shorter duration improve performance on slower systems.")
+                        Text(L10n.Transitions.performanceTipDescription)
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
                         if settings.settings.effectType == .fade || settings.settings.effectType == .crossfade {
-                            Text("• Fade effects are most performance-friendly")
+                            Text(L10n.Transitions.fadeEffectTip)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         } else if settings.settings.effectType == .zoomIn || settings.settings.effectType == .zoomOut {
-                            Text("• Zoom effects may impact performance on large images")
+                            Text(L10n.Transitions.zoomEffectTip)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         } else if settings.settings.effectType == .pushLeft || settings.settings.effectType == .pushRight {
-                            Text("• Push effects provide smooth directional transitions")
+                            Text(L10n.Transitions.pushEffectTip)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }

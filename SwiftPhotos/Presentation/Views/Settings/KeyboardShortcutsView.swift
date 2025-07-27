@@ -7,7 +7,7 @@ struct KeyboardShortcutsView: View {
         VStack(alignment: .leading, spacing: 24) {
             // Basic Slideshow Controls Section
             KeyboardShortcutsSection(
-                title: "Slideshow Controls",
+                title: String(localized: "keyboard.slideshow_controls"),
                 icon: "play.rectangle",
                 description: "Control slideshow playback and navigation"
             ) {
@@ -21,7 +21,7 @@ struct KeyboardShortcutsView: View {
             
             // Interface Controls Section
             KeyboardShortcutsSection(
-                title: "Interface Controls",
+                title: String(localized: "keyboard.interface_controls"),
                 icon: "rectangle.3.group",
                 description: "Show and hide interface elements"
             ) {
@@ -34,7 +34,7 @@ struct KeyboardShortcutsView: View {
             
             // Application Controls Section
             KeyboardShortcutsSection(
-                title: "Application Controls",
+                title: String(localized: "keyboard.application_controls"),
                 icon: "gear",
                 description: "Access application features and settings"
             ) {
@@ -48,7 +48,7 @@ struct KeyboardShortcutsView: View {
             
             // File Navigation Section
             KeyboardShortcutsSection(
-                title: "File Navigation",
+                title: String(localized: "keyboard.file_navigation"),
                 icon: "folder",
                 description: "Navigate through files and folders"
             ) {
@@ -62,61 +62,61 @@ struct KeyboardShortcutsView: View {
             
             // Tips and Information Section
             KeyboardShortcutsSection(
-                title: "Tips & Information",
+                title: String(localized: "keyboard.tips_and_information"),
                 icon: "lightbulb",
                 description: "Additional information about keyboard usage"
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("💡 Quick Tips")
+                        Text(String(localized: "keyboard.quick_tips"))
                             .fontWeight(.medium)
                             .foregroundColor(.blue)
                         
-                        Text("• Hold Shift while using arrow keys for faster navigation (10x speed)")
+                        Text(String(localized: "keyboard.quick_tips_content1"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Text("• Press and hold any navigation key for continuous movement")
+                        Text(String(localized: "keyboard.quick_tips_content2"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Text("• Most shortcuts work both during slideshow and while paused")
+                        Text(String(localized: "keyboard.quick_tips_content3"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("🎯 Accessibility")
+                        Text(String(localized: "keyboard.accessibility"))
                             .fontWeight(.medium)
                             .foregroundColor(.green)
                         
-                        Text("• All features are accessible via keyboard for full accessibility")
+                        Text(String(localized: "keyboard.accessibility_content1"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Text("• VoiceOver support available for all interface elements")
+                        Text(String(localized: "keyboard.accessibility_content2"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Text("• High contrast mode automatically adjusts control appearance")
+                        Text(String(localized: "keyboard.accessibility_content3"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("⚡ Performance")
+                        Text(String(localized: "keyboard.performance_tips"))
                             .fontWeight(.medium)
                             .foregroundColor(.orange)
                         
-                        Text("• Keyboard navigation is optimized for large photo collections")
+                        Text(String(localized: "keyboard.performance_content1"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Text("• Shortcuts work immediately without loading delays")
+                        Text(String(localized: "keyboard.performance_content2"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        Text("• Background preloading ensures smooth navigation")
+                        Text(String(localized: "keyboard.performance_content3"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

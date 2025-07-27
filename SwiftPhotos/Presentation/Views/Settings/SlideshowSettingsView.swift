@@ -10,31 +10,31 @@ struct SlideshowSettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             // Slideshow Presets Section
             SlideshowSettingsSection(
-                title: "Slideshow Presets",
+                title: String(localized: "slideshow.presets"),
                 icon: "play.circle",
                 description: "Quick presets for common slideshow configurations"
             ) {
                 HStack(spacing: 12) {
-                    Button("Default") { settings.updateSettings(.default) }
+                    Button(L10n.Slideshow.defaultPreset) { settings.updateSettings(.default) }
                         .buttonStyle(.bordered)
-                    Button("Quick") { settings.updateSettings(.quick) }
+                    Button(L10n.Slideshow.quickPreset) { settings.updateSettings(.quick) }
                         .buttonStyle(.bordered)
-                    Button("Slow") { settings.updateSettings(.slow) }
+                    Button(L10n.Slideshow.slowPreset) { settings.updateSettings(.slow) }
                         .buttonStyle(.bordered)
-                    Button("Random") { settings.updateSettings(.random) }
+                    Button(L10n.Slideshow.randomPreset) { settings.updateSettings(.random) }
                         .buttonStyle(.bordered)
                 }
             }
             
             // Timing Settings Section
             SlideshowSettingsSection(
-                title: "Timing Settings",
+                title: String(localized: "slideshow.timing_settings"),
                 icon: "timer",
                 description: "Configure slideshow timing and duration"
             ) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("Slide Duration")
+                        Text(L10n.Slideshow.slideDuration)
                         Spacer()
                         Text(formatDuration(settings.settings.slideDuration))
                             .foregroundColor(.secondary)
@@ -59,7 +59,7 @@ struct SlideshowSettingsView: View {
             
             // Playback Behavior Section
             SlideshowSettingsSection(
-                title: "Playback Behavior",
+                title: String(localized: "slideshow.playback_behavior"),
                 icon: "gearshape",
                 description: "Configure automatic playback options"
             ) {
@@ -110,7 +110,7 @@ struct SlideshowSettingsView: View {
             
             // Keyboard Controls Section
             SlideshowSettingsSection(
-                title: "Keyboard Controls",
+                title: String(localized: "slideshow.keyboard_controls"),
                 icon: "keyboard",
                 description: "Configure keyboard shortcuts"
             ) {

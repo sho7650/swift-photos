@@ -25,6 +25,8 @@ public enum L10n {
         public static let applicationLanguage = LocalizedStringKey("settings.application_language")
         public static let changesImmediate = LocalizedStringKey("settings.changes_immediate")
         public static let performance = LocalizedStringKey("settings.performance.title")
+        public static let performanceDescription = LocalizedStringKey("settings.performance.description")
+        public static let performancePresets = LocalizedStringKey("settings.performance.presets")
         public static let slideshow = LocalizedStringKey("settings.slideshow.title")
         public static let sorting = LocalizedStringKey("settings.sorting.title")
         public static let transitions = LocalizedStringKey("settings.transitions.title")
@@ -280,6 +282,77 @@ public enum L10n {
         public static func debugSettingsDescription() -> String {
             String(localized: "settings.advanced.debug.description")
         }
+        
+        // Performance Settings
+        public static func performancePresets() -> String {
+            String(localized: "performance.presets")
+        }
+        public static func performancePresetsDescription() -> String {
+            String(localized: "performance.presets_description")
+        }
+        public static func manualConfiguration() -> String {
+            String(localized: "performance.manual_configuration")
+        }
+        public static func manualConfigurationDescription() -> String {
+            String(localized: "performance.manual_configuration_description")
+        }
+        public static func advancedSettings() -> String {
+            String(localized: "performance.advanced_settings")
+        }
+        public static func advancedSettingsDescription() -> String {
+            String(localized: "performance.advanced_settings_description")
+        }
+        
+        // Setting labels
+        public static func memoryWindowSize() -> String {
+            String(localized: "performance.memory_window_size")
+        }
+        public static func maxMemoryUsage() -> String {
+            String(localized: "performance.max_memory_usage")
+        }
+        public static func concurrentLoads() -> String {
+            String(localized: "performance.concurrent_loads")
+        }
+        public static func aggressiveMemoryManagement() -> String {
+            String(localized: "performance.aggressive_memory_management")
+        }
+        public static func largeCollectionThreshold() -> String {
+            String(localized: "performance.large_collection_threshold")
+        }
+        public static func preloadDistance() -> String {
+            String(localized: "performance.preload_distance")
+        }
+        
+        // Format strings
+        public static func imagesFormat() -> String {
+            String(localized: "performance.format.images")
+        }
+        public static func mbFormat() -> String {
+            String(localized: "performance.format.mb")
+        }
+        public static func numberFormat() -> String {
+            String(localized: "performance.format.number")
+        }
+        
+        // Preset names
+        public static func customName() -> String {
+            String(localized: "performance.name.custom")
+        }
+        public static func defaultName() -> String {
+            String(localized: "performance.name.default")
+        }
+        public static func highPerformanceName() -> String {
+            String(localized: "performance.name.high_performance")
+        }
+        public static func unlimitedName() -> String {
+            String(localized: "performance.name.unlimited")
+        }
+        public static func massiveName() -> String {
+            String(localized: "performance.name.massive")
+        }
+        public static func extremeName() -> String {
+            String(localized: "performance.name.extreme")
+        }
     }
     
     // MARK: - Button String Helpers
@@ -313,6 +386,23 @@ public enum L10n {
         }
         public static func subtle() -> String {
             String(localized: "button.interface.subtle")
+        }
+        
+        // Performance Preset Buttons
+        public static func performanceDefault() -> String {
+            String(localized: "performance.preset.default")
+        }
+        public static func performanceHighPerformance() -> String {
+            String(localized: "performance.preset.high_performance")
+        }
+        public static func performanceUnlimited() -> String {
+            String(localized: "performance.preset.unlimited")
+        }
+        public static func performanceMassive() -> String {
+            String(localized: "performance.preset.massive")
+        }
+        public static func performanceExtreme() -> String {
+            String(localized: "performance.preset.extreme")
         }
     }
     
@@ -391,6 +481,217 @@ public enum L10n {
         public static let touchBarSupport = LocalizedStringKey("features.touch_bar_support")
         public static let enhancedGestures = LocalizedStringKey("features.enhanced_gestures")
         public static let advancedTransitions = LocalizedStringKey("features.advanced_transitions")
+    }
+    
+    // MARK: - File Management
+    public enum FileManagement {
+        public static let recentFolders = LocalizedStringKey("file_management.recent_folders")
+        public static let maximumRecentFolders = LocalizedStringKey("file_management.maximum_recent_folders")
+        public static let cleanUpInvalidFolders = LocalizedStringKey("file_management.clean_up_invalid")
+        public static let exportRecentFolders = LocalizedStringKey("file_management.export_recent")
+        public static let importRecentFolders = LocalizedStringKey("file_management.import_recent")
+        public static let clearAllRecentFolders = LocalizedStringKey("file_management.clear_all")
+        public static let appSandboxProtection = LocalizedStringKey("file_management.app_sandbox_protection")
+        public static let appSandboxProtectionEnabled = LocalizedStringKey("file_management.app_sandbox_protection_enabled")
+        public static let statistics = LocalizedStringKey("file_management.statistics")
+        public static let management = LocalizedStringKey("file_management.management")
+        public static let securityAccess = LocalizedStringKey("file_management.security_access")
+        public static let refreshStatistics = LocalizedStringKey("file_management.refresh_statistics")
+        public static let conservative = LocalizedStringKey("file_management.conservative")
+        public static let balanced = LocalizedStringKey("file_management.balanced")
+        public static let extensive = LocalizedStringKey("file_management.extensive")
+        public static let presets = LocalizedStringKey("file_management.presets")
+        public static let sandboxDescription = LocalizedStringKey("file_management.sandbox_description")
+        public static let externalVolumesSupported = LocalizedStringKey("file_management.external_volumes_supported")
+        public static let clearAllConfirmation = LocalizedStringKey("file_management.clear_all_confirmation")
+        public static let andMoreCount = LocalizedStringKey("file_management.and_more_count")
+    }
+    
+    // MARK: - Keyboard Shortcuts  
+    public enum KeyboardShortcuts {
+        public static let slideshowControls = LocalizedStringKey("keyboard.slideshow_controls")
+        public static let interfaceControls = LocalizedStringKey("keyboard.interface_controls")
+        public static let applicationControls = LocalizedStringKey("keyboard.application_controls")
+        public static let fileNavigation = LocalizedStringKey("keyboard.file_navigation")
+        public static let quickTips = LocalizedStringKey("keyboard.quick_tips")
+        public static let accessibility = LocalizedStringKey("keyboard.accessibility")
+        public static let performanceTips = LocalizedStringKey("keyboard.performance_tips")
+        public static let tipsAndInformation = LocalizedStringKey("keyboard.tips_and_information")
+        public static let quickTipsContent1 = LocalizedStringKey("keyboard.quick_tips_content1")
+        public static let quickTipsContent2 = LocalizedStringKey("keyboard.quick_tips_content2")
+        public static let quickTipsContent3 = LocalizedStringKey("keyboard.quick_tips_content3")
+        public static let accessibilityContent1 = LocalizedStringKey("keyboard.accessibility_content1")
+        public static let accessibilityContent2 = LocalizedStringKey("keyboard.accessibility_content2")
+        public static let accessibilityContent3 = LocalizedStringKey("keyboard.accessibility_content3")
+        public static let performanceContent1 = LocalizedStringKey("keyboard.performance_content1")
+        public static let performanceContent2 = LocalizedStringKey("keyboard.performance_content2")
+        public static let performanceContent3 = LocalizedStringKey("keyboard.performance_content3")
+    }
+    
+    // MARK: - Transitions
+    public enum Transitions {
+        public static let transitionEffects = LocalizedStringKey("transitions.effects")
+        public static let effectPresets = LocalizedStringKey("transitions.presets")
+        public static let simpleFade = LocalizedStringKey("transitions.simple_fade")
+        public static let elegantSlide = LocalizedStringKey("transitions.elegant_slide")
+        public static let dynamicZoom = LocalizedStringKey("transitions.dynamic_zoom")
+        public static let smoothCrossfade = LocalizedStringKey("transitions.smooth_crossfade")
+        public static let cinematicPush = LocalizedStringKey("transitions.cinematic_push")
+        public static let duration = LocalizedStringKey("transitions.duration")
+        public static let animationEasing = LocalizedStringKey("transitions.animation_easing")
+        public static let effectIntensity = LocalizedStringKey("transitions.effect_intensity")
+        public static let effectType = LocalizedStringKey("transitions.effect_type")
+        public static let timingSettings = LocalizedStringKey("transitions.timing_settings")
+        public static let currentSettings = LocalizedStringKey("transitions.current_settings")
+        public static let performanceInformation = LocalizedStringKey("transitions.performance_information")
+        public static let performanceTip = LocalizedStringKey("transitions.performance_tip")
+        public static let performanceTipDescription = LocalizedStringKey("transitions.performance_tip_description")
+        public static let fadeEffectTip = LocalizedStringKey("transitions.fade_effect_tip")
+        public static let zoomEffectTip = LocalizedStringKey("transitions.zoom_effect_tip")
+        public static let pushEffectTip = LocalizedStringKey("transitions.push_effect_tip")
+        public static let effectLabel = LocalizedStringKey("transitions.effect_label")
+        public static let durationLabel = LocalizedStringKey("transitions.duration_label")
+        public static let easingLabel = LocalizedStringKey("transitions.easing_label")
+        public static let intensityLabel = LocalizedStringKey("transitions.intensity_label")
+    }
+    
+    // MARK: - Slideshow Settings
+    public enum Slideshow {
+        public static let slideDuration = LocalizedStringKey("slideshow.slide_duration")
+        public static let slideshowPresets = LocalizedStringKey("slideshow.presets")
+        public static let timingSettings = LocalizedStringKey("slideshow.timing_settings")
+        public static let playbackBehavior = LocalizedStringKey("slideshow.playback_behavior")
+        public static let keyboardControls = LocalizedStringKey("slideshow.keyboard_controls")
+        public static let defaultPreset = LocalizedStringKey("slideshow.preset.default")
+        public static let quickPreset = LocalizedStringKey("slideshow.preset.quick")
+        public static let slowPreset = LocalizedStringKey("slideshow.preset.slow")
+        public static let randomPreset = LocalizedStringKey("slideshow.preset.random")
+    }
+    
+    // MARK: - Interface Settings
+    public enum Interface {
+        public static let generalAutoHideDelay = LocalizedStringKey("interface.general_auto_hide_delay")
+        public static let duringSlideshow = LocalizedStringKey("interface.during_slideshow")
+        public static let whenPaused = LocalizedStringKey("interface.when_paused")
+        public static let mouseSensitivity = LocalizedStringKey("interface.mouse_sensitivity")
+        public static let minimumVisibilityDuration = LocalizedStringKey("interface.minimum_visibility_duration")
+        public static let backgroundBlurIntensity = LocalizedStringKey("interface.background_blur_intensity")
+        public static let backgroundOpacity = LocalizedStringKey("interface.background_opacity")
+        public static let fadeAnimationDuration = LocalizedStringKey("interface.fade_animation_duration")
+        public static let controlsPositionFromBottom = LocalizedStringKey("interface.controls_position_from_bottom")
+        public static let infoToggleHint = LocalizedStringKey("interface.info_toggle_hint")
+        public static let infoDisplayDetails = LocalizedStringKey("interface.info_display_details")
+    }
+    
+    // MARK: - Region Names
+    public enum Region {
+        public static let unitedStates = LocalizedStringKey("region.united_states")
+        public static let japan = LocalizedStringKey("region.japan")
+        public static let unitedKingdom = LocalizedStringKey("region.united_kingdom")
+        public static let germany = LocalizedStringKey("region.germany")
+        public static let france = LocalizedStringKey("region.france")
+        public static let spain = LocalizedStringKey("region.spain")
+        public static let china = LocalizedStringKey("region.china")
+        public static let korea = LocalizedStringKey("region.korea")
+        public static let region = LocalizedStringKey("region.region")
+        public static let affectsFormatting = LocalizedStringKey("region.affects_formatting")
+    }
+    
+    // MARK: - Date and Time
+    public enum DateTime {
+        public static let dateFormat = LocalizedStringKey("datetime.date_format")
+        public static let numberFormat = LocalizedStringKey("datetime.number_format")
+        public static let timeFormat = LocalizedStringKey("datetime.time_format")
+        public static let preview = LocalizedStringKey("datetime.preview")
+        public static let affectsTimeDisplay = LocalizedStringKey("datetime.affects_time_display")
+        public static let affectsFileSize = LocalizedStringKey("datetime.affects_file_size")
+        public static let improvesAccessibility = LocalizedStringKey("datetime.improves_accessibility")
+        public static let sortLocale = LocalizedStringKey("datetime.sort_locale")
+        public static let firstDayOfWeek = LocalizedStringKey("datetime.first_day_of_week")
+        public static let rightToLeftLayout = LocalizedStringKey("datetime.right_to_left_layout")
+        public static let yes = LocalizedStringKey("datetime.yes")
+        public static let no = LocalizedStringKey("datetime.no")
+    }
+    
+    // MARK: - Performance Settings
+    public enum Performance {
+        // Section titles and descriptions
+        public static let performancePresets = LocalizedStringKey("performance.presets")
+        public static let performancePresetsDescription = LocalizedStringKey("performance.presets_description")
+        public static let manualConfiguration = LocalizedStringKey("performance.manual_configuration")
+        public static let manualConfigurationDescription = LocalizedStringKey("performance.manual_configuration_description")
+        public static let advancedSettings = LocalizedStringKey("performance.advanced_settings")
+        public static let advancedSettingsDescription = LocalizedStringKey("performance.advanced_settings_description")
+        
+        // Preset button titles
+        public static let defaultPreset = LocalizedStringKey("performance.preset.default")
+        public static let highPerformancePreset = LocalizedStringKey("performance.preset.high_performance")
+        public static let unlimitedPreset = LocalizedStringKey("performance.preset.unlimited")
+        public static let massivePreset = LocalizedStringKey("performance.preset.massive")
+        public static let extremePreset = LocalizedStringKey("performance.preset.extreme")
+        
+        // Setting labels
+        public static let memoryWindowSize = LocalizedStringKey("performance.memory_window_size")
+        public static let maxMemoryUsage = LocalizedStringKey("performance.max_memory_usage")
+        public static let concurrentLoads = LocalizedStringKey("performance.concurrent_loads")
+        public static let aggressiveMemoryManagement = LocalizedStringKey("performance.aggressive_memory_management")
+        public static let largeCollectionThreshold = LocalizedStringKey("performance.large_collection_threshold")
+        public static let preloadDistance = LocalizedStringKey("performance.preload_distance")
+        
+        // Preset names (for selectedPreset)
+        public static let defaultName = LocalizedStringKey("performance.name.default")
+        public static let highPerformanceName = LocalizedStringKey("performance.name.high_performance")
+        public static let unlimitedName = LocalizedStringKey("performance.name.unlimited")
+        public static let massiveName = LocalizedStringKey("performance.name.massive")
+        public static let extremeName = LocalizedStringKey("performance.name.extreme")
+        public static let customName = LocalizedStringKey("performance.name.custom")
+        
+        // Format strings
+        public static let imagesFormat = LocalizedStringKey("performance.format.images")
+        public static let mbFormat = LocalizedStringKey("performance.format.mb")
+        public static let numberFormat = LocalizedStringKey("performance.format.number")
+        
+        // Legacy keys (keeping for compatibility)
+        public static let preloadAhead = LocalizedStringKey("performance.preload_ahead")
+        public static let preloadBehind = LocalizedStringKey("performance.preload_behind")
+        public static let maxConcurrentLoads = LocalizedStringKey("performance.max_concurrent_loads")
+        public static let cacheSizeMB = LocalizedStringKey("performance.cache_size_mb")
+        public static let memoryManagement = LocalizedStringKey("performance.memory_management")
+        public static let aggressiveMemoryCleanup = LocalizedStringKey("performance.aggressive_memory_cleanup")
+        public static let enableDebugLogging = LocalizedStringKey("performance.enable_debug_logging")
+        public static let defaultImages = LocalizedStringKey("performance.default_images")
+        public static let highPerformanceImages = LocalizedStringKey("performance.high_performance_images")
+        public static let unlimitedImages = LocalizedStringKey("performance.unlimited_images")
+        public static let massiveImages = LocalizedStringKey("performance.massive_images")
+        public static let extremeImages = LocalizedStringKey("performance.extreme_images")
+        public static let currentSettings = LocalizedStringKey("performance.current_settings")
+        public static let memoryWindowImagesLabel = LocalizedStringKey("performance.memory_window_images_label")
+        public static let preloadLabel = LocalizedStringKey("performance.preload_label")
+        public static let cacheSizeLabel = LocalizedStringKey("performance.cache_size_label")
+        public static let concurrentLoadsLabel = LocalizedStringKey("performance.concurrent_loads_label")
+        public static let memoryModeLabel = LocalizedStringKey("performance.memory_mode_label")
+        public static let memoryTips = LocalizedStringKey("performance.memory_tips")
+        public static let memoryUsageInfo = LocalizedStringKey("performance.memory_usage_info")
+        public static let optimalSettings = LocalizedStringKey("performance.optimal_settings")
+        public static let smallCollections = LocalizedStringKey("performance.small_collections")
+        public static let mediumCollections = LocalizedStringKey("performance.medium_collections")
+        public static let largeCollections = LocalizedStringKey("performance.large_collections")
+        public static let resetConfiguration = LocalizedStringKey("performance.reset_configuration")
+    }
+    
+    // MARK: - Measurement System
+    public enum Measurement {
+        public static let system = LocalizedStringKey("measurement.system")
+        public static let automatic = LocalizedStringKey("measurement.automatic")
+        public static let metric = LocalizedStringKey("measurement.metric")
+        public static let imperial = LocalizedStringKey("measurement.imperial")
+    }
+    
+    // MARK: - Accessibility
+    public enum Accessibility {
+        public static let enableFeatures = LocalizedStringKey("accessibility.enable_features")
+        public static let title = LocalizedStringKey("accessibility.title")
+        public static let description = LocalizedStringKey("accessibility.description")
     }
 }
 

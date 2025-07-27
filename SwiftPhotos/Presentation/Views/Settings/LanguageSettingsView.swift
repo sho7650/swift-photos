@@ -26,11 +26,11 @@ struct LanguageSettingsView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // Primary Language Selection
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(L10n.Settings.applicationLanguage)
+                        Text(String(localized: "settings.application_language"))
                             .font(.headline)
                             .fontWeight(.medium)
                         
-                        Picker("Language", selection: Binding(
+                        Picker(String(localized: "settings.language"), selection: Binding(
                             get: { 
                                 let currentLang = localizationSettings.settings.language
                                 ProductionLogger.debug("LanguageSettingsView: Picker get - current language: \(currentLang.rawValue)")
@@ -58,36 +58,36 @@ struct LanguageSettingsView: View {
                         .pickerStyle(.menu)
                         .frame(maxWidth: 200)
                         
-                        Text(L10n.Settings.changesImmediate)
+                        Text(String(localized: "settings.changes_immediate"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                     
                     // Region Selection
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Region")
+                        Text(String(localized: "region.region"))
                             .font(.headline)
                             .fontWeight(.medium)
                         
-                        Picker("Region", selection: Binding(
+                        Picker(String(localized: "region.region"), selection: Binding(
                             get: { localizationSettings.settings.region },
                             set: { newRegion in
                                 localizationSettings.updateRegion(newRegion)
                             }
                         )) {
-                            Text("United States").tag("US")
-                            Text("Japan").tag("JP")
-                            Text("United Kingdom").tag("GB")
-                            Text("Germany").tag("DE")
-                            Text("France").tag("FR")
-                            Text("Spain").tag("ES")
-                            Text("China").tag("CN")
-                            Text("Korea").tag("KR")
+                            Text(String(localized: "region.united_states")).tag("US")
+                            Text(String(localized: "region.japan")).tag("JP")
+                            Text(String(localized: "region.united_kingdom")).tag("GB")
+                            Text(String(localized: "region.germany")).tag("DE")
+                            Text(String(localized: "region.france")).tag("FR")
+                            Text(String(localized: "region.spain")).tag("ES")
+                            Text(String(localized: "region.china")).tag("CN")
+                            Text(String(localized: "region.korea")).tag("KR")
                         }
                         .pickerStyle(.menu)
                         .frame(maxWidth: 200)
                         
-                        Text("Affects number and date formatting")
+                        Text(String(localized: "region.affects_formatting"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -103,11 +103,11 @@ struct LanguageSettingsView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // Date Format
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Date Format")
+                        Text(String(localized: "datetime.date_format"))
                             .font(.headline)
                             .fontWeight(.medium)
                         
-                        Picker("Date Format", selection: Binding(
+                        Picker(String(localized: "datetime.date_format"), selection: Binding(
                             get: { localizationSettings.settings.dateFormatStyle },
                             set: { newStyle in
                                 localizationSettings.updateDateFormatStyle(newStyle)
@@ -121,7 +121,7 @@ struct LanguageSettingsView: View {
                         .pickerStyle(.menu)
                         .frame(maxWidth: 200)
                         
-                        Text("Preview: \(localizationSettings.formatDate(previewDate))")
+                        Text(String(localized: "datetime.preview").replacingOccurrences(of: "%@", with: localizationSettings.formatDate(previewDate)))
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .padding(.leading, 4)
@@ -129,11 +129,11 @@ struct LanguageSettingsView: View {
                     
                     // Number Format
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Number Format")
+                        Text(String(localized: "datetime.number_format"))
                             .font(.headline)
                             .fontWeight(.medium)
                         
-                        Picker("Number Format", selection: Binding(
+                        Picker(String(localized: "datetime.number_format"), selection: Binding(
                             get: { localizationSettings.settings.numberFormatStyle },
                             set: { newStyle in
                                 var newSettings = localizationSettings.settings
@@ -149,7 +149,7 @@ struct LanguageSettingsView: View {
                         .pickerStyle(.menu)
                         .frame(maxWidth: 200)
                         
-                        Text("Preview: \(localizationSettings.formatNumber(previewNumber))")
+                        Text(String(localized: "datetime.preview").replacingOccurrences(of: "%@", with: localizationSettings.formatNumber(previewNumber)))
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .padding(.leading, 4)
@@ -157,11 +157,11 @@ struct LanguageSettingsView: View {
                     
                     // Time Format
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Time Format")
+                        Text(String(localized: "datetime.time_format"))
                             .font(.headline)
                             .fontWeight(.medium)
                         
-                        Picker("Time Format", selection: Binding(
+                        Picker(String(localized: "datetime.time_format"), selection: Binding(
                             get: { localizationSettings.settings.timeFormat },
                             set: { newFormat in
                                 var newSettings = localizationSettings.settings
@@ -177,7 +177,7 @@ struct LanguageSettingsView: View {
                         .pickerStyle(.menu)
                         .frame(maxWidth: 200)
                         
-                        Text("Affects time display in photo metadata")
+                        Text(String(localized: "datetime.affects_time_display"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -191,7 +191,7 @@ struct LanguageSettingsView: View {
                 description: String(localized: "settings.measurement_system.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Picker("Measurement System", selection: Binding(
+                    Picker(String(localized: "measurement.system"), selection: Binding(
                         get: { localizationSettings.settings.measurementSystem },
                         set: { newSystem in
                             var newSettings = localizationSettings.settings
@@ -207,7 +207,7 @@ struct LanguageSettingsView: View {
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 300)
                     
-                    Text("Affects file size and dimension displays")
+                    Text(String(localized: "datetime.affects_file_size"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -220,7 +220,7 @@ struct LanguageSettingsView: View {
                 description: String(localized: "settings.accessibility.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Toggle("Enable accessibility features for localization", isOn: Binding(
+                    Toggle(String(localized: "accessibility.enable_features"), isOn: Binding(
                         get: { localizationSettings.settings.accessibilityEnabled },
                         set: { newValue in
                             localizationSettings.updateAccessibilityEnabled(newValue)
@@ -228,7 +228,7 @@ struct LanguageSettingsView: View {
                     ))
                     .toggleStyle(.switch)
                     
-                    Text("Improves screen reader support and keyboard navigation")
+                    Text(String(localized: "datetime.improves_accessibility"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -266,19 +266,19 @@ struct LanguageSettingsView: View {
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Sort Locale: \(localizationSettings.settings.sortLocale)")
+                        Text(String(localized: "datetime.sort_locale").replacingOccurrences(of: "%@", with: localizationSettings.settings.sortLocale))
                             .font(.caption)
                             .fontWeight(.medium)
-                        Text("First Day of Week: \(WeekdayHelper.displayName(for: localizationSettings.settings.firstDayOfWeek))")
+                        Text(String(localized: "datetime.first_day_of_week").replacingOccurrences(of: "%@", with: String(describing: localizationSettings.settings.firstDayOfWeek)))
                             .font(.caption)
                             .fontWeight(.medium)
-                        Text("Right-to-Left Layout: \(localizationSettings.settings.isRightToLeft ? "Yes" : "No")")
+                        Text(String(localized: "datetime.right_to_left_layout").replacingOccurrences(of: "%@", with: localizationSettings.settings.isRightToLeft ? String(localized: "datetime.yes") : String(localized: "datetime.no")))
                             .font(.caption)
                             .fontWeight(.medium)
                     }
                     .padding(.vertical, 4)
                     
-                    Button("Reset to Defaults") {
+                    Button(String(localized: "button.reset_to_defaults")) {
                         localizationSettings.resetToDefaults()
                     }
                     .buttonStyle(.borderless)

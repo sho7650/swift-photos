@@ -17,7 +17,7 @@ struct InterfaceSettingsView: View {
                     // General auto-hide delay
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("General Auto-hide Delay")
+                            Text(L10n.Interface.generalAutoHideDelay)
                             Spacer()
                             Text(String(format: "%.1f seconds", settings.settings.autoHideDelay))
                                 .foregroundColor(.secondary)
@@ -51,7 +51,7 @@ struct InterfaceSettingsView: View {
                     // Playing auto-hide delay
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("During Slideshow")
+                            Text(L10n.Interface.duringSlideshow)
                             Spacer()
                             Text(String(format: "%.1f seconds", settings.settings.playingAutoHideDelay))
                                 .foregroundColor(.secondary)
@@ -85,7 +85,7 @@ struct InterfaceSettingsView: View {
                     // Paused auto-hide delay
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("When Paused")
+                            Text(L10n.Interface.whenPaused)
                             Spacer()
                             Text(String(format: "%.1f seconds", settings.settings.pausedAutoHideDelay))
                                 .foregroundColor(.secondary)
@@ -173,7 +173,7 @@ struct InterfaceSettingsView: View {
                     if settings.settings.showOnMouseMovement {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
-                                Text("Mouse Sensitivity")
+                                Text(L10n.Interface.mouseSensitivity)
                                 Spacer()
                                 Text(String(format: "%.0f pixels", settings.settings.mouseSensitivity))
                                     .foregroundColor(.secondary)
@@ -206,7 +206,7 @@ struct InterfaceSettingsView: View {
                         
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
-                                Text("Minimum Visibility Duration")
+                                Text(L10n.Interface.minimumVisibilityDuration)
                                 Spacer()
                                 Text(String(format: "%.1f seconds", settings.settings.minimumVisibilityDuration))
                                     .foregroundColor(.secondary)
@@ -250,7 +250,7 @@ struct InterfaceSettingsView: View {
                     // Background blur intensity
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("Background Blur Intensity")
+                            Text(L10n.Interface.backgroundBlurIntensity)
                             Spacer()
                             Text(String(format: "%.0f%%", settings.settings.backgroundBlurIntensity * 100))
                                 .foregroundColor(.secondary)
@@ -284,7 +284,7 @@ struct InterfaceSettingsView: View {
                     // Background opacity
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("Background Opacity")
+                            Text(L10n.Interface.backgroundOpacity)
                             Spacer()
                             Text(String(format: "%.0f%%", settings.settings.backgroundOpacity * 100))
                                 .foregroundColor(.secondary)
@@ -318,7 +318,7 @@ struct InterfaceSettingsView: View {
                     // Fade animation duration
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("Fade Animation Duration")
+                            Text(L10n.Interface.fadeAnimationDuration)
                             Spacer()
                             Text(String(format: "%.1f seconds", settings.settings.fadeAnimationDuration))
                                 .foregroundColor(.secondary)
@@ -352,7 +352,7 @@ struct InterfaceSettingsView: View {
                     // Bottom offset
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text("Controls Position from Bottom")
+                            Text(L10n.Interface.controlsPositionFromBottom)
                             Spacer()
                             Text(String(format: "%.0f pixels", settings.settings.bottomOffset))
                                 .foregroundColor(.secondary)
@@ -416,11 +416,11 @@ struct InterfaceSettingsView: View {
                     
                     if settings.settings.showDetailedInfoByDefault {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Press 'I' to toggle detailed information during slideshow")
+                            Text(L10n.Interface.infoToggleHint)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             
-                            Text("Shows: filename, dimensions, file size, creation date")
+                            Text(L10n.Interface.infoDisplayDetails)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
