@@ -28,7 +28,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
     private var settingsCache: [String: CachedSetting] = [:]
     
     // MARK: - Change Observers
-    private var changeObservers: [String: AsyncStream<Any?>.Continuation] = [:]
+    private var changeObservers: [String: Any] = [:]
     
     // MARK: - Initialization
     public init(
@@ -136,7 +136,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         settingsCache.removeValue(forKey: fullKey)
         
         // 変更通知
-        notifyObservers(for: key, value: nil)
+        notifyObservers(for: key, value: nil as Any?)
         
         ProductionLogger.debug("UserDefaultsSettingsRepository: Successfully removed \(key.rawValue)")
     }
@@ -266,7 +266,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         ProductionLogger.info("UserDefaultsSettingsRepository: Import completed - imported: \(importedCount) settings")
     }
     
-    public func observe<T: Codable>(_ type: T.Type, for key: SettingsKey) -> AsyncStream<T?> {
+    nonisolated public func observe<T: Codable>(_ type: T.Type, for key: SettingsKey) -> AsyncStream<T?> {
         let fullKey = generateFullKey(for: key)
         
         return AsyncStream { continuation in
@@ -277,7 +277,9 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
             }
             
             // 変更監視の登録
-            changeObservers[fullKey] = continuation as? AsyncStream<Any?>.Continuation
+            Task {
+                await self.registerObserver(fullKey: fullKey, continuation: continuation)
+            }
             
             continuation.onTermination = { _ in
                 Task {
@@ -323,21 +325,19 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         
         return SettingsMetadata(
             key: key,
-            category: key.category,
-            dataSize: size,
             lastModified: Date(), // UserDefaultsでは正確な変更日時は取得困難
             version: "1.0",
-            checksum: nil,
-            isEncrypted: false,
-            compressionType: nil,
-            customProperties: [:]
+            size: size,
+            type: "UserDefaults",
+            isDefault: false,
+            validationRules: []
         )
     }
     
-    public func validate<T: Codable>(_ value: T, for key: SettingsKey) async throws -> ValidationResult {
+    public func validate<T: Codable>(_ value: T, for key: SettingsKey) async throws -> SettingsValidationResult {
         // 基本的な検証を実装
-        var warnings: [ValidationResult.Warning] = []
-        var errors: [ValidationResult.Error] = []
+        var warnings: [SettingsValidationWarning] = []
+        var errors: [SettingsValidationError] = []
         
         // キー別の検証ロジック
         switch key.rawValue {
@@ -352,7 +352,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
             break
         }
         
-        return ValidationResult(
+        return SettingsValidationResult(
             isValid: errors.isEmpty,
             warnings: warnings,
             errors: errors
@@ -361,7 +361,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
     
     // MARK: - Private Helper Methods
     
-    private func generateFullKey(for key: SettingsKey) -> String {
+    nonisolated private func generateFullKey(for key: SettingsKey) -> String {
         return "\(keyPrefix).\(key.category.rawValue).\(key.rawValue)"
     }
     
@@ -372,9 +372,13 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
     private func notifyObservers<T>(for key: SettingsKey, value: T?) {
         let fullKey = generateFullKey(for: key)
         
-        if let continuation = changeObservers[fullKey] {
+        if let continuation = changeObservers[fullKey] as? AsyncStream<T?>.Continuation {
             continuation.yield(value)
         }
+    }
+    
+    private func registerObserver<T>(fullKey: String, continuation: AsyncStream<T?>.Continuation) {
+        changeObservers[fullKey] = continuation
     }
     
     private func removeObserver(for fullKey: String) {
@@ -424,12 +428,12 @@ extension UserDefaultsSettingsRepository {
         
         // Core デフォルト設定
         if !(await exists(for: .performance)) {
-            let defaultPerformance = ["memoryLimit": 1024 * 1024 * 1024, "maxConcurrentLoads": 5]
+            let defaultPerformance = ["memoryLimit": "1073741824", "maxConcurrentLoads": "5"]
             try await save(defaultPerformance, for: .performance)
         }
         
         if !(await exists(for: .slideshow)) {
-            let defaultSlideshow = ["interval": 3.0, "autoStart": false]
+            let defaultSlideshow = ["interval": "3.0", "autoStart": "false"]
             try await save(defaultSlideshow, for: .slideshow)
         }
         

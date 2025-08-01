@@ -155,7 +155,7 @@ public actor LocalImageRepository: ImageRepositoryProtocol {
         return matchingURLs
     }
     
-    public var supportedImageFormats: Set<String> {
+    nonisolated public var supportedImageFormats: Set<String> {
         return supportedFormats
     }
     

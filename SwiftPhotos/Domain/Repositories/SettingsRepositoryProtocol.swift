@@ -42,7 +42,7 @@ public protocol SettingsRepositoryProtocol: Sendable {
     func getMetadata(for key: SettingsKey) async -> SettingsMetadata?
     
     /// 設定の検証
-    func validate<T: Codable>(_ value: T, for key: SettingsKey) async throws -> ValidationResult
+    func validate<T: Codable>(_ value: T, for key: SettingsKey) async throws -> SettingsValidationResult
 }
 
 /// 設定キー

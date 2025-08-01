@@ -486,3 +486,61 @@ public enum RepositoryUtils {
         return .failure(lastError ?? .unknown(underlying: NSError(domain: "RepositoryUtils", code: -1)))
     }
 }
+
+// MARK: - Settings Validation Types
+
+/// 設定の検証結果
+public struct SettingsValidationResult: Sendable, Equatable {
+    public let isValid: Bool
+    public let warnings: [SettingsValidationWarning]
+    public let errors: [SettingsValidationError]
+    
+    public init(
+        isValid: Bool,
+        warnings: [SettingsValidationWarning] = [],
+        errors: [SettingsValidationError] = []
+    ) {
+        self.isValid = isValid
+        self.warnings = warnings
+        self.errors = errors
+    }
+    
+    /// 成功の結果
+    public static let valid = SettingsValidationResult(isValid: true)
+    
+    /// エラーがある結果を作成
+    public static func invalid(errors: [SettingsValidationError]) -> SettingsValidationResult {
+        return SettingsValidationResult(isValid: false, errors: errors)
+    }
+    
+    /// 警告がある結果を作成
+    public static func withWarnings(_ warnings: [SettingsValidationWarning]) -> SettingsValidationResult {
+        return SettingsValidationResult(isValid: true, warnings: warnings)
+    }
+}
+
+/// 設定検証警告
+public struct SettingsValidationWarning: Sendable, Equatable {
+    public let message: String
+    public let field: String?
+    public let code: String?
+    
+    public init(message: String, field: String? = nil, code: String? = nil) {
+        self.message = message
+        self.field = field
+        self.code = code
+    }
+}
+
+/// 設定検証エラー
+public struct SettingsValidationError: Sendable, Equatable {
+    public let message: String
+    public let field: String?
+    public let code: String?
+    
+    public init(message: String, field: String? = nil, code: String? = nil) {
+        self.message = message
+        self.field = field
+        self.code = code
+    }
+}
