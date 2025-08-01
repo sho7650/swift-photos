@@ -225,7 +225,7 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
         // These features would need to be added to PhotoMetadata if required in the future
         
         // Create FileInfo from legacy metadata
-        let fileInfo = FileInfo(
+        let fileInfo = ImageMetadata.FileInfo(
             size: legacyMetadata.fileSize,
             createdDate: legacyMetadata.creationDate ?? Date(),
             modifiedDate: Date(), // Not available in legacy, use current date
@@ -234,19 +234,24 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
         )
         
         // Create ImageInfo from legacy metadata
-        let imageInfo = ImageInfo(
+        let imageInfo = ImageMetadata.ImageInfo(
             width: Int(legacyMetadata.dimensions.width),
             height: Int(legacyMetadata.dimensions.height),
-            bitDepth: 8, // Default value as not available in legacy
             colorSpace: legacyMetadata.colorSpace ?? "RGB",
-            hasAlpha: false, // Default value as not available in legacy
-            orientation: 1 // Default orientation
+            bitDepth: 8, // Default value as not available in legacy
+            hasAlpha: false // Default value as not available in legacy
         )
         
-        // Create EXIF, IPTC, XMP data
-        let exifDataObj = EXIFData(properties: exifData)
-        let iptcDataObj = IPTCData(properties: iptcData)
-        let xmpDataObj = XMPData(properties: xmpData)
+        // Create EXIF, IPTC, XMP data with available information
+        let exifDataObj = EXIFData(
+            cameraModel: nil,
+            dateTaken: legacyMetadata.creationDate,
+            gpsLocation: nil,
+            exposureSettings: nil,
+            rawData: exifData
+        )
+        let iptcDataObj = IPTCData() // Default empty IPTC data
+        let xmpDataObj = XMPData() // Default empty XMP data
         
         return ImageMetadata(
             fileInfo: fileInfo,
@@ -260,12 +265,15 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
     
     /// Generate thumbnail from full image
     private func generateThumbnailFromImage(_ image: NSImage, targetSize: CGSize) async throws -> NSImage {
+        // Capture image size on main actor to avoid sendable issues
+        let imageSize = image.size
+        
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 let thumbnailImage = NSImage(size: targetSize)
                 thumbnailImage.lockFocus()
                 
-                let sourceRect = NSRect(origin: .zero, size: image.size)
+                let sourceRect = NSRect(origin: .zero, size: imageSize)
                 let targetRect = NSRect(origin: .zero, size: targetSize)
                 
                 image.draw(in: targetRect, from: sourceRect, operation: .copy, fraction: 1.0)
@@ -285,17 +293,17 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
             var matchesCriteria = true
             
             // Filter by file extension
-            if !criteria.fileExtensions.isEmpty {
+            if let fileTypes = criteria.fileTypes, !fileTypes.isEmpty {
                 let fileExtension = url.pathExtension.lowercased()
-                if !criteria.fileExtensions.contains(fileExtension) {
+                if !fileTypes.contains(fileExtension) {
                     matchesCriteria = false
                 }
             }
             
             // Filter by filename pattern
-            if let namePattern = criteria.namePattern {
-                let fileName = url.deletingPathExtension().lastPathComponent
-                if !fileName.localizedCaseInsensitiveContains(namePattern) {
+            if let fileName = criteria.fileName {
+                let actualFileName = url.deletingPathExtension().lastPathComponent
+                if !actualFileName.localizedCaseInsensitiveContains(fileName) {
                     matchesCriteria = false
                 }
             }
@@ -308,7 +316,7 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
                     let modificationDate = resourceValues.contentModificationDate ?? Date.distantPast
                     let relevantDate = max(creationDate, modificationDate)
                     
-                    if relevantDate < dateRange.lowerBound || relevantDate > dateRange.upperBound {
+                    if relevantDate < dateRange.start || relevantDate > dateRange.end {
                         matchesCriteria = false
                     }
                 } catch {
@@ -323,7 +331,7 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
                     let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
                     let fileSize = Int64(resourceValues.fileSize ?? 0)
                     
-                    if fileSize < sizeRange.lowerBound || fileSize > sizeRange.upperBound {
+                    if fileSize < sizeRange.minSize || fileSize > sizeRange.maxSize {
                         matchesCriteria = false
                     }
                 } catch {
@@ -393,10 +401,10 @@ public struct AdapterConfiguration: Sendable {
 
 extension RepositoryError {
     static func loadingFailed(url: URL, reason: String) -> RepositoryError {
-        return .operationFailed(operation: "loadImage", details: "Failed to load \(url.lastPathComponent): \(reason)")
+        return .storageError(underlying: NSError(domain: "FileSystemPhotoRepositoryAdapter", code: 1001, userInfo: [NSLocalizedDescriptionKey: "Failed to load \(url.lastPathComponent): \(reason)"]))
     }
     
     static func metadataExtractionFailed(url: URL, reason: String) -> RepositoryError {
-        return .operationFailed(operation: "extractMetadata", details: "Failed to extract metadata for \(url.lastPathComponent): \(reason)")
+        return .storageError(underlying: NSError(domain: "FileSystemPhotoRepositoryAdapter", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Failed to extract metadata for \(url.lastPathComponent): \(reason)"]))
     }
 }

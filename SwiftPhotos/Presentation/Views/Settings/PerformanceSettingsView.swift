@@ -40,6 +40,7 @@ struct PerformanceSettingsView: View {
                     PresetButton(title: "Extreme (50,001+ images)", preset: .extreme, current: settings.settings) {
                         settings.updateSettings(.extreme)
                         selectedPreset = "Extreme"
+                        
                     }
                 }
             }

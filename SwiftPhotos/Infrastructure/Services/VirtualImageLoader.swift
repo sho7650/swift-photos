@@ -107,7 +107,7 @@ actor VirtualImageLoader {
         await withTaskGroup(of: Void.self) { group in
             var semaphore = 0
             
-            for (photo, distance, idx) in photosToLoad {
+            for (photo, distance, _) in photosToLoad {
                 // セマフォで並行数制御
                 while semaphore >= maxConcurrent {
                     await group.next()
