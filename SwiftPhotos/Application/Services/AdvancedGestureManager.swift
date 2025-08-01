@@ -329,8 +329,10 @@ public class AdvancedGestureManager: ObservableObject {
         guard photoZoomState.currentZoomLevel <= 1.1 else { return }
         
         // Swipe functionality removed
-        slideshowViewModel.nextPhoto()
-        logger.debug("🎮 AdvancedGestureManager: Navigated to next photo via swipe")
+        Task {
+            await slideshowViewModel.nextPhoto()
+            logger.debug("🎮 AdvancedGestureManager: Navigated to next photo via swipe")
+        }
     }
     
     public func navigateToPreviousPhoto() {
@@ -338,8 +340,10 @@ public class AdvancedGestureManager: ObservableObject {
         guard photoZoomState.currentZoomLevel <= 1.1 else { return }
         
         // Swipe functionality removed
-        slideshowViewModel.previousPhoto()
-        logger.debug("🎮 AdvancedGestureManager: Navigated to previous photo via swipe")
+        Task {
+            await slideshowViewModel.previousPhoto()
+            logger.debug("🎮 AdvancedGestureManager: Navigated to previous photo via swipe")
+        }
     }
     
     private func handleUpSwipe() {

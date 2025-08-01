@@ -202,7 +202,7 @@ public actor FileSystemMetadataRepository: MetadataRepositoryProtocol {
         ProductionLogger.info("Metadata cache cleared")
     }
     
-    public var supportedMetadataFormats: Set<MetadataFormat> {
+    nonisolated public var supportedMetadataFormats: Set<MetadataFormat> {
         return supportedFormats
     }
     

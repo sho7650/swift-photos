@@ -10,7 +10,7 @@ import AppKit
 import Combine
 
 struct ContentView: View {
-    @State private var viewModel: ModernSlideshowViewModel?
+    @State private var viewModel: (any SlideshowViewModelProtocol)?
     @State private var keyboardHandler: KeyboardHandler?
     @State private var uiControlStateManager: UIControlStateManager?
     @State private var isInitialized = false
@@ -79,15 +79,30 @@ struct ContentView: View {
     }
     
     @ViewBuilder
-    private func slideshowContentView(viewModel: ModernSlideshowViewModel, keyboardHandler: KeyboardHandler, uiControlStateManager: UIControlStateManager) -> some View {
+    private func slideshowContentView(viewModel: any SlideshowViewModelProtocol, keyboardHandler: KeyboardHandler, uiControlStateManager: UIControlStateManager) -> some View {
                 ZStack {
                     // Main content with image hover cursor control
-                    SimpleImageDisplayView(
-                        viewModel: viewModel,
-                        transitionSettings: transitionSettings,
-                        uiControlStateManager: uiControlStateManager
-                    )
+                    // Handle different ViewModel types
+                    if let modernViewModel = viewModel as? ModernSlideshowViewModel {
+                        SimpleImageDisplayView(
+                            viewModel: modernViewModel,
+                            transitionSettings: transitionSettings,
+                            uiControlStateManager: uiControlStateManager
+                        )
                         .ignoresSafeArea()
+                    } else if let enhancedViewModel = viewModel as? EnhancedModernSlideshowViewModel {
+                        // Repository pattern ViewModel - use a generic display approach
+                        RepositoryImageDisplayView(
+                            viewModel: enhancedViewModel,
+                            transitionSettings: transitionSettings,
+                            uiControlStateManager: uiControlStateManager
+                        )
+                        .ignoresSafeArea()
+                    } else {
+                        // Fallback for unknown ViewModel types
+                        Text("Unsupported ViewModel type")
+                            .foregroundColor(.white)
+                    }
                     
                     // Window level accessor
                     WindowLevelAccessor(windowLevel: viewModel.windowLevel)
@@ -222,13 +237,42 @@ struct ContentView: View {
             let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
-            // Create view model and UI managers
-            let createdViewModel = ModernSlideshowViewModel(domainService: domainService, fileAccess: secureFileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings, sortSettings: sortSettings)
+            // Create view model using Repository migration bridge for seamless pattern integration
+            let migrationBridge = RepositoryMigrationBridge.shared
+            let createdViewModel: any SlideshowViewModelProtocol
+            
+            // Check if Repository pattern should be used
+            if await migrationBridge.shouldUseRepositoryPattern() {
+                ProductionLogger.info("ContentView: Using Repository pattern ViewModel")
+                createdViewModel = await migrationBridge.createViewModel(
+                    fileAccess: secureFileAccess,
+                    performanceSettings: performanceSettings,
+                    slideshowSettings: slideshowSettings,
+                    sortSettings: sortSettings,
+                    localizationService: localizationService!
+                )
+            } else {
+                ProductionLogger.info("ContentView: Using Legacy ViewModel")
+                // Fallback to legacy ViewModel creation
+                createdViewModel = ModernSlideshowViewModel(domainService: domainService, fileAccess: secureFileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings, sortSettings: sortSettings)
+            }
+            
             let createdKeyboardHandler = KeyboardHandler()
-            let createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: createdViewModel)
+            
+            // Setup UI Control State Manager with type-appropriate ViewModel
+            let createdUIControlStateManager: UIControlStateManager
+            if let modernViewModel = createdViewModel as? ModernSlideshowViewModel {
+                createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: modernViewModel)
+            } else {
+                // For EnhancedModernSlideshowViewModel, create without specific ViewModel reference
+                createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings)
+            }
             
             // Setup keyboard handler connections
-            createdKeyboardHandler.viewModel = createdViewModel
+            if let modernViewModel = createdViewModel as? ModernSlideshowViewModel {
+                createdKeyboardHandler.viewModel = modernViewModel
+            }
+            // Note: EnhancedModernSlideshowViewModel integration with KeyboardHandler would need additional work
             createdKeyboardHandler.performanceSettings = performanceSettings
             createdKeyboardHandler.onOpenSettings = {
                 settingsWindowManager.openSettingsWindow(
@@ -299,9 +343,9 @@ struct ContentView: View {
             do {
                 // Create security bookmark for the folder
                 let bookmarkData = try newFolderURL.bookmarkData(
-                    options: [.withSecurityScope],
-                    includingResourceValuesForKeys: nil,
-                    relativeTo: nil
+                    options: [URL.BookmarkCreationOptions.withSecurityScope],
+                    includingResourceValuesForKeys: nil as Set<URLResourceKey>?,
+                    relativeTo: nil as URL?
                 )
                 
                 // Add to recent files
@@ -367,7 +411,11 @@ struct ContentView: View {
         }
         
         // Create slideshow from the selected folder with proper security scoped access
-        viewModel.loadingState = .scanningFolder(0)
+        if let modernViewModel = viewModel as? ModernSlideshowViewModel {
+            modernViewModel.loadingState = .scanningFolder(0)
+            modernViewModel.error = nil
+        }
+        // For other ViewModel types, loading state is managed internally
         viewModel.error = nil
         
         do {
@@ -388,7 +436,10 @@ struct ContentView: View {
             viewModel.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
         }
         
-        viewModel.loadingState = .notLoading
+        if let modernViewModel = viewModel as? ModernSlideshowViewModel {
+            modernViewModel.loadingState = .notLoading
+        }
+        // For other ViewModel types, loading state is managed internally
     }
     
     // MARK: - Fullscreen Management

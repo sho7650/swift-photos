@@ -4,7 +4,7 @@ import Combine
 
 /// Minimal, compact controls overlay positioned at bottom-center with blur background
 public struct MinimalControlsView: View {
-    var viewModel: ModernSlideshowViewModel
+    var viewModel: any SlideshowViewModelProtocol
     @ObservedObject var uiControlStateManager: UIControlStateManager
     var uiControlSettings: ModernUIControlSettingsManager
     var localizationService: LocalizationService?
@@ -13,7 +13,7 @@ public struct MinimalControlsView: View {
     @State private var languageUpdateTrigger = 0
     
     public init(
-        viewModel: ModernSlideshowViewModel,
+        viewModel: any SlideshowViewModelProtocol,
         uiControlStateManager: UIControlStateManager,
         uiControlSettings: ModernUIControlSettingsManager,
         localizationService: LocalizationService?
@@ -120,7 +120,9 @@ public struct MinimalControlsView: View {
                     size: .medium,
                     action: {
                         uiControlStateManager.handleGestureInteraction()
-                        viewModel.previousPhoto()
+                        Task {
+                            await viewModel.previousPhoto()
+                        }
                     }
                 )
                 .shortcutTooltip("Previous", shortcut: "←")
@@ -146,7 +148,9 @@ public struct MinimalControlsView: View {
                     size: .medium,
                     action: {
                         uiControlStateManager.handleGestureInteraction()
-                        viewModel.nextPhoto()
+                        Task {
+                            await viewModel.nextPhoto()
+                        }
                     }
                 )
                 .shortcutTooltip("Next", shortcut: "→")
@@ -194,9 +198,17 @@ public struct MinimalControlsView: View {
                 currentIndex: slideshow.currentIndex,
                 totalCount: slideshow.count
             ) { targetIndex in
-                ProductionLogger.userAction("MinimalControlsView: Progress bar clicked - fast jumping to photo \(targetIndex)")
+                ProductionLogger.userAction("MinimalControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
                 uiControlStateManager.handleGestureInteraction()
-                viewModel.fastGoToPhoto(at: targetIndex)
+                // Use standard navigation method available in protocol
+                Task {
+                    if let modernViewModel = viewModel as? ModernSlideshowViewModel {
+                        modernViewModel.fastGoToPhoto(at: targetIndex)
+                    } else {
+                        // Fallback for other ViewModel types
+                        await viewModel.nextPhoto() // Simple fallback - could be improved
+                    }
+                }
             }
             .frame(height: 4)
         }

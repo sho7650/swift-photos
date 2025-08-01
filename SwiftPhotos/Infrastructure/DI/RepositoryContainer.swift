@@ -77,14 +77,14 @@ public actor RepositoryContainer {
     private func createImageRepository() async -> any ImageRepositoryProtocol {
         switch configuration.imageRepositoryType {
         case .local:
-            return LocalImageRepository(
+            return await LocalImageRepository(
                 fileAccess: configuration.secureFileAccess,
                 imageLoader: configuration.imageLoader,
                 additionalFormats: configuration.supportedImageFormats
             )
         case .hybrid:
             // 将来的にクラウドとローカルのハイブリッド実装を追加
-            return LocalImageRepository()
+            return await LocalImageRepository()
         }
     }
     

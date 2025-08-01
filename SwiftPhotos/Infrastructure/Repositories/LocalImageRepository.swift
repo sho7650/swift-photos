@@ -21,8 +21,12 @@ public actor LocalImageRepository: ImageRepositoryProtocol {
         fileAccess: SecureFileAccess? = nil,
         imageLoader: ImageLoader? = nil,
         additionalFormats: Set<String> = []
-    ) {
-        self.fileAccess = fileAccess ?? SecureFileAccess()
+    ) async {
+        if let fileAccess = fileAccess {
+            self.fileAccess = fileAccess
+        } else {
+            self.fileAccess = await SecureFileAccess()
+        }
         self.imageLoader = imageLoader ?? ImageLoader()
         
         // デフォルトでサポートする画像形式
@@ -44,7 +48,7 @@ public actor LocalImageRepository: ImageRepositoryProtocol {
         ProductionLogger.debug("LocalImageRepository: Loading image from \(url.lastPathComponent)")
         
         // ファイルアクセス検証
-        try fileAccess.validateFileAccess(for: url)
+        try await fileAccess.validateFileAccess(for: url)
         
         // 画像形式チェック
         let fileExtension = url.pathExtension.lowercased()
@@ -54,7 +58,8 @@ public actor LocalImageRepository: ImageRepositoryProtocol {
         
         // 画像読み込み
         do {
-            let image = try await imageLoader.loadImage(from: url)
+            let imageURL = try ImageURL(url)
+            let image = try await imageLoader.loadImage(from: imageURL)
             ProductionLogger.debug("LocalImageRepository: Successfully loaded \(url.lastPathComponent)")
             return image
         } catch {
@@ -70,14 +75,14 @@ public actor LocalImageRepository: ImageRepositoryProtocol {
         ProductionLogger.debug("LocalImageRepository: Loading image URLs from \(folder.path)")
         
         // ファイルアクセス検証
-        try fileAccess.validateFileAccess(for: folder)
+        try await fileAccess.validateFileAccess(for: folder)
         
         // 画像ファイル列挙
         do {
-            let imageFileURLs = try fileAccess.enumerateImages(in: folder)
+            let imageFileURLs = try await fileAccess.enumerateImages(in: folder)
             
             // ImageURLオブジェクトに変換
-            let imageURLs = try imageFileURLs.compactMap { url -> ImageURL? in
+            let imageURLs = imageFileURLs.compactMap { url -> ImageURL? in
                 do {
                     return try ImageURL(url)
                 } catch {
@@ -102,7 +107,7 @@ public actor LocalImageRepository: ImageRepositoryProtocol {
         ProductionLogger.debug("LocalImageRepository: Loading metadata for \(url.lastPathComponent)")
         
         // ファイルアクセス検証
-        try fileAccess.validateFileAccess(for: url)
+        try await fileAccess.validateFileAccess(for: url)
         
         // ファイル情報取得
         let fileInfo = try await extractFileInfo(from: url)

@@ -55,11 +55,15 @@ public class KeyboardHandler: ObservableObject {
             handled = true
             
         case 124, 125: // Right arrow, Down arrow - Next photo
-            viewModel.nextPhoto()
+            Task {
+                await viewModel.nextPhoto()
+            }
             handled = true
             
         case 123, 126: // Left arrow, Up arrow - Previous photo
-            viewModel.previousPhoto()
+            Task {
+                await viewModel.previousPhoto()
+            }
             handled = true
             
         case 53: // Escape - Stop/Pause

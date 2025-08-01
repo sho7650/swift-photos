@@ -101,12 +101,12 @@ public struct MetadataExtractionOptions: Sendable {
 
 /// メタデータパフォーマンス統計
 public struct MetadataPerformanceStatistics: Sendable, Equatable {
-    public let totalExtractions: Int
-    public let successfulExtractions: Int
-    public let failedExtractions: Int
-    public let averageExtractionTime: TimeInterval
-    public let cacheHitCount: Int
-    public let cacheMissCount: Int
+    public var totalExtractions: Int
+    public var successfulExtractions: Int
+    public var failedExtractions: Int
+    public var averageExtractionTime: TimeInterval
+    public var cacheHitCount: Int
+    public var cacheMissCount: Int
     
     public init(
         totalExtractions: Int,

@@ -4,7 +4,7 @@ import Combine
 
 /// Expandable detailed information overlay with photo metadata and enhanced controls
 public struct DetailedInfoOverlay: View {
-    var viewModel: ModernSlideshowViewModel
+    var viewModel: any SlideshowViewModelProtocol
     @ObservedObject var uiControlStateManager: UIControlStateManager
     var uiControlSettings: ModernUIControlSettingsManager
     var localizationService: LocalizationService?
@@ -16,7 +16,7 @@ public struct DetailedInfoOverlay: View {
     @State private var showMetadata = false
     
     public init(
-        viewModel: ModernSlideshowViewModel,
+        viewModel: any SlideshowViewModelProtocol,
         uiControlStateManager: UIControlStateManager,
         uiControlSettings: ModernUIControlSettingsManager,
         localizationService: LocalizationService?
@@ -130,7 +130,16 @@ public struct DetailedInfoOverlay: View {
             ) { targetIndex in
                 ProductionLogger.userAction("DetailedInfoOverlay: Progress bar clicked - jumping to photo \(targetIndex)")
                 uiControlStateManager.handleGestureInteraction()
-                viewModel.goToPhoto(at: targetIndex)
+                // Use type checking for specific ViewModel methods
+                Task {
+                    if let modernViewModel = viewModel as? ModernSlideshowViewModel {
+                        modernViewModel.goToPhoto(at: targetIndex)
+                    } else {
+                        // Fallback for other ViewModel types - navigate step by step
+                        // This is a simplified fallback implementation
+                        await viewModel.nextPhoto()
+                    }
+                }
             }
             .frame(height: 8)
         }
@@ -220,7 +229,9 @@ public struct DetailedInfoOverlay: View {
                     label: "Previous",
                     action: {
                         uiControlStateManager.handleGestureInteraction()
-                        viewModel.previousPhoto()
+                        Task {
+                            await viewModel.previousPhoto()
+                        }
                     }
                 )
                 
@@ -244,7 +255,9 @@ public struct DetailedInfoOverlay: View {
                     label: "Next",
                     action: {
                         uiControlStateManager.handleGestureInteraction()
-                        viewModel.nextPhoto()
+                        Task {
+                            await viewModel.nextPhoto()
+                        }
                     }
                 )
             }

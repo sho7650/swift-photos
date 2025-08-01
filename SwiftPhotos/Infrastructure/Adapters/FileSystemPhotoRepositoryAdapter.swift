@@ -50,7 +50,7 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
             // Extract the loaded image from the photo
             switch loadedPhoto.loadState {
             case .loaded(let image):
-                let sendableImage = SendableImage(image)
+                let sendableImage = image // image is already SendableImage
                 
                 // Update performance metrics
                 successCount += 1
@@ -134,7 +134,7 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
             }
             
             // Fallback to new metadata repository
-            let metadata = try await metadataRepository.extractMetadata(from: url)
+            let metadata = try await metadataRepository.loadAllMetadata(for: url)
             
             successCount += 1
             totalResponseTime += Date().timeIntervalSince(startTime)
@@ -217,50 +217,44 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
         var xmpData: [String: String] = [:]
         
         // Convert legacy metadata if available
-        if let captureDate = legacyMetadata.captureDate {
-            exifData["DateTimeOriginal"] = ISO8601DateFormatter().string(from: captureDate)
+        if let creationDate = legacyMetadata.creationDate {
+            exifData["DateTimeOriginal"] = ISO8601DateFormatter().string(from: creationDate)
         }
         
-        if let gpsLocation = legacyMetadata.gpsLocation {
-            exifData["GPSLatitude"] = String(gpsLocation.latitude)
-            exifData["GPSLongitude"] = String(gpsLocation.longitude)
-        }
+        // Note: gpsLocation and cameraInfo are not available in current PhotoMetadata structure
+        // These features would need to be added to PhotoMetadata if required in the future
         
-        if let cameraInfo = legacyMetadata.cameraInfo {
-            exifData["Make"] = cameraInfo.make
-            exifData["Model"] = cameraInfo.model
-            if let focalLength = cameraInfo.focalLength {
-                exifData["FocalLength"] = String(focalLength)
-            }
-            if let aperture = cameraInfo.aperture {
-                exifData["FNumber"] = String(aperture)
-            }
-            if let shutterSpeed = cameraInfo.shutterSpeed {
-                exifData["ExposureTime"] = String(shutterSpeed)
-            }
-            if let iso = cameraInfo.iso {
-                exifData["ISOSpeedRatings"] = String(iso)
-            }
-        }
-        
-        let basicInfo = ImageBasicInfo(
-            width: legacyMetadata.imageSize?.width ?? 0,
-            height: legacyMetadata.imageSize?.height ?? 0,
-            fileSize: legacyMetadata.fileSize,
-            colorSpace: legacyMetadata.colorProfile?.colorSpace,
-            bitDepth: legacyMetadata.colorProfile?.bitsPerChannel ?? 8,
-            hasAlpha: legacyMetadata.colorProfile?.hasAlpha ?? false,
-            format: url.pathExtension.lowercased()
+        // Create FileInfo from legacy metadata
+        let fileInfo = FileInfo(
+            size: legacyMetadata.fileSize,
+            createdDate: legacyMetadata.creationDate ?? Date(),
+            modifiedDate: Date(), // Not available in legacy, use current date
+            fileName: url.lastPathComponent,
+            fileExtension: url.pathExtension
         )
         
+        // Create ImageInfo from legacy metadata
+        let imageInfo = ImageInfo(
+            width: Int(legacyMetadata.dimensions.width),
+            height: Int(legacyMetadata.dimensions.height),
+            bitDepth: 8, // Default value as not available in legacy
+            colorSpace: legacyMetadata.colorSpace ?? "RGB",
+            hasAlpha: false, // Default value as not available in legacy
+            orientation: 1 // Default orientation
+        )
+        
+        // Create EXIF, IPTC, XMP data
+        let exifDataObj = EXIFData(properties: exifData)
+        let iptcDataObj = IPTCData(properties: iptcData)
+        let xmpDataObj = XMPData(properties: xmpData)
+        
         return ImageMetadata(
-            url: url,
-            basicInfo: basicInfo,
-            exifData: exifData,
-            iptcData: iptcData,
-            xmpData: xmpData,
-            extractionDate: Date(),
-            source: .fileSystem
+            fileInfo: fileInfo,
+            imageInfo: imageInfo,
+            exifData: exifDataObj,
+            iptcData: iptcDataObj,
+            xmpData: xmpDataObj,
+            colorProfile: nil // Not available in legacy
         )
     }
     

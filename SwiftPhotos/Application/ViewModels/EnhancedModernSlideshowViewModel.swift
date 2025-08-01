@@ -220,6 +220,11 @@ public final class EnhancedModernSlideshowViewModel {
         refreshCounter += 1
     }
     
+    /// Clear the current error
+    public func clearError() {
+        error = nil
+    }
+    
     /// Select a folder and load photos using Repository pattern
     public func selectFolderAndLoadPhotos() async {
         loadingState = .selectingFolder
@@ -500,15 +505,39 @@ public final class EnhancedModernSlideshowViewModel {
     }
     
     public func nextPhoto() async {
-        // Delegate to existing implementation with Repository loading
+        guard var currentSlideshow = slideshow else { 
+            ProductionLogger.debug("EnhancedSlideshowViewModel: No slideshow available for nextPhoto")
+            return 
+        }
+        
         ProductionLogger.debug("EnhancedSlideshowViewModel: Moving to next photo")
-        // Implementation would call existing nextPhoto logic + Repository loading
+        
+        // Move to next photo in slideshow
+        currentSlideshow.nextPhoto()
+        setSlideshow(currentSlideshow)
+        currentPhoto = currentSlideshow.currentPhoto
+        refreshCounter += 1
+        
+        // Load the new current image using Repository pattern
+        await loadCurrentImage()
     }
     
     public func previousPhoto() async {
-        // Delegate to existing implementation with Repository loading
+        guard var currentSlideshow = slideshow else { 
+            ProductionLogger.debug("EnhancedSlideshowViewModel: No slideshow available for previousPhoto")
+            return 
+        }
+        
         ProductionLogger.debug("EnhancedSlideshowViewModel: Moving to previous photo")
-        // Implementation would call existing previousPhoto logic + Repository loading
+        
+        // Move to previous photo in slideshow
+        currentSlideshow.previousPhoto()
+        setSlideshow(currentSlideshow)
+        currentPhoto = currentSlideshow.currentPhoto
+        refreshCounter += 1
+        
+        // Load the new current image using Repository pattern
+        await loadCurrentImage()
     }
     
     // MARK: - Private Implementation Methods

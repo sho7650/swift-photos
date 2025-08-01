@@ -66,7 +66,11 @@ public struct ControlsView: View {
             progressBar(slideshow: slideshow)
             
             HStack(spacing: 24) {
-                Button(action: viewModel.previousPhoto) {
+                Button(action: {
+                    Task {
+                        await viewModel.previousPhoto()
+                    }
+                }) {
                     Image(systemName: "chevron.left.circle.fill")
                         .font(.title)
                         .foregroundColor(.white)
@@ -86,7 +90,11 @@ public struct ControlsView: View {
                 }
                 .buttonStyle(.plain)
                 
-                Button(action: viewModel.nextPhoto) {
+                Button(action: {
+                    Task {
+                        await viewModel.nextPhoto()
+                    }
+                }) {
                     Image(systemName: "chevron.right.circle.fill")
                         .font(.title)
                         .foregroundColor(.white)

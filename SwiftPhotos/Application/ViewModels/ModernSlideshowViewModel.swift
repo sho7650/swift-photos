@@ -258,7 +258,7 @@ public final class ModernSlideshowViewModel {
         stopTimer()
     }
     
-    public func nextPhoto() {
+    public func nextPhoto() async {
         guard var currentSlideshow = slideshow else { return }
         
         ProductionLogger.debug("NextPhoto: Current slideshow mode: \(currentSlideshow.mode), current index: \(currentSlideshow.currentIndex)")
@@ -270,21 +270,19 @@ public final class ModernSlideshowViewModel {
         refreshCounter += 1
         
         // Load the new current image
-        Task {
-            if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
-                await loadCurrentImageVirtual()
-                // Update preloader priorities
-                await backgroundPreloader.updatePriorities(
-                    photos: currentSlideshow.photos,
-                    newIndex: currentSlideshow.currentIndex
-                )
-            } else {
-                loadCurrentImage()
-            }
+        if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+            await loadCurrentImageVirtual()
+            // Update preloader priorities
+            await backgroundPreloader.updatePriorities(
+                photos: currentSlideshow.photos,
+                newIndex: currentSlideshow.currentIndex
+            )
+        } else {
+            await loadCurrentImage()
         }
     }
     
-    public func previousPhoto() {
+    public func previousPhoto() async {
         guard var currentSlideshow = slideshow else { return }
         
         ProductionLogger.debug("PreviousPhoto: Current slideshow mode: \(currentSlideshow.mode), current index: \(currentSlideshow.currentIndex)")
@@ -295,17 +293,15 @@ public final class ModernSlideshowViewModel {
         refreshCounter += 1
         
         // Load the new current image
-        Task {
-            if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
-                await loadCurrentImageVirtual()
-                // Update preloader priorities
-                await backgroundPreloader.updatePriorities(
-                    photos: currentSlideshow.photos,
-                    newIndex: currentSlideshow.currentIndex
-                )
-            } else {
-                loadCurrentImage()
-            }
+        if currentSlideshow.photos.count > performanceSettingsManager.settings.largeCollectionThreshold {
+            await loadCurrentImageVirtual()
+            // Update preloader priorities
+            await backgroundPreloader.updatePriorities(
+                photos: currentSlideshow.photos,
+                newIndex: currentSlideshow.currentIndex
+            )
+        } else {
+            await loadCurrentImage()
         }
     }
     
@@ -688,7 +684,7 @@ public final class ModernSlideshowViewModel {
         
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                self?.nextPhoto()
+                await self?.nextPhoto()
             }
         }
     }
