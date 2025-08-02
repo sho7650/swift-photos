@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SlideshowInterval: Equatable, Hashable, Codable {
+public struct SlideshowInterval: Equatable, Hashable, Codable, Sendable {
     public let seconds: Double
     
     private static let minimumSeconds: Double = 0.5

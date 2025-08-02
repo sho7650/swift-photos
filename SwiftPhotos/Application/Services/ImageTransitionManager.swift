@@ -322,8 +322,10 @@ public struct TransitionPreview: View {
     private func startPreview() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: duration + 0.5, repeats: true) { _ in
-            withAnimation(easing.toSwiftUIAnimation(duration: duration)) {
-                isVisible.toggle()
+            Task { @MainActor in
+                withAnimation(easing.toSwiftUIAnimation(duration: duration)) {
+                    isVisible.toggle()
+                }
             }
         }
         

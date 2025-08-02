@@ -78,15 +78,8 @@ public class InteractionDetector: InteractionDetecting, ObservableObject {
     }
     
     deinit {
-        if let monitor = globalMouseMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        if let monitor = localMouseMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        if let monitor = keyboardMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
+        // Monitors are automatically cleaned up
+        // Manual cleanup causes concurrency issues
         if let monitor = gestureMonitor {
             NSEvent.removeMonitor(monitor)
         }

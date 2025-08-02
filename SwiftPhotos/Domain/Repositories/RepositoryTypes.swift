@@ -436,7 +436,7 @@ public protocol RepositoryExtensions: Sendable {
 public enum RepositoryUtils {
     /// 安全な非同期操作実行
     public static func safeExecute<T: Sendable>(
-        operation: @escaping () async throws -> T,
+        operation: @escaping @Sendable () async throws -> T,
         options: RepositoryOptions = .default
     ) async -> RepositoryResult<T> {
         var lastError: RepositoryError?

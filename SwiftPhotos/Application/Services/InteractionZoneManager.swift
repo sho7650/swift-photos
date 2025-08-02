@@ -39,9 +39,6 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
     }
     
     deinit {
-        Task { @MainActor in
-            cleanupActiveGestures()
-        }
         logger.debug("🎯 InteractionZoneManager: Deinitialized")
     }
     

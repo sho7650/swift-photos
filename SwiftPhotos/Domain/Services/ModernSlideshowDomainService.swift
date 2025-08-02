@@ -217,7 +217,7 @@ public class ModernSlideshowDomainService: ObservableObject {
             let maxConcurrent = min(maxConcurrentLoads, photos.count)
             
             for photo in photos.prefix(maxConcurrent) {
-                group.addTask(priority: priority) { [weak self] in
+                group.addTask(priority: priority) { @Sendable [weak self] in
                     do {
                         _ = try await self?.loadImage(for: photo)
                         loadedCount += 1

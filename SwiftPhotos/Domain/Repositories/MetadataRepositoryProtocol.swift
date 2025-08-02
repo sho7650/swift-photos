@@ -236,7 +236,7 @@ public protocol MetadataValidator: Sendable {
     func validate(_ metadata: ImageMetadata) async throws -> MetadataValidationResult
     
     /// 特定のメタデータフィールドを検証
-    func validateField(_ field: MetadataField, value: Any) async throws -> FieldValidationResult
+    func validateField(_ field: MetadataField, value: any Sendable) async throws -> FieldValidationResult
 }
 
 /// メタデータ検証結果

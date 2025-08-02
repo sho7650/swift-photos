@@ -487,7 +487,7 @@ extension FileSystemMetadataRepository: MetadataValidator {
         )
     }
     
-    public func validateField(_ field: MetadataField, value: Any) async throws -> FieldValidationResult {
+    public func validateField(_ field: MetadataField, value: any Sendable) async throws -> FieldValidationResult {
         var isValid = true
         var message: String?
         

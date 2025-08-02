@@ -262,7 +262,7 @@ public actor RepositoryContainer {
 // MARK: - Repository Configuration
 
 /// Repository Container の設定
-public struct ContainerConfiguration {
+public struct ContainerConfiguration: @unchecked Sendable {
     public let name: String
     
     // Repository Types
