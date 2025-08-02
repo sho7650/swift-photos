@@ -108,7 +108,7 @@ public enum RecentFilesServiceError: LocalizedError, Equatable {
 // MARK: - Additional Domain Contracts
 
 /// Statistics about recent files usage
-public struct RecentFilesStatistics: Equatable {
+public struct RecentFilesStatistics: Equatable, Sendable {
     /// Total number of recent files stored
     public let totalCount: Int
     

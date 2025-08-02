@@ -262,7 +262,7 @@ public actor RepositoryContainer {
 // MARK: - Repository Configuration
 
 /// Repository Container の設定
-public struct ContainerConfiguration {
+public struct ContainerConfiguration: Sendable {
     public let name: String
     
     // Repository Types
@@ -369,18 +369,18 @@ public struct ContainerConfiguration {
 
 // MARK: - Repository Types
 
-public enum ImageRepositoryType {
+public enum ImageRepositoryType: Sendable {
     case local
     case hybrid // 将来拡張用
 }
 
-public enum CacheRepositoryType {
+public enum CacheRepositoryType: Sendable {
     case memory
     case disk // 将来拡張用
     case hybrid // 将来拡張用
 }
 
-public enum MetadataRepositoryType {
+public enum MetadataRepositoryType: Sendable {
     case fileSystem
     case database // 将来拡張用
     case hybrid // 将来拡張用

@@ -249,7 +249,7 @@ private struct MetricCard: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
     }
 }
@@ -341,7 +341,7 @@ private struct DataSummaryView: View {
                         .font(.system(.body, design: .monospaced))
                         .textSelection(.enabled)
                         .padding()
-                        .background(Color(.systemGray6))
+                        .background(Color(NSColor.controlBackgroundColor))
                         .cornerRadius(8)
                     
                     Text("All data is stored locally and only shared if you enable analytics. You can export or delete this data at any time.")
@@ -443,7 +443,7 @@ private struct DiagnosticsView: View {
         savePanel.allowedContentTypes = [.log]
         savePanel.nameFieldStringValue = "swift-photos-debug.log"
         
-        if savePanel.runModal() == .OK, let url = savePanel.url {
+        if savePanel.runModal() == .OK, let _ = savePanel.url {
             // Export debug information
         }
     }
@@ -508,7 +508,7 @@ private struct DetailedMetricsView: View {
             }
             .font(.system(.body, design: .monospaced))
             .padding()
-            .background(Color(.systemGray6))
+            .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(8)
         }
     }

@@ -14,7 +14,7 @@ public protocol PhotoCache {
     func getCacheStatistics() async -> CacheStatistics
 }
 
-public struct CacheStatistics: Equatable {
+public struct CacheStatistics: Equatable, Sendable {
     public let hitCount: Int
     public let missCount: Int
     public let totalCost: Int

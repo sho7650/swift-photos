@@ -62,7 +62,9 @@ public class SlideshowViewModel: ObservableObject {
             queue: .main
         ) { [weak self] notification in
             if let randomOrder = notification.object as? Bool {
-                self?.updateSlideshowMode(randomOrder: randomOrder)
+                Task { @MainActor in
+                    self?.updateSlideshowMode(randomOrder: randomOrder)
+                }
             }
         }
         
@@ -442,7 +444,9 @@ public class SlideshowViewModel: ObservableObject {
         ProductionLogger.debug("StartTimer: Using interval \(interval) seconds from settings")
         
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            self?.nextPhoto()
+            Task { @MainActor in
+                self?.nextPhoto()
+            }
         }
     }
     

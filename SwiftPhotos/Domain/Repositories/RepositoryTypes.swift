@@ -435,7 +435,7 @@ public protocol RepositoryExtensions: Sendable {
 /// 共通ユーティリティ関数
 public enum RepositoryUtils {
     /// 安全な非同期操作実行
-    public static func safeExecute<T>(
+    public static func safeExecute<T: Sendable>(
         operation: @escaping () async throws -> T,
         options: RepositoryOptions = .default
     ) async -> RepositoryResult<T> {

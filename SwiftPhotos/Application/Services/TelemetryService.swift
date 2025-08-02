@@ -1,5 +1,6 @@
 import Foundation
 import os.log
+import Observation
 
 /// Privacy-compliant telemetry service for monitoring Repository pattern usage and performance
 /// Collects only aggregated, anonymized metrics to improve the application

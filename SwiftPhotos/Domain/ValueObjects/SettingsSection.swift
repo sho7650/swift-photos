@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Domain value object representing a section within a settings category
 /// Groups related settings items with clear organizational structure
-public struct SettingsSection: Codable, Equatable, Identifiable, Hashable {
+public struct SettingsSection: Codable, Equatable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public let name: String
     public let displayOrder: Int
@@ -92,7 +92,7 @@ public struct SettingsSection: Codable, Equatable, Identifiable, Hashable {
 }
 
 /// Individual settings item within a section
-public struct SettingsItem: Codable, Equatable, Identifiable, Hashable {
+public struct SettingsItem: Codable, Equatable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public let name: String
     public let description: String
@@ -153,7 +153,7 @@ public struct SettingsItem: Codable, Equatable, Identifiable, Hashable {
 }
 
 /// Types of settings items that can be displayed
-public enum SettingsItemType: String, Codable, CaseIterable {
+public enum SettingsItemType: String, Codable, CaseIterable, Sendable {
     case toggle = "toggle"
     case slider = "slider"
     case picker = "picker"

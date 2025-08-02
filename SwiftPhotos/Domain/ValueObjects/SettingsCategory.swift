@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Domain value object representing a settings category in the sidebar navigation
 /// Follows DDD principles with immutable design and business logic encapsulation
-public struct SettingsCategory: Codable, Equatable, Identifiable, Hashable {
+public struct SettingsCategory: Codable, Equatable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public let name: String
     public let systemIcon: String
