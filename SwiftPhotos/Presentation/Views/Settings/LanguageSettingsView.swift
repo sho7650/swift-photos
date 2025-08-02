@@ -292,7 +292,9 @@ struct LanguageSettingsView: View {
         .onAppear {
             // Update preview values periodically
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                previewDate = Date()
+                Task { @MainActor in
+                    previewDate = Date()
+                }
             }
         }
         .environment(\.locale, localizationSettings.environmentLocale) // Swift 6 native pattern

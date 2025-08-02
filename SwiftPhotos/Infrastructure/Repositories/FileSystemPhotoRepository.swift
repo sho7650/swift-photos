@@ -92,13 +92,16 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             return sortByFileName(photos, direction: sortSettings.direction)
             
         case .creationDate:
-            return await sortByCreationDate(photos, direction: sortSettings.direction)
+            let direction = sortSettings.direction
+            return await sortByCreationDate(photos, direction: direction)
             
         case .modificationDate:
-            return await sortByModificationDate(photos, direction: sortSettings.direction)
+            let direction = sortSettings.direction
+            return await sortByModificationDate(photos, direction: direction)
             
         case .fileSize:
-            return await sortByFileSize(photos, direction: sortSettings.direction)
+            let direction = sortSettings.direction
+            return await sortByFileSize(photos, direction: direction)
             
         case .random:
             return sortByRandom(photos, seed: sortSettings.randomSeed)

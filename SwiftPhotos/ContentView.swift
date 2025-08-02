@@ -382,11 +382,11 @@ struct ContentView: View {
             forName: NSNotification.Name("SwiftPhotosWindowLevelChanged"),
             object: nil,
             queue: .main
-        ) { notification in
-            if let windowLevel = notification.object as? WindowLevel,
-               let viewModel = self.viewModel {
-                ProductionLogger.userAction("Received window level change: \(windowLevel.displayName)")
-                Task { @MainActor in
+        ) { @Sendable notification in
+            Task { @MainActor in
+                if let windowLevel = notification.object as? WindowLevel,
+                   let viewModel = self.viewModel {
+                    ProductionLogger.userAction("Received window level change: \(windowLevel.displayName)")
                     viewModel.windowLevel = windowLevel
                 }
             }

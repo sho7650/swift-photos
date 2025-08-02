@@ -251,7 +251,7 @@ public struct SmartOverlayContainer<Content: View>: View {
 
 /// Preference key for collecting overlay position requirements
 public struct OverlayPositionPreference: PreferenceKey {
-    nonisolated public static var defaultValue: [OverlayPositionRequirement] = []
+    nonisolated(unsafe) public static var defaultValue: [OverlayPositionRequirement] = []
     
     public static func reduce(value: inout [OverlayPositionRequirement], nextValue: () -> [OverlayPositionRequirement]) {
         value.append(contentsOf: nextValue())

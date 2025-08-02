@@ -45,7 +45,8 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
             let photo = Photo(imageURL: imageURL)
             
             // Use the legacy repository to load the image
-            let loadedPhoto = try await legacyRepository.loadImage(for: photo)
+            let repository = legacyRepository
+            let loadedPhoto = try await repository.loadImage(for: photo)
             
             // Extract the loaded image from the photo
             switch loadedPhoto.loadState {
@@ -89,7 +90,8 @@ public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
         
         do {
             // Use the legacy repository to load photos
-            let photos = try await legacyRepository.loadPhotos(from: folder)
+            let repository = legacyRepository
+            let photos = try await repository.loadPhotos(from: folder)
             
             // Extract image URLs from the photos
             let imageURLs = photos.map { $0.imageURL }

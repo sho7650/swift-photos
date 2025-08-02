@@ -351,7 +351,6 @@ private struct DataSummaryView: View {
                 .padding()
             }
             .navigationTitle("Data Summary")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {

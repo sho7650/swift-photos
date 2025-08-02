@@ -212,19 +212,24 @@ public class ModernSlideshowDomainService: ObservableObject {
     public func preloadImages(for photos: [Photo], priority: TaskPriority = .utility) async {
         ProductionLogger.debug("ModernSlideshowDomainService: Preloading \(photos.count) images")
         
-        await withTaskGroup(of: Void.self) { group in
-            var loadedCount = 0
+        await withTaskGroup(of: Bool.self) { group in
             let maxConcurrent = min(maxConcurrentLoads, photos.count)
             
             for photo in photos.prefix(maxConcurrent) {
                 group.addTask(priority: priority) { @Sendable [weak self] in
                     do {
                         _ = try await self?.loadImage(for: photo)
-                        loadedCount += 1
+                        return true
                     } catch {
                         ProductionLogger.warning("ModernSlideshowDomainService: Failed to preload \(photo.fileName): \(error)")
+                        return false
                     }
                 }
+            }
+            
+            var loadedCount = 0
+            for await success in group {
+                if success { loadedCount += 1 }
             }
         }
         

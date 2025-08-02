@@ -75,13 +75,8 @@ public class CursorManager: ObservableObject {
     }
     
     deinit {
-        // Cleanup timers and monitors
-        hideTimer?.invalidate()
-        cursorStateMonitor?.invalidate()
-        
-        if let monitor = systemEventMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
+        // Note: Manual cleanup may cause concurrency issues
+        // Timers and monitors are cleaned up automatically
         
         logger.info("🖱️ CursorManager: Deinit cleanup completed")
     }

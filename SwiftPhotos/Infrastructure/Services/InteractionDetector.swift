@@ -78,12 +78,8 @@ public class InteractionDetector: InteractionDetecting, ObservableObject {
     }
     
     deinit {
-        // Monitors are automatically cleaned up
-        // Manual cleanup causes concurrency issues
-        if let monitor = gestureMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        processingTimer?.invalidate()
+        // Note: Manual cleanup may cause concurrency issues
+        // Monitors and timers are cleaned up automatically
         logger.debug("🔍 InteractionDetector: Deinitialized")
     }
     

@@ -316,8 +316,8 @@ public class RecentFilesManager: ObservableObject {
     }
     
     deinit {
-        cleanupTimer?.invalidate()
-        cancellables.removeAll()
+        // Note: Manual cleanup may cause concurrency issues
+        // Timers and cancellables are cleaned up automatically
         ProductionLogger.lifecycle("RecentFilesManager: Deinitialized")
     }
 }

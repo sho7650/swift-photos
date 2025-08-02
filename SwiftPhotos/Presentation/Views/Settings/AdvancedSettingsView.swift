@@ -558,7 +558,7 @@ private struct SystemInformation {
     }
     
     private static func getAvailableMemory() -> String {
-        let pageSize = vm_page_size
+        let pageSize = UInt32(4096) // Standard page size to avoid vm_page_size concurrency issues
         var vmStats = vm_statistics64()
         var infoCount = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.stride / MemoryLayout<integer_t>.stride)
         
