@@ -1,7 +1,7 @@
 import Foundation
 import AppKit
 
-public class FileSystemPhotoRepository: SlideshowRepository {
+public final class FileSystemPhotoRepository: SlideshowRepository, @unchecked Sendable {
     private let fileAccess: SecureFileAccess
     private let imageLoader: ImageLoader
     private let sortSettings: ModernSortSettingsManager
@@ -83,13 +83,12 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     }
     
     /// Sort photos according to the specified sort settings
-    @MainActor
     private func sortPhotos(_ photos: [Photo], using sortSettings: SortSettings) async -> [Photo] {
         ProductionLogger.debug("FileSystemPhotoRepository: Sorting \(photos.count) photos by \(sortSettings.order.displayName)")
         
         switch sortSettings.order {
         case .fileName:
-            return sortByFileName(photos, direction: sortSettings.direction)
+            return await sortByFileName(photos, direction: sortSettings.direction)
             
         case .creationDate:
             let direction = sortSettings.direction
@@ -109,9 +108,8 @@ public class FileSystemPhotoRepository: SlideshowRepository {
     }
     
     /// Sort photos by file name using locale-aware comparison
-    @MainActor
-    private func sortByFileName(_ photos: [Photo], direction: SortSettings.SortDirection) -> [Photo] {
-        let locale = localizationService.currentLocale
+    private func sortByFileName(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        let locale = await localizationService.currentLocale
         
         let sorted = photos.sorted { photo1, photo2 in
             let name1 = photo1.fileName

@@ -84,7 +84,7 @@ public struct TrackingAreaView: NSViewRepresentable {
 // MARK: - Enhanced Tracking View
 
 /// Custom NSView that provides advanced mouse tracking capabilities
-public class EnhancedTrackingView: NSView {
+public final class EnhancedTrackingView: NSView, @unchecked Sendable {
     
     weak var delegate: TrackingAreaView.Coordinator?
     
@@ -221,7 +221,7 @@ public class EnhancedTrackingView: NSView {
 
 extension TrackingAreaView {
     
-    public class Coordinator: NSObject {
+    public final class Coordinator: NSObject, @unchecked Sendable {
         
         @Binding var isCursorInside: Bool
         @Binding var mousePosition: CGPoint
@@ -249,7 +249,8 @@ extension TrackingAreaView {
         // MARK: - Event Handlers
         
         func mouseEntered(at position: CGPoint) {
-            Task<Void, Never> { @MainActor in
+            Task<Void, Never> { @MainActor @Sendable [weak self] in
+                guard let self = self else { return }
                 isCursorInside = true
                 mousePosition = position
                 onMouseEntered()
@@ -257,7 +258,8 @@ extension TrackingAreaView {
         }
         
         func mouseExited(at position: CGPoint) {
-            Task<Void, Never> { @MainActor in
+            Task<Void, Never> { @MainActor @Sendable [weak self] in
+                guard let self = self else { return }
                 isCursorInside = false
                 mousePosition = position
                 onMouseExited()
@@ -265,14 +267,16 @@ extension TrackingAreaView {
         }
         
         func mouseMoved(at position: CGPoint) {
-            Task<Void, Never> { @MainActor in
+            Task<Void, Never> { @MainActor @Sendable [weak self] in
+                guard let self = self else { return }
                 mousePosition = position
                 onMouseMoved(position)
             }
         }
         
         func mouseClicked(at position: CGPoint, clickCount: Int) {
-            Task<Void, Never> { @MainActor in
+            Task<Void, Never> { @MainActor @Sendable [weak self] in
+                guard let self = self else { return }
                 mousePosition = position
                 // Additional click handling can be added here
                 logger.debug("🖱️ TrackingAreaView: Mouse clicked at \(String(describing: position)), count: \(clickCount)")
@@ -280,7 +284,8 @@ extension TrackingAreaView {
         }
         
         func rightMouseClicked(at position: CGPoint) {
-            Task<Void, Never> { @MainActor in
+            Task<Void, Never> { @MainActor @Sendable [weak self] in
+                guard let self = self else { return }
                 mousePosition = position
                 // Right-click handling can be added here
                 logger.debug("🖱️ TrackingAreaView: Right mouse clicked at \(String(describing: position))")
@@ -288,7 +293,8 @@ extension TrackingAreaView {
         }
         
         func mouseScrolled(at position: CGPoint, delta: CGVector) {
-            Task<Void, Never> { @MainActor in
+            Task<Void, Never> { @MainActor @Sendable [weak self] in
+                guard let self = self else { return }
                 mousePosition = position
                 // Scroll handling can be added here
                 logger.debug("🖱️ TrackingAreaView: Mouse scrolled at \(String(describing: position)), delta: \(String(describing: delta))")

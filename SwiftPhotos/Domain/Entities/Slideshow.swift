@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Slideshow: Equatable {
+public struct Slideshow: Equatable, Sendable {
     public private(set) var photos: [Photo]
     public private(set) var currentIndex: Int
     public private(set) var interval: SlideshowInterval
@@ -15,7 +15,7 @@ public struct Slideshow: Equatable {
         self.state = .stopped
     }
     
-    public enum SlideshowMode: String, CaseIterable, Equatable {
+    public enum SlideshowMode: String, CaseIterable, Equatable, Sendable {
         case sequential = "sequential"
         case singleLoop = "single_loop"
         
@@ -29,7 +29,7 @@ public struct Slideshow: Equatable {
         }
     }
     
-    public enum SlideshowState: Equatable {
+    public enum SlideshowState: Equatable, Sendable {
         case stopped
         case playing
         case paused

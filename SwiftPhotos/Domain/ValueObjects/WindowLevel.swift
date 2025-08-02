@@ -1,6 +1,6 @@
 import Foundation
 
-public enum WindowLevel: String, CaseIterable, Codable {
+public enum WindowLevel: String, CaseIterable, Codable, Sendable {
     case normal = "normal"
     case alwaysOnTop = "alwaysOnTop"
     case alwaysAtBottom = "alwaysAtBottom"

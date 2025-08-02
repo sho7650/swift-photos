@@ -1,13 +1,13 @@
 import Foundation
 import AppKit
 
-public protocol SlideshowRepository {
+public protocol SlideshowRepository: Sendable {
     func loadPhotos(from folderURL: URL) async throws -> [Photo]
     func loadImage(for photo: Photo) async throws -> Photo
     func loadMetadata(for photo: Photo) async throws -> Photo.PhotoMetadata?
 }
 
-public protocol PhotoCache {
+public protocol PhotoCache: Sendable {
     func getCachedImage(for imageURL: ImageURL) async -> SendableImage?
     func setCachedImage(_ image: SendableImage, for imageURL: ImageURL) async
     func clearCache() async

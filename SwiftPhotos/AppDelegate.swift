@@ -11,6 +11,7 @@ import os.log
 
 private let logger = Logger(subsystem: "com.example.SwiftPhotos", category: "AppDelegate")
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -27,11 +28,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     private func configureWindowTransparency() {
         // Wait a short moment for windows to be properly initialized
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.setupWindowTransparency()
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+            await self?.setupWindowTransparency()
         }
     }
     
+    @MainActor
     private func setupWindowTransparency() {
         ProductionLogger.debug("AppDelegate: Setting up window for blur support (best practices)")
         
@@ -62,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 /// Singleton class to manage window transparency state
+@MainActor
 class TransparencyManager: ObservableObject {
     static let shared = TransparencyManager()
     

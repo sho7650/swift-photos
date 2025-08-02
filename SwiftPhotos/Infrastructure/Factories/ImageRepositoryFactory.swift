@@ -91,9 +91,13 @@ public actor ImageRepositoryFactory {
             metadataRepo = await repositoryContainer.metadataRepository()
         }
         
+        // Create local references to avoid data races
+        let legacyRepository = legacyRepo
+        let metadataRepository = metadataRepo
+        
         let adapter = FileSystemPhotoRepositoryAdapter(
-            legacyRepository: legacyRepo,
-            metadataRepository: metadataRepo
+            legacyRepository: legacyRepository,
+            metadataRepository: metadataRepository
         )
         
         ProductionLogger.info("ImageRepositoryFactory: Created legacy repository adapter")

@@ -685,7 +685,7 @@ public enum OverlayType: String, CaseIterable, Codable {
 
 /// Observer protocol for position changes
 @MainActor
-public protocol PositionObserver: AnyObject {
+public protocol PositionObserver: AnyObject, Sendable {
     func positionDidChange(overlay: OverlayType, from oldPosition: CGPoint, to newPosition: CGPoint)
     func positionValidationFailed(overlay: OverlayType, invalidPosition: CGPoint, reason: String)
 }

@@ -571,7 +571,7 @@ public final class ModernSlideshowViewModel {
                 }
                 
                 // Schedule background loading after first image
-                Task.detached(priority: .background) { [weak self] in
+                Task.detached(priority: .background) { @Sendable [weak self, slideshow = initializedSlideshow] in
                     guard let self = self else { return }
                     
                     // Small delay to let first image display
@@ -579,17 +579,17 @@ public final class ModernSlideshowViewModel {
                     
                     // Check if this is a large collection for background processing
                     let largeCollectionThreshold = await self.performanceSettingsManager.settings.largeCollectionThreshold
-                    if initializedSlideshow.photos.count > largeCollectionThreshold {
-                        ProductionLogger.performance("Large collection (\(initializedSlideshow.photos.count) photos) - starting background virtual loading")
+                    if slideshow.photos.count > largeCollectionThreshold {
+                        ProductionLogger.performance("Large collection (\(slideshow.photos.count) photos) - starting background virtual loading")
                         await self.loadCurrentImageVirtual()
                         
                         // Schedule background preloading with smart windowing
                         await self.backgroundPreloader.schedulePreload(
-                            photos: initializedSlideshow.photos,
+                            photos: slideshow.photos,
                             currentIndex: 0  // Always start preloading from first image
                         )
                     } else {
-                        ProductionLogger.performance("Small collection (\(initializedSlideshow.photos.count) photos) - background standard loading")
+                        ProductionLogger.performance("Small collection (\(slideshow.photos.count) photos) - background standard loading")
                         await MainActor.run {
                             self.loadCurrentImage()
                         }

@@ -383,9 +383,11 @@ struct ContentView: View {
             object: nil,
             queue: .main
         ) { @Sendable notification in
-            Task { @MainActor in
-                if let windowLevel = notification.object as? WindowLevel,
-                   let viewModel = self.viewModel {
+            // Extract windowLevel outside async context to avoid data race
+            guard let windowLevel = notification.object as? WindowLevel else { return }
+            
+            Task { @MainActor [windowLevel] in
+                if let viewModel = self.viewModel {
                     ProductionLogger.userAction("Received window level change: \(windowLevel.displayName)")
                     viewModel.windowLevel = windowLevel
                 }

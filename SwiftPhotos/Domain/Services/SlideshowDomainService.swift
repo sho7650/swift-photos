@@ -17,6 +17,9 @@ public class SlideshowDomainService: ObservableObject {
         ProductionLogger.debug("SlideshowDomainService: Loading photos from repository...")
         ProductionLogger.debug("SlideshowDomainService: About to call repository.loadPhotos")
         
+        // Create local reference to avoid data race
+        let repository = self.repository
+        
         do {
             let photos = try await repository.loadPhotos(from: folderURL)
             ProductionLogger.debug("SlideshowDomainService: Loaded \(photos.count) photos")
@@ -34,6 +37,10 @@ public class SlideshowDomainService: ObservableObject {
     }
     
     public func loadImage(for photo: Photo) async throws -> Photo {
+        // Create local references to avoid data race
+        let cache = self.cache
+        let repository = self.repository
+        
         if let cachedImage = await cache.getCachedImage(for: photo.imageURL) {
             var updatedPhoto = photo
             updatedPhoto.updateLoadState(.loaded(cachedImage))

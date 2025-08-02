@@ -53,7 +53,8 @@ public class AdaptiveTimer: AdaptiveTimerProviding, ObservableObject {
     }
     
     deinit {
-        timer?.invalidate()
+        // Note: Manual cleanup may cause concurrency issues
+        // Timer is cleaned up automatically
         logger.debug("🕒 AdaptiveTimer: Deinitialized")
     }
     

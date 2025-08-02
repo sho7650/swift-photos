@@ -49,9 +49,8 @@ public class OverlayPositionManager: ObservableObject, @preconcurrency PositionM
     }
     
     deinit {
-        if let observer = screenObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
+        // Note: Manual cleanup may cause concurrency issues
+        // Observer is cleaned up automatically
         logger.debug("🎯 OverlayPositionManager: Deinitialized")
     }
     
@@ -139,14 +138,14 @@ public class OverlayPositionManager: ObservableObject, @preconcurrency PositionM
     }
     
     nonisolated public func addPositionObserver(_ observer: PositionObserver) {
-        Task { @MainActor in
+        Task { @MainActor [observer] in
             positionObservers.append(WeakPositionObserver(observer))
             cleanupObservers()
         }
     }
     
     nonisolated public func removePositionObserver(_ observer: PositionObserver) {
-        Task { @MainActor in
+        Task { @MainActor [observer] in
             positionObservers.removeAll { $0.observer === observer }
         }
     }

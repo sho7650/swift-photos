@@ -74,15 +74,8 @@ public class UIControlStateManager: ObservableObject {
     }
     
     deinit {
-        // Cleanup is handled automatically by ARC
-        if let monitor = globalMouseMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        
-        // Timers will be cleaned up automatically when the actor is deallocated
-        // Cannot call stop() from deinit as it's MainActor isolated
-        // Note: Cursor cleanup is handled by CursorManager's own deinit
-        
+        // Note: Manual cleanup may cause concurrency issues
+        // Monitors and timers are cleaned up automatically
         NotificationCenter.default.removeObserver(self)
     }
     

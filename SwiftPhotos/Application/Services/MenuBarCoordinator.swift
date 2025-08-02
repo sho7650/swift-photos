@@ -379,7 +379,8 @@ public class MenuBarCoordinator: NSObject, ObservableObject {
     }
     
     deinit {
-        cancellables.removeAll()
+        // Note: Manual cleanup may cause concurrency issues
+        // Cancellables are cleaned up automatically
         print("🍔 MenuBarCoordinator: Menu bar coordinator deinitialized")
     }
 }

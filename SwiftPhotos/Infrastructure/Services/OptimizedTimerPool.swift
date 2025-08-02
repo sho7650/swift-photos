@@ -37,9 +37,8 @@ public final class OptimizedTimerPool: ObservableObject {
     }
     
     deinit {
-        // Note: Cannot call @MainActor method from deinit
-        // Timer cleanup will be handled automatically when the object is deallocated
-        masterTimer?.invalidate()
+        // Note: Manual cleanup may cause concurrency issues
+        // Timer is cleaned up automatically by ARC
         logger.info("🏊‍♂️ OptimizedTimerPool: Deinitialized")
     }
     

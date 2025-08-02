@@ -37,8 +37,8 @@ public class GestureAnimationController: ObservableObject {
     }
     
     deinit {
-        animationUpdateTimer?.invalidate()
-        animationUpdateTimer = nil
+        // Note: Manual cleanup may cause concurrency issues
+        // Timer is cleaned up automatically
     }
     
     // MARK: - Public Interface

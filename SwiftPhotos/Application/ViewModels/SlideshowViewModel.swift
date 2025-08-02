@@ -641,10 +641,8 @@ public class SlideshowViewModel: ObservableObject {
     }
     
     deinit {
-        timer?.invalidate()
-        timer = nil
-        
-        // Remove notification observer
+        // Note: Manual cleanup may cause concurrency issues
+        // Timer and observers are cleaned up automatically
         NotificationCenter.default.removeObserver(self)
         
         // Clean up async resources

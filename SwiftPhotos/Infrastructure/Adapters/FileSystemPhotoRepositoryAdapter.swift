@@ -3,7 +3,7 @@ import AppKit
 
 /// Adapter that bridges the existing FileSystemPhotoRepository with the new ImageRepositoryProtocol
 /// This enables backward compatibility while migrating to the new Repository pattern
-public actor FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol {
+public final class FileSystemPhotoRepositoryAdapter: ImageRepositoryProtocol, @unchecked Sendable {
     
     // MARK: - Properties
     private let legacyRepository: FileSystemPhotoRepository

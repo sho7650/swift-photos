@@ -90,6 +90,12 @@
     "accessibility.title" : {
 
     },
+    "Advanced" : {
+
+    },
+    "Advanced Options" : {
+
+    },
     "Aggressive Memory Management" : {
 
     },
@@ -137,10 +143,16 @@
         }
       }
     },
+    "All data is stored locally and only shared if you enable analytics. You can export or delete this data at any time." : {
+
+    },
     "Always at Bottom" : {
 
     },
     "Always on Top" : {
+
+    },
+    "Analytics Data Summary" : {
 
     },
     "app.description" : {
@@ -350,7 +362,19 @@
     "Auto Start" : {
 
     },
+    "Automatic Pattern Selection" : {
+
+    },
+    "Automatically choose the best pattern based on collection size and system resources" : {
+
+    },
     "Automatically remove invalid folders" : {
+
+    },
+    "Automatically switch to Legacy mode when system memory is low" : {
+
+    },
+    "Average Response Time:" : {
 
     },
     "button.advanced.clear_all_caches" : {
@@ -959,6 +983,12 @@
         }
       }
     },
+    "Cache Hit Rate:" : {
+
+    },
+    "Cache Validation" : {
+
+    },
     "Cancel" : {
 
     },
@@ -1100,6 +1130,9 @@
     "Clear All" : {
 
     },
+    "Clear All Data" : {
+
+    },
     "Clear All Recent Folders" : {
 
     },
@@ -1109,7 +1142,22 @@
     "Clear Menu" : {
 
     },
+    "Collections larger than this will automatically use Repository pattern" : {
+
+    },
+    "Concurrent Loading Limit:" : {
+
+    },
+    "Current Status" : {
+
+    },
     "Currently using legacy fallback" : {
+
+    },
+    "Data Summary" : {
+
+    },
+    "Data Transferred:" : {
 
     },
     "date_format.automatic" : {
@@ -1244,10 +1292,22 @@
     "datetime.yes" : {
 
     },
+    "Debug Logging" : {
+
+    },
+    "Detailed Performance Metrics" : {
+
+    },
+    "Diagnostics" : {
+
+    },
     "dialog.export_debug_logs" : {
 
     },
     "dialog.export_performance_report" : {
+
+    },
+    "Done" : {
 
     },
     "duration.minute" : {
@@ -1307,10 +1367,22 @@
     "Effect Type" : {
 
     },
+    "Enable Analytics" : {
+
+    },
+    "Enable detailed logging for troubleshooting" : {
+
+    },
+    "Enable Repository Pattern" : {
+
+    },
     "Enable Transition Effects" : {
 
     },
     "Error" : {
+
+    },
+    "Error Count:" : {
 
     },
     "Error Loading Image" : {
@@ -1564,7 +1636,16 @@
         }
       }
     },
+    "Export Analytics Data" : {
+
+    },
+    "Export Debug Log" : {
+
+    },
     "Export Recent Files..." : {
+
+    },
+    "Extract EXIF and other metadata from images" : {
 
     },
     "Failed to load image" : {
@@ -1664,6 +1745,12 @@
 
     },
     "file_management.statistics" : {
+
+    },
+    "Health Monitoring" : {
+
+    },
+    "Help improve Swift Photos by sharing anonymous usage data" : {
 
     },
     "Import Recent Files..." : {
@@ -2008,6 +2095,12 @@
         }
       }
     },
+    "Large Collection Threshold:" : {
+
+    },
+    "Last Operation:" : {
+
+    },
     "Legacy" : {
 
     },
@@ -2015,6 +2108,9 @@
 
     },
     "Load Image" : {
+
+    },
+    "Load only visible photos to reduce memory usage with large collections" : {
 
     },
     "Loading components..." : {
@@ -2176,6 +2272,12 @@
     "Loop Slideshow" : {
 
     },
+    "Manual mode: Repository pattern will always be used when enabled" : {
+
+    },
+    "Maximum number of images to load simultaneously" : {
+
+    },
     "measurement.automatic" : {
       "localizations" : {
         "en" : {
@@ -2227,6 +2329,9 @@
     "measurement.system" : {
 
     },
+    "Memory Pressure Fallback" : {
+
+    },
     "menu.file.open_folder" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2244,6 +2349,12 @@
         }
       }
     },
+    "Metadata Extraction" : {
+
+    },
+    "Monitor Repository pattern performance and automatically handle issues" : {
+
+    },
     "No Photos Loaded" : {
 
     },
@@ -2251,6 +2362,9 @@
 
     },
     "Normal" : {
+
+    },
+    "Number of images to keep in memory around current photo" : {
 
     },
     "number_format.automatic" : {
@@ -2343,6 +2457,9 @@
 
     },
     "Order:" : {
+
+    },
+    "Performance" : {
 
     },
     "performance.advanced_settings" : {
@@ -2787,6 +2904,12 @@
     "Photo Information" : {
 
     },
+    "photos" : {
+
+    },
+    "Photos" : {
+
+    },
     "Preparing image..." : {
 
     },
@@ -2858,6 +2981,9 @@
         }
       }
     },
+    "Privacy & Analytics" : {
+
+    },
     "Quick Actions" : {
 
     },
@@ -2927,16 +3053,25 @@
     "Repository Pattern Loading..." : {
 
     },
+    "Repository Settings" : {
+
+    },
     "Repository Status:" : {
 
     },
     "Repository: Image Not Loaded" : {
 
     },
+    "Reset Repository State" : {
+
+    },
     "Retry" : {
 
     },
     "Retry with Legacy Mode" : {
+
+    },
+    "Run Health Check" : {
 
     },
     "search.placeholder" : {
@@ -4476,6 +4611,18 @@
         }
       }
     },
+    "Share feature usage data to prioritize improvements" : {
+
+    },
+    "Share Performance Data" : {
+
+    },
+    "Share performance metrics to help optimize the app" : {
+
+    },
+    "Share Usage Data" : {
+
+    },
     "shortcut.desc.next_photo" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4697,6 +4844,9 @@
         }
       }
     },
+    "Show Detailed Metrics" : {
+
+    },
     "Show full paths in menu" : {
 
     },
@@ -4819,7 +4969,13 @@
     "Sorting files before slideshow improves image caching efficiency. Random sorting with a fixed seed ensures consistent order across sessions." : {
 
     },
+    "Success Count:" : {
+
+    },
     "Swift Photos" : {
+
+    },
+    "Swift Photos collects anonymous usage data to improve performance and user experience. No personal information or photo content is collected." : {
 
     },
     "time_format.12_hour" : {
@@ -5033,6 +5189,9 @@
           }
         }
       }
+    },
+    "Total Operations:" : {
+
     },
     "Total Operations: %lld" : {
 
@@ -6087,10 +6246,25 @@
     "Unsupported ViewModel type" : {
 
     },
+    "Use the advanced Repository pattern for improved performance with large photo collections" : {
+
+    },
     "Using legacy fallback" : {
 
     },
+    "Validate cached data integrity" : {
+
+    },
     "Version %@" : {
+
+    },
+    "View Data Summary" : {
+
+    },
+    "Virtual Loading" : {
+
+    },
+    "Virtual Loading Window:" : {
 
     },
     "warning.actions_cannot_be_undone" : {
