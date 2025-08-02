@@ -8,7 +8,7 @@ public enum L10n {
     
     // MARK: - Actions
     public enum Action {
-        public static let play = LocalizedStringKey("slideshow.button.play")
+        public static let play: LocalizedStringKey = LocalizedStringKey("slideshow.button.play")
         public static let pause = LocalizedStringKey("slideshow.button.pause")
         public static let stop = LocalizedStringKey("slideshow.button.stop")
         public static let next = LocalizedStringKey("slideshow.navigation.next")

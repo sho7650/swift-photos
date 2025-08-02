@@ -54,7 +54,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
     
     // MARK: - SettingsRepositoryProtocol Implementation
     
-    public func load<T: Codable>(_ type: T.Type, for key: SettingsKey) async -> T? {
+    public func load<T: Codable & Sendable>(_ type: T.Type, for key: SettingsKey) async -> T? {
         operationCount += 1
         lastOperationTime = Date()
         
@@ -95,7 +95,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         }
     }
     
-    public func save<T: Codable>(_ value: T, for key: SettingsKey) async throws {
+    public func save<T: Codable & Sendable>(_ value: T, for key: SettingsKey) async throws {
         operationCount += 1
         lastOperationTime = Date()
         
@@ -136,12 +136,13 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         settingsCache.removeValue(forKey: fullKey)
         
         // 変更通知
-        notifyObservers(for: key, value: nil as Any?)
+        // Note: Using String? for nil notification to maintain Sendable compliance
+        notifyObservers(for: key, value: nil as String?)
         
         ProductionLogger.debug("UserDefaultsSettingsRepository: Successfully removed \(key.rawValue)")
     }
     
-    public func loadMultiple<T: Codable>(_ type: T.Type, for keys: [SettingsKey]) async -> [SettingsKey: T] {
+    public func loadMultiple<T: Codable & Sendable>(_ type: T.Type, for keys: [SettingsKey]) async -> [SettingsKey: T] {
         var results: [SettingsKey: T] = [:]
         
         for key in keys {
@@ -153,7 +154,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         return results
     }
     
-    public func saveMultiple<T: Codable>(_ values: [SettingsKey: T]) async throws {
+    public func saveMultiple<T: Codable & Sendable>(_ values: [SettingsKey: T]) async throws {
         for (key, value) in values {
             try await save(value, for: key)
         }
@@ -266,7 +267,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         ProductionLogger.info("UserDefaultsSettingsRepository: Import completed - imported: \(importedCount) settings")
     }
     
-    nonisolated public func observe<T: Codable>(_ type: T.Type, for key: SettingsKey) -> AsyncStream<T?> {
+    nonisolated public func observe<T: Codable & Sendable>(_ type: T.Type, for key: SettingsKey) -> AsyncStream<T?> {
         let fullKey = generateFullKey(for: key)
         
         return AsyncStream { continuation in
@@ -334,7 +335,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         )
     }
     
-    public func validate<T: Codable>(_ value: T, for key: SettingsKey) async throws -> SettingsValidationResult {
+    public func validate<T: Codable & Sendable>(_ value: T, for key: SettingsKey) async throws -> SettingsValidationResult {
         // 基本的な検証を実装
         var warnings: [SettingsValidationWarning] = []
         var errors: [SettingsValidationError] = []
@@ -369,7 +370,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         return "\(keyPrefix).\(category.rawValue)."
     }
     
-    private func notifyObservers<T>(for key: SettingsKey, value: T?) {
+    private func notifyObservers<T: Sendable>(for key: SettingsKey, value: T?) {
         let fullKey = generateFullKey(for: key)
         
         if let continuation = changeObservers[fullKey] as? AsyncStream<T?>.Continuation {
@@ -377,7 +378,7 @@ public actor UserDefaultsSettingsRepository: SettingsRepositoryProtocol {
         }
     }
     
-    private func registerObserver<T>(fullKey: String, continuation: AsyncStream<T?>.Continuation) {
+    private func registerObserver<T: Sendable>(fullKey: String, continuation: AsyncStream<T?>.Continuation) {
         changeObservers[fullKey] = continuation
     }
     

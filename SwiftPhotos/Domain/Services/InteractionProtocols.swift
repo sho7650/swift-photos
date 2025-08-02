@@ -3,7 +3,7 @@ import CoreGraphics
 import SwiftUI
 
 /// Custom EdgeInsets type for cross-platform compatibility
-public struct EdgeInsets: Codable, Equatable {
+public struct EdgeInsets: Codable, Equatable, Sendable {
     public let top: Double
     public let leading: Double
     public let bottom: Double
@@ -16,7 +16,7 @@ public struct EdgeInsets: Codable, Equatable {
         self.trailing = trailing
     }
     
-    public static let zero = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+    public static let zero: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
 }
 
 // MARK: - Core Interaction Detection Protocol
@@ -126,7 +126,7 @@ public protocol MouseTracking: AnyObject {
 }
 
 /// Configuration for mouse tracking behavior
-public struct MouseTrackingConfiguration: Codable, Equatable {
+public struct MouseTrackingConfiguration: Codable, Equatable, Sendable {
     public let sensitivity: Double
     public let velocitySmoothing: Double
     public let accelerationThreshold: Double
@@ -154,7 +154,7 @@ public struct MouseTrackingConfiguration: Codable, Equatable {
     }
     
     /// High-performance configuration for gaming-like responsiveness
-    public static let highPerformance = MouseTrackingConfiguration(
+    public static let highPerformance: MouseTrackingConfiguration = MouseTrackingConfiguration(
         sensitivity: 1.5,
         velocitySmoothing: 0.6,
         samplingRate: 120.0,
@@ -162,7 +162,7 @@ public struct MouseTrackingConfiguration: Codable, Equatable {
     )
     
     /// Battery-optimized configuration for longer usage
-    public static let batteryOptimized = MouseTrackingConfiguration(
+    public static let batteryOptimized: MouseTrackingConfiguration = MouseTrackingConfiguration(
         sensitivity: 0.8,
         velocitySmoothing: 0.9,
         samplingRate: 30.0,
@@ -773,7 +773,7 @@ public struct PositionConstraints: Codable, Equatable {
 }
 
 /// Result of position validation
-public struct ValidationResult: Equatable {
+public struct ValidationResult: Equatable, Sendable {
     public let isValid: Bool
     public let adjustedPosition: CGPoint?
     public let violations: [String]
@@ -784,7 +784,7 @@ public struct ValidationResult: Equatable {
         self.violations = violations
     }
     
-    public static let valid = ValidationResult(isValid: true)
+    public static let valid: ValidationResult = ValidationResult(isValid: true)
     
     public static func invalid(violations: [String]) -> ValidationResult {
         return ValidationResult(isValid: false, violations: violations)

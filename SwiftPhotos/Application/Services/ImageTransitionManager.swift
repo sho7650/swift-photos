@@ -328,7 +328,8 @@ public struct TransitionPreview: View {
         }
         
         // Start first animation after small delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
             withAnimation(easing.toSwiftUIAnimation(duration: duration)) {
                 isVisible.toggle()
             }

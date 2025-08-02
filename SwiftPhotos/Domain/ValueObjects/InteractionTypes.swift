@@ -75,7 +75,7 @@ public enum GestureType: String, CaseIterable, Codable, Sendable {
 }
 
 /// Data associated with an interaction event
-public struct InteractionData: Codable, Equatable {
+public struct InteractionData: Codable, Equatable, Sendable {
     public let timestamp: TimeInterval
     public let position: CGPoint?
     public let velocity: CGVector?
@@ -151,7 +151,7 @@ public enum GesturePhase: String, CaseIterable, Codable, Sendable {
 }
 
 /// Complete interaction event
-public struct Interaction: Codable, Equatable, Identifiable {
+public struct Interaction: Codable, Equatable, Identifiable, Sendable {
     public let id: UUID
     public let type: InteractionType
     public let data: InteractionData
@@ -224,7 +224,7 @@ public enum InteractionSource: String, CaseIterable, Codable, Sendable {
 // MARK: - Configuration Types
 
 /// Configuration for interaction detection
-public struct InteractionConfiguration: Codable, Equatable {
+public struct InteractionConfiguration: Codable, Equatable, Sendable {
     public let enabledTypes: Set<InteractionType>
     public let sensitivity: Double
     public let minimumConfidence: Double
@@ -252,7 +252,7 @@ public struct InteractionConfiguration: Codable, Equatable {
     }
     
     /// Default configuration for performance-focused detection
-    public static let performance = InteractionConfiguration(
+    public static let performance: InteractionConfiguration = InteractionConfiguration(
         enabledTypes: [.mouseMove, .mouseClick, .keyPress],
         sensitivity: 0.8,
         debounceInterval: 0.033, // ~30fps
@@ -261,7 +261,7 @@ public struct InteractionConfiguration: Codable, Equatable {
     )
     
     /// Default configuration for gesture-rich interaction
-    public static let gestureRich = InteractionConfiguration(
+    public static let gestureRich: InteractionConfiguration = InteractionConfiguration(
         enabledTypes: Set(InteractionType.allCases),
         sensitivity: 1.2,
         debounceInterval: 0.008, // ~120fps
@@ -270,7 +270,7 @@ public struct InteractionConfiguration: Codable, Equatable {
     )
     
     /// Configuration for accessibility-focused interaction
-    public static let accessibility = InteractionConfiguration(
+    public static let accessibility: InteractionConfiguration = InteractionConfiguration(
         enabledTypes: [.mouseClick, .keyPress, .gesture],
         sensitivity: 1.5,
         minimumConfidence: 0.3,
@@ -282,7 +282,7 @@ public struct InteractionConfiguration: Codable, Equatable {
 }
 
 /// Configuration for gesture recognition
-public struct GestureConfiguration: Codable, Equatable {
+public struct GestureConfiguration: Codable, Equatable, Sendable {
     public let enabledGestures: Set<GestureType>
     public let minimumTouchCount: Int
     public let maximumTouchCount: Int
@@ -307,7 +307,7 @@ public struct GestureConfiguration: Codable, Equatable {
     }
     
     /// Configuration optimized for accessibility
-    public static let accessibility = GestureConfiguration(
+    public static let accessibility: GestureConfiguration = GestureConfiguration(
         enabledGestures: [.tap, .doubleTap, .longPress, .pan],
         minimumTouchCount: 1,
         maximumTouchCount: 2,
@@ -317,7 +317,7 @@ public struct GestureConfiguration: Codable, Equatable {
     )
     
     /// Configuration for advanced gesture users
-    public static let advanced = GestureConfiguration(
+    public static let advanced: GestureConfiguration = GestureConfiguration(
         enabledGestures: Set(GestureType.allCases),
         minimumTouchCount: 1,
         maximumTouchCount: 10,
@@ -330,7 +330,7 @@ public struct GestureConfiguration: Codable, Equatable {
 // MARK: - Error Types
 
 /// Errors that can occur during interaction processing
-public enum InteractionError: LocalizedError, Equatable {
+public enum InteractionError: LocalizedError, Equatable, Sendable {
     case detectionFailed(reason: String)
     case configurationInvalid(parameter: String)
     case rateLimitExceeded(currentRate: Double, maxRate: Double)

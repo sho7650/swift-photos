@@ -3,7 +3,7 @@ import os.log
 
 /// Production-ready logging system for App Store compliance
 /// Provides controlled debug output and production-safe logging
-public final class ProductionLogger {
+public final class ProductionLogger: Sendable {
     
     // MARK: - Singleton
     public static let shared = ProductionLogger()

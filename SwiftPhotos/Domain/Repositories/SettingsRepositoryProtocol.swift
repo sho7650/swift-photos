@@ -3,19 +3,19 @@ import Foundation
 /// アプリケーション設定へのアクセスを抽象化するプロトコル
 public protocol SettingsRepositoryProtocol: Sendable {
     /// 設定を読み込む
-    func load<T: Codable>(_ type: T.Type, for key: SettingsKey) async -> T?
+    func load<T: Codable & Sendable>(_ type: T.Type, for key: SettingsKey) async -> T?
     
     /// 設定を保存
-    func save<T: Codable>(_ value: T, for key: SettingsKey) async throws
+    func save<T: Codable & Sendable>(_ value: T, for key: SettingsKey) async throws
     
     /// 設定を削除
     func remove(for key: SettingsKey) async
     
     /// 複数の設定を一括読み込み
-    func loadMultiple<T: Codable>(_ type: T.Type, for keys: [SettingsKey]) async -> [SettingsKey: T]
+    func loadMultiple<T: Codable & Sendable>(_ type: T.Type, for keys: [SettingsKey]) async -> [SettingsKey: T]
     
     /// 複数の設定を一括保存
-    func saveMultiple<T: Codable>(_ values: [SettingsKey: T]) async throws
+    func saveMultiple<T: Codable & Sendable>(_ values: [SettingsKey: T]) async throws
     
     /// すべての設定をリセット
     func resetAll() async
@@ -30,7 +30,7 @@ public protocol SettingsRepositoryProtocol: Sendable {
     func importSettings(from data: Data) async throws
     
     /// 設定の変更を監視
-    func observe<T: Codable>(_ type: T.Type, for key: SettingsKey) -> AsyncStream<T?>
+    func observe<T: Codable & Sendable>(_ type: T.Type, for key: SettingsKey) -> AsyncStream<T?>
     
     /// すべての設定キーを取得
     func allKeys() async -> [SettingsKey]
@@ -42,7 +42,7 @@ public protocol SettingsRepositoryProtocol: Sendable {
     func getMetadata(for key: SettingsKey) async -> SettingsMetadata?
     
     /// 設定の検証
-    func validate<T: Codable>(_ value: T, for key: SettingsKey) async throws -> SettingsValidationResult
+    func validate<T: Codable & Sendable>(_ value: T, for key: SettingsKey) async throws -> SettingsValidationResult
 }
 
 /// 設定キー
@@ -311,15 +311,15 @@ public struct SettingsImportResult: Sendable {
 /// 設定変更イベント
 public struct SettingsChangeEvent: Sendable {
     public let key: SettingsKey
-    public let oldValue: Any?
-    public let newValue: Any?
+    public let oldValue: String? // Changed from Any? for Sendable compliance
+    public let newValue: String? // Changed from Any? for Sendable compliance
     public let timestamp: Date
     public let source: ChangeSource
     
     public init(
         key: SettingsKey,
-        oldValue: Any? = nil,
-        newValue: Any? = nil,
+        oldValue: String? = nil,
+        newValue: String? = nil,
         timestamp: Date = Date(),
         source: ChangeSource = .user
     ) {
@@ -343,7 +343,7 @@ public struct SettingsChangeEvent: Sendable {
 /// 設定エラー
 public enum SettingsError: LocalizedError, Sendable {
     case keyNotFound(SettingsKey)
-    case invalidValue(key: SettingsKey, value: Any)
+    case invalidValue(key: SettingsKey, value: String)
     case validationFailed(key: SettingsKey, rule: ValidationRule)
     case encodingFailed(key: SettingsKey, error: Error)
     case decodingFailed(key: SettingsKey, error: Error)
