@@ -1,7 +1,7 @@
 import Foundation
 
 // UserDefaults is thread-safe but not marked Sendable
-extension UserDefaults: @unchecked Sendable {}
+extension UserDefaults: @retroactive @unchecked Sendable {}
 
 /// Repository層のDependency Injection Container
 /// すべてのRepositoryの生成と管理を行う
