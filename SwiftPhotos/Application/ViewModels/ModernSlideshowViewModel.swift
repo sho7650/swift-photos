@@ -278,7 +278,7 @@ public final class ModernSlideshowViewModel {
                 newIndex: currentSlideshow.currentIndex
             )
         } else {
-            await loadCurrentImage()
+            loadCurrentImage()
         }
     }
     
@@ -301,7 +301,7 @@ public final class ModernSlideshowViewModel {
                 newIndex: currentSlideshow.currentIndex
             )
         } else {
-            await loadCurrentImage()
+            loadCurrentImage()
         }
     }
     
@@ -647,7 +647,7 @@ public final class ModernSlideshowViewModel {
         
         // Store current state
         let wasPlaying = slideshow?.isPlaying ?? false
-        let currentIndex = slideshow?.currentIndex ?? 0
+        let _ = slideshow?.currentIndex ?? 0
         
         // Pause slideshow if playing
         if wasPlaying {

@@ -18,8 +18,8 @@ public class TelemetryService: ObservableObject {
     
     @Published public var isEnabled: Bool {
         didSet {
-            userDefaults.set(isEnabled, forKey: "TelemetryEnabled")
-            logger.info("Telemetry \(isEnabled ? "enabled" : "disabled") by user")
+            userDefaults.set(self.isEnabled, forKey: "TelemetryEnabled")
+            logger.info("Telemetry \(self.isEnabled ? "enabled" : "disabled") by user")
         }
     }
     
@@ -58,8 +58,8 @@ public class TelemetryService: ObservableObject {
         sessionStartTime = Date()
         sessionMetrics = SessionMetrics()
         
-        if isEnabled {
-            logger.info("Analytics session started: \(sessionId)")
+        if self.isEnabled {
+            logger.info("Analytics session started: \(self.sessionId)")
             recordEvent(.sessionStart, properties: [
                 "app_version": getAppVersion(),
                 "macos_version": getOSVersion(),
@@ -284,7 +284,7 @@ public class TelemetryService: ObservableObject {
         let machineMirror = Mirror(reflecting: systemInfo.machine)
         let identifier = machineMirror.children.reduce("") { identifier, element in
             guard let value = element.value as? Int8, value != 0 else { return identifier }
-            return identifier + String(UnicodeScalar(UInt8(value))!)
+            return identifier + String(UnicodeScalar(UInt8(value)))
         }
         return identifier
     }
