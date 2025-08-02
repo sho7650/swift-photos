@@ -544,6 +544,9 @@ public final class EnhancedModernSlideshowViewModel {
         
         // Load the new current image using Repository pattern
         await loadCurrentImage()
+        
+        // Update virtual loading window for the new position
+        await updateVirtualLoadingWindow()
     }
     
     public func previousPhoto() async {
@@ -562,6 +565,9 @@ public final class EnhancedModernSlideshowViewModel {
         
         // Load the new current image using Repository pattern
         await loadCurrentImage()
+        
+        // Update virtual loading window for the new position
+        await updateVirtualLoadingWindow()
     }
     
     // MARK: - Private Implementation Methods
@@ -610,20 +616,129 @@ public final class EnhancedModernSlideshowViewModel {
         // Stop any running timer
         stopTimer()
         
-        // TODO: Cancel virtual loader and background preloader operations when methods are available
-        // For now, just stopping the timer is sufficient to prevent conflicts
+        // Cancel virtual loading operations
+        await cancelVirtualLoadingOperations()
     }
     
     private func updateSlideshowMode(randomOrder: Bool) {
-        // Implementation would handle slideshow mode updates
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Updating slideshow mode - randomOrder: \(randomOrder)")
+        
+        guard let currentSlideshow = slideshow, !currentSlideshow.isEmpty else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: No slideshow available for mode update")
+            return
+        }
+        
+        // Update sort settings if needed
+        if let sortSettings = sortSettingsManager {
+            if randomOrder && sortSettings.settings.order != .random {
+                ProductionLogger.debug("EnhancedSlideshowViewModel: Switching to random order")
+                let newSettings = SortSettings(
+                    order: .random,
+                    direction: sortSettings.settings.direction,
+                    randomSeed: sortSettings.settings.randomSeed
+                )
+                sortSettings.updateSettings(newSettings)
+            } else if !randomOrder && sortSettings.settings.order == .random {
+                ProductionLogger.debug("EnhancedSlideshowViewModel: Switching from random to sequential order")
+                let newSettings = SortSettings(
+                    order: .fileName, // Default to fileName sorting
+                    direction: sortSettings.settings.direction,
+                    randomSeed: sortSettings.settings.randomSeed
+                )
+                sortSettings.updateSettings(newSettings)
+            }
+        }
+        
+        // If we have photos, trigger a reload to apply new sorting
+        if let folderURL = selectedFolderURL {
+            Task {
+                await reloadSlideshowWithCurrentSettings(from: folderURL)
+            }
+        }
     }
     
     private func reloadSlideshowWithNewSorting() async {
-        // Implementation would reload with new sorting
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Reloading slideshow with new sorting")
+        
+        guard let folderURL = selectedFolderURL else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: No folder URL available for sorting reload")
+            return
+        }
+        
+        // Store current photo ID to maintain position if possible
+        let currentPhotoId = slideshow?.currentPhoto?.id
+        let wasPlaying = slideshow?.isPlaying == true
+        
+        // Pause slideshow during reload
+        if wasPlaying {
+            stopSlideshow()
+        }
+        
+        // Regenerate random seed if using random sort order
+        if let sortSettings = sortSettingsManager, sortSettings.settings.order == .random {
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Regenerating random seed for sorting reload")
+            sortSettings.regenerateRandomSeed()
+        }
+        
+        // Reload slideshow with new sorting
+        await createSlideshow(from: folderURL)
+        
+        // Try to restore position to the same photo if possible
+        if let currentPhotoId = currentPhotoId, var newSlideshow = slideshow {
+            if let newIndex = newSlideshow.photos.firstIndex(where: { $0.id == currentPhotoId }) {
+                do {
+                    try newSlideshow.setCurrentIndex(newIndex)
+                    setSlideshow(newSlideshow)
+                    currentPhoto = newSlideshow.currentPhoto
+                    refreshCounter += 1
+                    ProductionLogger.debug("EnhancedSlideshowViewModel: Restored position to photo at index \(newIndex)")
+                } catch {
+                    ProductionLogger.warning("EnhancedSlideshowViewModel: Failed to restore photo position: \(error)")
+                }
+            }
+        }
+        
+        // Resume playback if it was playing before
+        if wasPlaying {
+            startSlideshow()
+        }
     }
     
     private func handleVirtualImageLoaded(photoId: UUID, image: NSImage) {
-        // Implementation would handle virtual image loading
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Virtual image loaded for photo ID: \(photoId)")
+        
+        guard var currentSlideshow = slideshow else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: No slideshow available for virtual image update")
+            return
+        }
+        
+        // Find the photo with the matching ID and update it
+        if let photoIndex = currentSlideshow.photos.firstIndex(where: { $0.id == photoId }) {
+            var updatedPhoto = currentSlideshow.photos[photoIndex]
+            
+            // Update the photo with the loaded image
+            let sendableImage = SendableImage(image)
+            updatedPhoto.updateLoadState(.loaded(sendableImage))
+            
+            do {
+                try currentSlideshow.updatePhoto(at: photoIndex, with: updatedPhoto)
+                setSlideshow(currentSlideshow)
+                
+                // If this is the current photo, update the display
+                if updatedPhoto.id == currentPhoto?.id {
+                    currentPhoto = updatedPhoto
+                    refreshCounter += 1
+                    ProductionLogger.debug("EnhancedSlideshowViewModel: Updated current photo display with virtual image")
+                }
+                
+                ProductionLogger.debug("EnhancedSlideshowViewModel: Successfully updated photo at index \(photoIndex) with virtual image")
+                
+            } catch {
+                ProductionLogger.error("EnhancedSlideshowViewModel: Failed to update photo with virtual image: \(error)")
+            }
+        } else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: Could not find photo with ID \(photoId) for virtual image update")
+        }
     }
     
     private func startTimer() {
@@ -647,11 +762,150 @@ public final class EnhancedModernSlideshowViewModel {
     }
     
     private func reinitializeVirtualLoader() async {
-        // Implementation would reinitialize virtual loader
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Reinitializing virtual loader with new settings")
+        
+        guard let currentSlideshow = slideshow, !currentSlideshow.isEmpty else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: No slideshow available for virtual loader reinitialization")
+            return
+        }
+        
+        // Stop any existing virtual loading operations
+        await cancelVirtualLoadingOperations()
+        
+        // Update virtual loader settings
+        await virtualLoader.updateSettings(performanceSettingsManager.settings)
+        
+        // Update background preloader settings
+        await backgroundPreloader.updateSettings(performanceSettingsManager.settings)
+        
+        // Setup the callback again
+        await virtualLoader.setImageLoadedCallback { [weak self] photoId, image in
+            self?.handleVirtualImageLoaded(photoId: photoId, image: image.nsImage)
+        }
+        
+        // Setup virtual loading if needed
+        await setupVirtualLoadingIfNeeded()
+        
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Virtual loader reinitialization completed")
     }
     
     private func setupVirtualLoadingIfNeeded() async {
-        // Implementation would setup virtual loading for large collections
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Setting up virtual loading if needed")
+        
+        guard let currentSlideshow = slideshow, !currentSlideshow.isEmpty else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: No slideshow available for virtual loading setup")
+            return
+        }
+        
+        let photoCount = currentSlideshow.photos.count
+        let largeCollectionThreshold = performanceSettingsManager.settings.largeCollectionThreshold
+        
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Photo count: \(photoCount), threshold: \(largeCollectionThreshold)")
+        
+        if photoCount >= largeCollectionThreshold {
+            ProductionLogger.performance("EnhancedSlideshowViewModel: Large collection detected (\(photoCount) photos) - enabling virtual loading")
+            
+            // Configure virtual loader window for this collection
+            await virtualLoader.loadImageWindow(
+                around: currentSlideshow.currentIndex, 
+                photos: currentSlideshow.photos
+            )
+            
+            // Start background preloading for adjacent images
+            let preloadDistance = min(performanceSettingsManager.settings.preloadDistance, 100)
+            await backgroundPreloader.schedulePreload(
+                photos: currentSlideshow.photos,
+                currentIndex: currentSlideshow.currentIndex,
+                windowSize: preloadDistance
+            )
+            
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Virtual loading configured with preload distance: \(preloadDistance)")
+            
+        } else {
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Small collection (\(photoCount) photos) - using standard loading")
+            
+            // For smaller collections, we can load images more aggressively
+            let preloadDistance = min(photoCount / 4, 20) // Load up to 25% of photos or 20, whichever is smaller
+            await backgroundPreloader.schedulePreload(
+                photos: currentSlideshow.photos,
+                currentIndex: currentSlideshow.currentIndex,
+                windowSize: preloadDistance
+            )
+        }
+        
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Virtual loading setup completed")
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func reloadSlideshowWithCurrentSettings(from folderURL: URL) async {
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Reloading slideshow with current settings")
+        
+        let wasPlaying = slideshow?.isPlaying == true
+        let currentPhotoId = slideshow?.currentPhoto?.id
+        
+        // Pause slideshow during reload
+        if wasPlaying {
+            stopSlideshow()
+        }
+        
+        // Reload slideshow
+        await createSlideshow(from: folderURL)
+        
+        // Try to restore position if possible
+        if let currentPhotoId = currentPhotoId, var newSlideshow = slideshow {
+            if let newIndex = newSlideshow.photos.firstIndex(where: { $0.id == currentPhotoId }) {
+                do {
+                    try newSlideshow.setCurrentIndex(newIndex)
+                    setSlideshow(newSlideshow)
+                    currentPhoto = newSlideshow.currentPhoto
+                    refreshCounter += 1
+                } catch {
+                    ProductionLogger.warning("EnhancedSlideshowViewModel: Failed to restore photo position: \(error)")
+                }
+            }
+        }
+        
+        // Resume playback if it was playing before
+        if wasPlaying {
+            startSlideshow()
+        }
+    }
+    
+    private func cancelVirtualLoadingOperations() async {
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Cancelling virtual loading operations")
+        
+        // Cancel virtual loader operations
+        await virtualLoader.cancelAllForProgressJump()
+        
+        // Cancel background preloader operations
+        await backgroundPreloader.cancelAllPreloads()
+        
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Virtual loading operations cancelled")
+    }
+    
+    /// Update virtual loading window when navigation occurs
+    private func updateVirtualLoadingWindow() async {
+        guard let currentSlideshow = slideshow, 
+              !currentSlideshow.isEmpty,
+              currentSlideshow.photos.count >= performanceSettingsManager.settings.largeCollectionThreshold else {
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Skipping virtual loading update for small collection")
+            return
+        }
+        
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Updating virtual loading window for index \\(currentSlideshow.currentIndex)")
+        
+        // Update virtual loader window
+        await virtualLoader.loadImageWindow(
+            around: currentSlideshow.currentIndex,
+            photos: currentSlideshow.photos
+        )
+        
+        // Update background preloader priorities
+        await backgroundPreloader.updatePriorities(
+            photos: currentSlideshow.photos,
+            newIndex: currentSlideshow.currentIndex
+        )
     }
 }
 
