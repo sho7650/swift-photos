@@ -37,6 +37,16 @@
     "%lld photos" : {
 
     },
+    "%lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
     "• Alphabetical sorting provides fastest cache performance" : {
 
     },
@@ -1093,7 +1103,13 @@
     "Clear All Recent Folders" : {
 
     },
+    "Clear Error" : {
+
+    },
     "Clear Menu" : {
+
+    },
+    "Currently using legacy fallback" : {
 
     },
     "date_format.automatic" : {
@@ -1554,6 +1570,9 @@
     "Failed to load image" : {
 
     },
+    "Fallback Active" : {
+
+    },
     "features.advanced_memory_management" : {
 
     },
@@ -1650,7 +1669,13 @@
     "Import Recent Files..." : {
 
     },
+    "Initialization Failed" : {
+
+    },
     "Initializing application..." : {
+
+    },
+    "Initializing Swift Photos..." : {
 
     },
     "interface.background_blur_intensity" : {
@@ -1983,6 +2008,15 @@
         }
       }
     },
+    "Legacy" : {
+
+    },
+    "Legacy Operations: %lld" : {
+
+    },
+    "Load Image" : {
+
+    },
     "Loading components..." : {
 
     },
@@ -1990,6 +2024,12 @@
 
     },
     "Loading images..." : {
+
+    },
+    "Loading slideshow..." : {
+
+    },
+    "Loading with Repository pattern..." : {
 
     },
     "Loading..." : {
@@ -2204,6 +2244,9 @@
         }
       }
     },
+    "No Photos Loaded" : {
+
+    },
     "No Recent Folders" : {
 
     },
@@ -2305,122 +2348,6 @@
     "performance.advanced_settings" : {
 
     },
-    "performance.aggressive_memory_cleanup" : {
-
-    },
-    "performance.cache_size_label" : {
-
-    },
-    "performance.cache_size_mb" : {
-
-    },
-    "performance.concurrent_loads_label" : {
-
-    },
-    "performance.current_settings" : {
-
-    },
-    "performance.default_images" : {
-
-    },
-    "performance.enable_debug_logging" : {
-
-    },
-    "performance.extreme_images" : {
-
-    },
-    "performance.high_performance_images" : {
-
-    },
-    "performance.large_collections" : {
-
-    },
-    "performance.manual_configuration" : {
-
-    },
-    "performance.massive_images" : {
-
-    },
-    "performance.max_concurrent_loads" : {
-
-    },
-    "performance.medium_collections" : {
-
-    },
-    "performance.memory_management" : {
-
-    },
-    "performance.memory_mode_label" : {
-
-    },
-    "performance.memory_tips" : {
-
-    },
-    "performance.memory_usage_info" : {
-
-    },
-    "performance.memory_window_images_label" : {
-
-    },
-    "performance.memory_window_size" : {
-
-    },
-    "performance.optimal_settings" : {
-
-    },
-    "performance.preload_ahead" : {
-
-    },
-    "performance.preload_behind" : {
-
-    },
-    "performance.preload_label" : {
-
-    },
-    "performance.presets" : {
-
-    },
-    "performance.reset_configuration" : {
-
-    },
-    "performance.small_collections" : {
-
-    },
-    "performance.unlimited_images" : {
-
-    },
-    "performance.presets_description" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adjust performance settings based on collection size"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コレクションサイズに基づいてパフォーマンス設定を調整"
-          }
-        }
-      }
-    },
-    "performance.manual_configuration_description" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fine-tune performance settings for your specific needs"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "特定のニーズに合わせてパフォーマンス設定を微調整"
-          }
-        }
-      }
-    },
     "performance.advanced_settings_description" : {
       "localizations" : {
         "en" : {
@@ -2437,117 +2364,8 @@
         }
       }
     },
-    "performance.preset.default" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default (0-100 images)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "標準 (0-100 画像)"
-          }
-        }
-      }
-    },
-    "performance.preset.high_performance" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "High Performance (101-1,000 images)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "高性能 (101-1,000 画像)"
-          }
-        }
-      }
-    },
-    "performance.preset.unlimited" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlimited (1,001-10,000 images)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無制限 (1,001-10,000 画像)"
-          }
-        }
-      }
-    },
-    "performance.preset.massive" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Massive (10,001-50,000 images)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "大規模 (10,001-50,000 画像)"
-          }
-        }
-      }
-    },
-    "performance.preset.extreme" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extreme (50,001+ images)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "極限 (50,001+ 画像)"
-          }
-        }
-      }
-    },
-    "performance.max_memory_usage" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Max Memory Usage"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最大メモリ使用量"
-          }
-        }
-      }
-    },
-    "performance.concurrent_loads" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Concurrent Loads"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "同時読み込み数"
-          }
-        }
-      }
+    "performance.aggressive_memory_cleanup" : {
+
     },
     "performance.aggressive_memory_management" : {
       "localizations" : {
@@ -2565,133 +2383,42 @@
         }
       }
     },
-    "performance.large_collection_threshold" : {
+    "performance.cache_size_label" : {
+
+    },
+    "performance.cache_size_mb" : {
+
+    },
+    "performance.concurrent_loads" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Large Collection Threshold"
+            "value" : "Concurrent Loads"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "大規模コレクション閾値"
+            "value" : "同時読み込み数"
           }
         }
       }
     },
-    "performance.preload_distance" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preload Distance"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プリロード距離"
-          }
-        }
-      }
+    "performance.concurrent_loads_label" : {
+
     },
-    "performance.name.default" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "標準"
-          }
-        }
-      }
+    "performance.current_settings" : {
+
     },
-    "performance.name.high_performance" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "High Performance"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "高性能"
-          }
-        }
-      }
+    "performance.default_images" : {
+
     },
-    "performance.name.unlimited" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlimited"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無制限"
-          }
-        }
-      }
+    "performance.enable_debug_logging" : {
+
     },
-    "performance.name.massive" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Massive"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "大規模"
-          }
-        }
-      }
-    },
-    "performance.name.extreme" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extreme"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "極限"
-          }
-        }
-      }
-    },
-    "performance.name.custom" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Custom"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "カスタム"
-          }
-        }
-      }
+    "performance.extreme_images" : {
+
     },
     "performance.format.images" : {
       "localizations" : {
@@ -2740,6 +2467,322 @@
           }
         }
       }
+    },
+    "performance.high_performance_images" : {
+
+    },
+    "performance.large_collection_threshold" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Large Collection Threshold"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大規模コレクション閾値"
+          }
+        }
+      }
+    },
+    "performance.large_collections" : {
+
+    },
+    "performance.manual_configuration" : {
+
+    },
+    "performance.manual_configuration_description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fine-tune performance settings for your specific needs"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特定のニーズに合わせてパフォーマンス設定を微調整"
+          }
+        }
+      }
+    },
+    "performance.massive_images" : {
+
+    },
+    "performance.max_concurrent_loads" : {
+
+    },
+    "performance.max_memory_usage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Max Memory Usage"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大メモリ使用量"
+          }
+        }
+      }
+    },
+    "performance.medium_collections" : {
+
+    },
+    "performance.memory_management" : {
+
+    },
+    "performance.memory_mode_label" : {
+
+    },
+    "performance.memory_tips" : {
+
+    },
+    "performance.memory_usage_info" : {
+
+    },
+    "performance.memory_window_images_label" : {
+
+    },
+    "performance.memory_window_size" : {
+
+    },
+    "performance.name.custom" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタム"
+          }
+        }
+      }
+    },
+    "performance.name.default" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標準"
+          }
+        }
+      }
+    },
+    "performance.name.extreme" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extreme"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "極限"
+          }
+        }
+      }
+    },
+    "performance.name.high_performance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High Performance"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高性能"
+          }
+        }
+      }
+    },
+    "performance.name.massive" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Massive"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大規模"
+          }
+        }
+      }
+    },
+    "performance.name.unlimited" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlimited"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無制限"
+          }
+        }
+      }
+    },
+    "performance.optimal_settings" : {
+
+    },
+    "performance.preload_ahead" : {
+
+    },
+    "performance.preload_behind" : {
+
+    },
+    "performance.preload_distance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preload Distance"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プリロード距離"
+          }
+        }
+      }
+    },
+    "performance.preload_label" : {
+
+    },
+    "performance.preset.default" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default (0-100 images)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標準 (0-100 画像)"
+          }
+        }
+      }
+    },
+    "performance.preset.extreme" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extreme (50,001+ images)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "極限 (50,001+ 画像)"
+          }
+        }
+      }
+    },
+    "performance.preset.high_performance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High Performance (101-1,000 images)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高性能 (101-1,000 画像)"
+          }
+        }
+      }
+    },
+    "performance.preset.massive" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Massive (10,001-50,000 images)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大規模 (10,001-50,000 画像)"
+          }
+        }
+      }
+    },
+    "performance.preset.unlimited" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlimited (1,001-10,000 images)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無制限 (1,001-10,000 画像)"
+          }
+        }
+      }
+    },
+    "performance.presets" : {
+
+    },
+    "performance.presets_description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust performance settings based on collection size"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コレクションサイズに基づいてパフォーマンス設定を調整"
+          }
+        }
+      }
+    },
+    "performance.reset_configuration" : {
+
+    },
+    "performance.small_collections" : {
+
+    },
+    "performance.unlimited_images" : {
+
     },
     "Photo Information" : {
 
@@ -2857,6 +2900,45 @@
     "region.united_states" : {
 
     },
+    "Repository" : {
+
+    },
+    "Repository Error" : {
+
+    },
+    "Repository Health: %@" : {
+
+    },
+    "Repository Loading Failed" : {
+
+    },
+    "Repository Mode" : {
+
+    },
+    "Repository operations: %lld" : {
+
+    },
+    "Repository Operations: %lld" : {
+
+    },
+    "Repository Pattern" : {
+
+    },
+    "Repository Pattern Loading..." : {
+
+    },
+    "Repository Status:" : {
+
+    },
+    "Repository: Image Not Loaded" : {
+
+    },
+    "Retry" : {
+
+    },
+    "Retry with Legacy Mode" : {
+
+    },
     "search.placeholder" : {
       "localizations" : {
         "en" : {
@@ -2888,7 +2970,13 @@
     "Select a folder to start slideshow" : {
 
     },
+    "Select a folder to start slideshow with Repository pattern" : {
+
+    },
     "Select Folder" : {
+
+    },
+    "Setting up Repository pattern..." : {
 
     },
     "Settings for %@ will be implemented here." : {
@@ -4946,6 +5034,9 @@
         }
       }
     },
+    "Total Operations: %lld" : {
+
+    },
     "transitions.animation_easing" : {
 
     },
@@ -5988,6 +6079,15 @@
       }
     },
     "ui.when_paused" : {
+
+    },
+    "Unexpected state" : {
+
+    },
+    "Unsupported ViewModel type" : {
+
+    },
+    "Using legacy fallback" : {
 
     },
     "Version %@" : {
