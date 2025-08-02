@@ -108,7 +108,7 @@ struct EnhancedContentView: View {
             
             // Main slideshow content
             Group {
-                if let slideshow = viewModel.slideshow,
+                if viewModel.slideshow != nil,
                    let currentPhoto = viewModel.currentPhoto {
                     
                     // Image display with Repository-aware transitions

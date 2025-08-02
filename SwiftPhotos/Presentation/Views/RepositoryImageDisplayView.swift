@@ -42,7 +42,7 @@ public struct RepositoryImageDisplayView: View {
             setupTransitionManager()
             updatePerformanceMetrics()
         }
-        .onChange(of: transitionSettings.settings) {
+        .onChange(of: transitionSettings.settings) { _, _ in
             setupTransitionManager()
         }
         .task {

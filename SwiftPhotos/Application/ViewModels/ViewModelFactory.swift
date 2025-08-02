@@ -84,22 +84,17 @@ public struct ViewModelFactory {
         
         if preferRepositoryPattern {
             // Try to create Enhanced ViewModel with Repository pattern
-            do {
-                let enhancedViewModel = await createEnhancedSlideshowViewModel(
-                    fileAccess: fileAccess,
-                    performanceSettings: performanceSettings,
-                    slideshowSettings: slideshowSettings,
-                    sortSettings: sortSettings,
-                    localizationService: localizationService,
-                    enableLegacyFallback: true
-                )
-                
-                ProductionLogger.info("ViewModelFactory: Successfully created Repository-based ViewModel")
-                return enhancedViewModel
-                
-            } catch {
-                ProductionLogger.warning("ViewModelFactory: Repository pattern creation failed, falling back to legacy: \(error)")
-            }
+            let enhancedViewModel = await createEnhancedSlideshowViewModel(
+                fileAccess: fileAccess,
+                performanceSettings: performanceSettings,
+                slideshowSettings: slideshowSettings,
+                sortSettings: sortSettings,
+                localizationService: localizationService,
+                enableLegacyFallback: true
+            )
+            
+            ProductionLogger.info("ViewModelFactory: Successfully created Repository-based ViewModel")
+            return enhancedViewModel
         }
         
         // Fallback to legacy ViewModel

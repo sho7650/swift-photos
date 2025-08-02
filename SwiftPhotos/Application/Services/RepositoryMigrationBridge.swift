@@ -248,41 +248,35 @@ public class RepositoryMigrationBridge: ObservableObject {
     private func performMigrationSteps() async -> Bool {
         ProductionLogger.info("RepositoryMigrationBridge: Performing migration steps")
         
-        do {
-            // Step 1: Initialize Repository container
-            migrationProgress = 0.2
-            let container = RepositoryContainer.shared
-            let health = await container.performHealthCheck()
-            
-            guard health.isHealthy else {
-                ProductionLogger.error("RepositoryMigrationBridge: Repository container unhealthy")
-                return false
-            }
-            
-            // Step 2: Verify Repository implementations
-            migrationProgress = 0.4
-            let _ = await container.imageRepository()
-            let _ = await container.cacheRepository()
-            let _ = await container.metadataRepository()
-            let _ = await container.settingsRepository()
-            
-            // Step 3: Test basic operations
-            migrationProgress = 0.6
-            // Basic smoke tests would go here
-            
-            // Step 4: Enable Repository pattern
-            migrationProgress = 0.8
-            enableRepositoryPattern = true
-            
-            // Step 5: Complete
-            migrationProgress = 1.0
-            ProductionLogger.info("RepositoryMigrationBridge: Migration steps completed successfully")
-            return true
-            
-        } catch {
-            ProductionLogger.error("RepositoryMigrationBridge: Migration steps failed: \(error)")
+        // Step 1: Initialize Repository container
+        migrationProgress = 0.2
+        let container = RepositoryContainer.shared
+        let health = await container.performHealthCheck()
+        
+        guard health.isHealthy else {
+            ProductionLogger.error("RepositoryMigrationBridge: Repository container unhealthy")
             return false
         }
+        
+        // Step 2: Verify Repository implementations
+        migrationProgress = 0.4
+        let _ = await container.imageRepository()
+        let _ = await container.cacheRepository()
+        let _ = await container.metadataRepository()
+        let _ = await container.settingsRepository()
+        
+        // Step 3: Test basic operations
+        migrationProgress = 0.6
+        // Basic smoke tests would go here
+        
+        // Step 4: Enable Repository pattern
+        migrationProgress = 0.8
+        enableRepositoryPattern = true
+        
+        // Step 5: Complete
+        migrationProgress = 1.0
+        ProductionLogger.info("RepositoryMigrationBridge: Migration steps completed successfully")
+        return true
     }
 }
 
