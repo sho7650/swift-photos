@@ -57,6 +57,9 @@ public final class EnhancedModernSlideshowViewModel {
     private var repositoryOperationCount = 0
     private var legacyOperationCount = 0
     
+    // MARK: - State Management
+    private var isCreatingSlideshow = false
+    
     // MARK: - Initialization
     
     /// Initialize with Repository pattern support
@@ -185,8 +188,11 @@ public final class EnhancedModernSlideshowViewModel {
             queue: .main
         ) { [weak self] notification in
             if let _ = notification.object as? SortSettings {
-                Task { [weak self] in
-                    await self?.reloadSlideshowWithNewSorting()
+                Task { @MainActor [weak self] in
+                    // Only reload if we're not already creating a slideshow
+                    if self?.isCreatingSlideshow == false {
+                        await self?.reloadSlideshowWithNewSorting()
+                    }
                 }
             }
         }
@@ -245,6 +251,15 @@ public final class EnhancedModernSlideshowViewModel {
     
     /// Create slideshow using Repository pattern with fallback to legacy
     private func createSlideshow(from folderURL: URL) async {
+        // Prevent recursive calls
+        guard !isCreatingSlideshow else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: Slideshow creation already in progress, ignoring request")
+            return
+        }
+        
+        isCreatingSlideshow = true
+        defer { isCreatingSlideshow = false }
+        
         ProductionLogger.lifecycle("EnhancedSlideshowViewModel: Creating slideshow from folder: \(folderURL.path)")
         operationCount += 1
         
@@ -712,6 +727,12 @@ public final class EnhancedModernSlideshowViewModel {
             return
         }
         
+        // Check if we're in the middle of creating a new slideshow
+        guard !isCreatingSlideshow else {
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Ignoring virtual image update - slideshow creation in progress")
+            return
+        }
+        
         // Find the photo with the matching ID and update it
         if let photoIndex = currentSlideshow.photos.firstIndex(where: { $0.id == photoId }) {
             var updatedPhoto = currentSlideshow.photos[photoIndex]
@@ -737,7 +758,8 @@ public final class EnhancedModernSlideshowViewModel {
                 ProductionLogger.error("EnhancedSlideshowViewModel: Failed to update photo with virtual image: \(error)")
             }
         } else {
-            ProductionLogger.warning("EnhancedSlideshowViewModel: Could not find photo with ID \(photoId) for virtual image update")
+            // This is normal when slideshow has been recreated - don't log as warning
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Photo with ID \(photoId) no longer in slideshow (likely recreated)")
         }
     }
     
@@ -876,7 +898,7 @@ public final class EnhancedModernSlideshowViewModel {
         ProductionLogger.debug("EnhancedSlideshowViewModel: Cancelling virtual loading operations")
         
         // Cancel virtual loader operations
-        await virtualLoader.cancelAllForProgressJump()
+        await virtualLoader.clearCache()
         
         // Cancel background preloader operations
         await backgroundPreloader.cancelAllPreloads()

@@ -175,13 +175,15 @@ actor VirtualImageLoader {
     
     /// プログレスバージャンプ専用: 全タスクをキャンセルして特定画像のロードを優先
     func cancelAllForProgressJump() async {
-        print("🚫 VirtualImageLoader: Cancelling all tasks for progress bar jump")
-        
-        for (photoId, task) in loadingTasks {
-            task.cancel()
-            print("🚫 VirtualImageLoader: Cancelled task for \(photoId)")
+        let taskCount = loadingTasks.count
+        if taskCount > 0 {
+            ProductionLogger.debug("VirtualImageLoader: Cancelling \(taskCount) loading tasks")
+            
+            for (_, task) in loadingTasks {
+                task.cancel()
+            }
+            loadingTasks.removeAll()
         }
-        loadingTasks.removeAll()
     }
     
     /// 特定画像のロードタスクをキャンセル
@@ -256,7 +258,7 @@ actor VirtualImageLoader {
         } catch {
             loadingTasks.removeValue(forKey: photo.id)
             if !Task.isCancelled {
-                print("Failed to load image for photo \(photo.id): \(error)")
+                ProductionLogger.error("Failed to load image for photo \(photo.id): \(error)")
             }
         }
     }

@@ -179,7 +179,22 @@ public class InteractionDetector: InteractionDetecting, ObservableObject {
            configuration.enabledTypes.contains(.keyPress) {
             let trusted = AXIsProcessTrusted()
             if !trusted {
-                throw InteractionError.systemPermissionDenied(permission: "Accessibility permissions required for global event monitoring")
+                // Log warning but don't throw - we'll fall back to local monitoring
+                logger.warning("⚠️ InteractionDetector: Accessibility permissions not granted - falling back to local event monitoring only")
+                // Create new configuration without global monitoring types
+                var newEnabledTypes = configuration.enabledTypes
+                newEnabledTypes.remove(.mouseMove)
+                newEnabledTypes.remove(.keyPress)
+                
+                configuration = InteractionConfiguration(
+                    enabledTypes: newEnabledTypes,
+                    sensitivity: configuration.sensitivity,
+                    minimumConfidence: configuration.minimumConfidence,
+                    debounceInterval: configuration.debounceInterval,
+                    maxEventRate: configuration.maxEventRate,
+                    enableGestures: configuration.enableGestures,
+                    gestureConfiguration: configuration.gestureConfiguration
+                )
             }
         }
     }
