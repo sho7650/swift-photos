@@ -268,11 +268,8 @@ struct ContentView: View {
                 createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings)
             }
             
-            // Setup keyboard handler connections
-            if let modernViewModel = createdViewModel as? ModernSlideshowViewModel {
-                createdKeyboardHandler.viewModel = modernViewModel
-            }
-            // Note: EnhancedModernSlideshowViewModel integration with KeyboardHandler would need additional work
+            // Setup keyboard handler connections for both ViewModel types
+            createdKeyboardHandler.viewModel = createdViewModel
             createdKeyboardHandler.performanceSettings = performanceSettings
             createdKeyboardHandler.onOpenSettings = {
                 settingsWindowManager.openSettingsWindow(

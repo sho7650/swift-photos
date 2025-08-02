@@ -353,6 +353,10 @@ public final class EnhancedModernSlideshowViewModel {
             currentPhoto = initializedSlideshow.currentPhoto
             refreshCounter += 1
             
+            // Load the current image immediately to display it
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Loading initial image after slideshow creation")
+            await loadCurrentImage()
+            
             // Auto-recommend settings for collection size
             let recommendedSettings = performanceSettingsManager.recommendedSettings(for: initializedSlideshow.photos.count)
             if recommendedSettings != performanceSettingsManager.settings {
@@ -493,14 +497,34 @@ public final class EnhancedModernSlideshowViewModel {
     // method signatures but the full implementation would delegate appropriately.
     
     public func startSlideshow() {
-        // Delegate to existing implementation
         ProductionLogger.debug("EnhancedSlideshowViewModel: Starting slideshow")
-        // Implementation would call existing startSlideshow logic
+        
+        guard var currentSlideshow = slideshow else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: No slideshow available to start")
+            return
+        }
+        
+        // Update slideshow state to playing
+        currentSlideshow.play()
+        setSlideshow(currentSlideshow)
+        
+        // Start the timer for auto-progression
+        startTimer()
     }
     
     public func stopSlideshow() {
-        // Delegate to existing implementation
         ProductionLogger.debug("EnhancedSlideshowViewModel: Stopping slideshow")
+        
+        guard var currentSlideshow = slideshow else {
+            ProductionLogger.warning("EnhancedSlideshowViewModel: No slideshow available to stop")
+            return
+        }
+        
+        // Update slideshow state to stopped
+        currentSlideshow.stop()
+        setSlideshow(currentSlideshow)
+        
+        // Stop the timer
         stopTimer()
     }
     
@@ -543,12 +567,51 @@ public final class EnhancedModernSlideshowViewModel {
     // MARK: - Private Implementation Methods
     
     private func openFolderSelection() async throws -> URL {
-        // Implementation would use existing folder selection logic
-        throw SlideshowError.loadingFailed(underlying: NSError(domain: "NotImplemented", code: -1))
+        ProductionLogger.userAction("EnhancedSlideshowViewModel: Starting folder selection")
+        
+        // Ensure cursor is visible when opening folder
+        await MainActor.run {
+            NSCursor.unhide()
+        }
+        
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Calling fileAccess.selectFolder()")
+        guard let folderURL = try fileAccess.selectFolder() else {
+            ProductionLogger.userAction("EnhancedSlideshowViewModel: Folder selection cancelled by user")
+            // Ensure cursor remains visible when cancelled
+            await MainActor.run {
+                NSCursor.unhide()
+            }
+            throw SlideshowError.loadingFailed(underlying: NSError(
+                domain: "EnhancedSlideshowViewModel",
+                code: -2,
+                userInfo: [NSLocalizedDescriptionKey: "Folder selection was cancelled"]
+            ))
+        }
+        
+        ProductionLogger.userAction("EnhancedSlideshowViewModel: Selected folder: \(folderURL.path)")
+        
+        // Ensure cursor is visible after folder selection
+        await MainActor.run {
+            NSCursor.unhide()
+        }
+        
+        // Generate new random seed if sort order is random
+        if let sortSettings = sortSettingsManager, sortSettings.settings.order == .random {
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Generating new random seed for folder selection")
+            sortSettings.regenerateRandomSeed()
+        }
+        
+        return folderURL
     }
     
     private func cancelExistingOperations() async {
-        // Implementation would cancel existing operations
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Cancelling existing operations")
+        
+        // Stop any running timer
+        stopTimer()
+        
+        // TODO: Cancel virtual loader and background preloader operations when methods are available
+        // For now, just stopping the timer is sufficient to prevent conflicts
     }
     
     private func updateSlideshowMode(randomOrder: Bool) {
@@ -564,7 +627,18 @@ public final class EnhancedModernSlideshowViewModel {
     }
     
     private func startTimer() {
-        // Implementation would start slideshow timer
+        stopTimer()
+        
+        // Use settings from SlideshowSettingsManager
+        let interval = slideshowSettingsManager.settings.slideDuration
+        
+        ProductionLogger.debug("EnhancedSlideshowViewModel.startTimer: Using interval \(interval) seconds from settings")
+        
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                await self?.nextPhoto()
+            }
+        }
     }
     
     private func stopTimer() {
