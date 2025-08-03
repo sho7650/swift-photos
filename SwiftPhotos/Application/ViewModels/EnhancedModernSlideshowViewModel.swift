@@ -198,9 +198,11 @@ public final class EnhancedModernSlideshowViewModel {
         ) { [weak self] notification in
             if let _ = notification.object as? SortSettings {
                 Task { @MainActor [weak self] in
-                    // Only reload if we're not already creating a slideshow
-                    if self?.isCreatingSlideshow == false {
+                    // Only reload if we have a slideshow to sort and not in the middle of initial creation
+                    if self?.slideshow != nil && self?.isCreatingSlideshow == false {
                         await self?.reloadSlideshowWithNewSorting()
+                    } else {
+                        ProductionLogger.debug("EnhancedSlideshowViewModel: Skipping sort reload - no slideshow or creation in progress")
                     }
                 }
             }
@@ -413,6 +415,26 @@ public final class EnhancedModernSlideshowViewModel {
         performanceMonitor.endOperation("slideshow_creation")
         
         ProductionLogger.lifecycle("EnhancedSlideshowViewModel: Slideshow creation finalized")
+    }
+    
+    /// Recreate slideshow with new sorting (dedicated method for sort changes)
+    private func recreateSlideshowWithSorting(from folderURL: URL) async {
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Recreating slideshow with new sorting")
+        
+        do {
+            // Create slideshow with new sorting directly
+            let newSlideshow = try await createSlideshowWithRepository(from: folderURL)
+            
+            ProductionLogger.debug("EnhancedSlideshowViewModel: Successfully recreated slideshow with \(newSlideshow.photos.count) photos")
+            
+            // Apply the new slideshow
+            await finalizeSlideshowCreation(newSlideshow)
+            
+        } catch {
+            ProductionLogger.error("EnhancedSlideshowViewModel: Failed to recreate slideshow with new sorting: \(error)")
+            self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
+            loadingState = .notLoading
+        }
     }
     
     // MARK: - Image Loading with Repository Pattern
@@ -716,8 +738,11 @@ public final class EnhancedModernSlideshowViewModel {
             sortSettings.regenerateRandomSeed()
         }
         
-        // Reload slideshow with new sorting
-        await createSlideshow(from: folderURL)
+        // Set loading state explicitly for sort operation
+        loadingState = .preparingSlideshow
+        
+        // Create new slideshow with updated sorting (bypassing isCreatingSlideshow check)
+        await recreateSlideshowWithSorting(from: folderURL)
         
         // Try to restore position to the same photo if possible
         if let currentPhotoId = currentPhotoId, var newSlideshow = slideshow {
@@ -738,6 +763,13 @@ public final class EnhancedModernSlideshowViewModel {
         if wasPlaying {
             startSlideshow()
         }
+        
+        // Ensure loading state is cleared
+        if loadingState != .notLoading {
+            loadingState = .notLoading
+        }
+        
+        ProductionLogger.debug("EnhancedSlideshowViewModel: Sort reload completed successfully")
     }
     
     private func handleVirtualImageLoaded(photoId: UUID, image: NSImage) {
