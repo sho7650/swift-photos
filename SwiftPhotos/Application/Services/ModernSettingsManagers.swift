@@ -204,7 +204,18 @@ public final class ModernSortSettingsManager {
             randomSeed: UInt64.random(in: 1...UInt64.max)
         )
         settings = newSettings
+        sendNotification()
         ProductionLogger.debug("Random seed regenerated: \(newSettings.randomSeed)")
+    }
+    
+    public func regenerateRandomSeedSilently() {
+        let newSettings = SortSettings(
+            order: settings.order,
+            direction: settings.direction,
+            randomSeed: UInt64.random(in: 1...UInt64.max)
+        )
+        settings = newSettings
+        ProductionLogger.debug("Random seed regenerated silently: \(newSettings.randomSeed)")
     }
     
     public func resetToDefaults() {

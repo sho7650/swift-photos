@@ -161,7 +161,7 @@ public class SortSettingsManager: ObservableObject {
         NotificationCenter.default.post(name: .sortSettingsChanged, object: settings)
     }
     
-    /// Generate new random seed for random sorting
+    /// Generate new random seed for random sorting (with notification)
     public func regenerateRandomSeed() {
         if settings.order == .random {
             let newSettings = SortSettings(
@@ -170,6 +170,20 @@ public class SortSettingsManager: ObservableObject {
                 randomSeed: UInt64.random(in: 0...UInt64.max)
             )
             updateSettings(newSettings) // This will automatically notify observers
+        }
+    }
+    
+    /// Generate new random seed silently (without notification to prevent loops)
+    public func regenerateRandomSeedSilently() {
+        if settings.order == .random {
+            let newSettings = SortSettings(
+                order: settings.order,
+                direction: settings.direction,
+                randomSeed: UInt64.random(in: 0...UInt64.max)
+            )
+            settings = newSettings
+            saveSettings()
+            ProductionLogger.debug("Random seed regenerated silently: \(newSettings.randomSeed)")
         }
     }
     

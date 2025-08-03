@@ -60,6 +60,8 @@ public final class EnhancedModernSlideshowViewModel {
     
     // MARK: - State Management
     private var isCreatingSlideshow = false
+    private var sortReloadTask: Task<Void, Never>?
+    private var lastSortSettingsHash: Int = 0
     
     // MARK: - Performance Monitoring
     private let performanceMonitor = PerformanceMonitor.shared
@@ -190,19 +192,39 @@ public final class EnhancedModernSlideshowViewModel {
             }
         }
         
-        // Listen for sort settings changes
+        // Listen for sort settings changes with debouncing to prevent loops
         NotificationCenter.default.addObserver(
             forName: .sortSettingsChanged,
             object: nil,
             queue: .main
         ) { [weak self] notification in
-            if let _ = notification.object as? SortSettings {
+            if let sortSettings = notification.object as? SortSettings {
                 Task { @MainActor [weak self] in
                     // Only reload if we have a slideshow to sort and not in the middle of initial creation
-                    if self?.slideshow != nil && self?.isCreatingSlideshow == false {
-                        await self?.reloadSlideshowWithNewSorting()
-                    } else {
+                    guard let self = self, 
+                          self.slideshow != nil && 
+                          self.isCreatingSlideshow == false else {
                         ProductionLogger.debug("EnhancedSlideshowViewModel: Skipping sort reload - no slideshow or creation in progress")
+                        return
+                    }
+                    
+                    // Debounce rapid sort setting changes
+                    let newHash = self.hashSortSettings(sortSettings)
+                    guard newHash != self.lastSortSettingsHash else {
+                        ProductionLogger.debug("EnhancedSlideshowViewModel: Skipping sort reload - identical settings")
+                        return
+                    }
+                    
+                    self.lastSortSettingsHash = newHash
+                    
+                    // Cancel previous sort reload task
+                    self.sortReloadTask?.cancel()
+                    
+                    // Debounce the reload operation
+                    self.sortReloadTask = Task { @MainActor [weak self] in
+                        try? await Task.sleep(for: .milliseconds(300))
+                        guard !Task.isCancelled else { return }
+                        await self?.reloadSlideshowWithNewSorting()
                     }
                 }
             }
@@ -630,6 +652,15 @@ public final class EnhancedModernSlideshowViewModel {
     
     // MARK: - Private Implementation Methods
     
+    /// Create a hash for SortSettings to detect duplicate notifications
+    private func hashSortSettings(_ settings: SortSettings) -> Int {
+        var hasher = Hasher()
+        hasher.combine(settings.order)
+        hasher.combine(settings.direction)
+        hasher.combine(settings.randomSeed)
+        return hasher.finalize()
+    }
+    
     private func openFolderSelection() async throws -> URL {
         ProductionLogger.userAction("EnhancedSlideshowViewModel: Starting folder selection")
         
@@ -659,10 +690,10 @@ public final class EnhancedModernSlideshowViewModel {
             NSCursor.unhide()
         }
         
-        // Generate new random seed if sort order is random
+        // Generate new random seed if sort order is random (use silent version to avoid notification loops)
         if let sortSettings = sortSettingsManager, sortSettings.settings.order == .random {
             ProductionLogger.debug("EnhancedSlideshowViewModel: Generating new random seed for folder selection")
-            sortSettings.regenerateRandomSeed()
+            sortSettings.regenerateRandomSeedSilently()
         }
         
         return folderURL
@@ -732,11 +763,8 @@ public final class EnhancedModernSlideshowViewModel {
             stopSlideshow()
         }
         
-        // Regenerate random seed if using random sort order
-        if let sortSettings = sortSettingsManager, sortSettings.settings.order == .random {
-            ProductionLogger.debug("EnhancedSlideshowViewModel: Regenerating random seed for sorting reload")
-            sortSettings.regenerateRandomSeed()
-        }
+        // Note: No need to regenerate random seed here - it's already handled by the settings manager
+        // when the user changes to random sort order
         
         // Set loading state explicitly for sort operation
         loadingState = .preparingSlideshow

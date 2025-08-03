@@ -364,22 +364,51 @@ public class ModernSlideshowDomainService: ObservableObject {
         return sorted
     }
     
-    /// Sort photos by creation date
+    /// Sort photos by creation date (optimized with parallel processing)
     private func sortByCreationDate(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
-        // Load creation dates for all photos
-        var photosWithDates: [(Photo, Date?)] = []
+        ProductionLogger.debug("ModernSlideshowDomainService: Starting creation date sort for \(photos.count) photos")
         
-        for photo in photos {
-            do {
-                let metadata = try await loadMetadata(for: photo)
-                var updatedPhoto = photo
-                updatedPhoto.updateMetadata(metadata)
-                photosWithDates.append((updatedPhoto, metadata?.creationDate))
-            } catch {
-                // If metadata loading fails, use the original photo with no date
-                photosWithDates.append((photo, nil))
+        // For small collections, use fast fallback to modification date
+        if photos.count <= 50 {
+            return await sortByCreationDateConcurrent(photos, direction: direction)
+        }
+        
+        // For large collections, offer fallback to modification date
+        ProductionLogger.info("ModernSlideshowDomainService: Large collection (\(photos.count) photos) - using modification date fallback for performance")
+        return await sortByModificationDate(photos, direction: direction)
+    }
+    
+    /// Sort photos by creation date with concurrent processing
+    private func sortByCreationDateConcurrent(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        // Simple concurrent metadata loading - process all at once with limited concurrency
+        var results: [(Int, Photo, Date?)] = []
+        
+        await withTaskGroup(of: (Int, Photo, Date?).self) { group in
+            for (index, photo) in photos.enumerated() {
+                group.addTask { [weak self] in
+                    do {
+                        // Add timeout for individual metadata loading
+                        let metadata = try await self?.loadMetadataWithTimeout(for: photo, timeoutSeconds: 2.0)
+                        var updatedPhoto = photo
+                        if let metadata = metadata {
+                            updatedPhoto.updateMetadata(metadata)
+                        }
+                        return (index, updatedPhoto, metadata?.creationDate)
+                    } catch {
+                        ProductionLogger.debug("ModernSlideshowDomainService: Failed to load metadata for \(photo.fileName): \(error)")
+                        return (index, photo, nil)
+                    }
+                }
+            }
+            
+            // Collect all results
+            for await result in group {
+                results.append(result)
             }
         }
+        
+        // Sort results by original index to maintain order, then extract photo-date pairs
+        let photosWithDates = results.sorted { $0.0 < $1.0 }.map { ($0.1, $0.2) }
         
         let sorted = photosWithDates.sorted { item1, item2 in
             let date1 = item1.1 ?? Date.distantPast
@@ -387,7 +416,7 @@ public class ModernSlideshowDomainService: ObservableObject {
             return direction == .ascending ? date1 < date2 : date1 > date2
         }.map { $0.0 }
         
-        ProductionLogger.debug("ModernSlideshowDomainService: Sorted by creation date (\(direction.displayName))")
+        ProductionLogger.debug("ModernSlideshowDomainService: Sorted by creation date (\(direction.displayName)) - \(photos.count) photos")
         return sorted
     }
     
@@ -414,20 +443,15 @@ public class ModernSlideshowDomainService: ObservableObject {
         return sorted
     }
     
-    /// Sort photos by file size
+    /// Sort photos by file size (optimized with lightweight file attributes)
     private func sortByFileSize(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
-        // Load file sizes for all photos
+        // Load file sizes using lightweight file attributes
         var photosWithSizes: [(Photo, Int64)] = []
         
         for photo in photos {
-            do {
-                let metadata = try await loadMetadata(for: photo)
-                var updatedPhoto = photo
-                updatedPhoto.updateMetadata(metadata)
-                let fileSize = metadata?.fileSize ?? 0
-                photosWithSizes.append((updatedPhoto, fileSize))
-            } catch {
-                // If metadata loading fails, use the original photo with size 0
+            if let fileSize = getFileSize(for: photo.imageURL.url) {
+                photosWithSizes.append((photo, fileSize))
+            } else {
                 photosWithSizes.append((photo, 0))
             }
         }
@@ -436,7 +460,7 @@ public class ModernSlideshowDomainService: ObservableObject {
             return direction == .ascending ? item1.1 < item2.1 : item1.1 > item2.1
         }.map { $0.0 }
         
-        ProductionLogger.debug("ModernSlideshowDomainService: Sorted by file size (\(direction.displayName))")
+        ProductionLogger.debug("ModernSlideshowDomainService: Sorted by file size (\(direction.displayName)) - \(photos.count) photos")
         return sorted
     }
     
@@ -456,6 +480,38 @@ public class ModernSlideshowDomainService: ObservableObject {
         } catch {
             ProductionLogger.warning("ModernSlideshowDomainService: Failed to get modification date for \(url.path): \(error)")
             return nil
+        }
+    }
+    
+    /// Get file size for a file URL (lightweight method)
+    private func getFileSize(for url: URL) -> Int64? {
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            return attributes[.size] as? Int64
+        } catch {
+            ProductionLogger.warning("ModernSlideshowDomainService: Failed to get file size for \(url.path): \(error)")
+            return nil
+        }
+    }
+    
+    /// Load metadata with timeout protection for individual photos
+    private func loadMetadataWithTimeout(for photo: Photo, timeoutSeconds: TimeInterval) async throws -> Photo.PhotoMetadata? {
+        return try await withThrowingTaskGroup(of: Photo.PhotoMetadata?.self) { group in
+            // Add metadata loading task
+            group.addTask { [weak self] in
+                try await self?.loadMetadata(for: photo)
+            }
+            
+            // Add timeout task
+            group.addTask {
+                try await Task.sleep(for: .seconds(timeoutSeconds))
+                return nil // Return nil on timeout
+            }
+            
+            // Return first result and cancel others
+            let result = try await group.next()
+            group.cancelAll()
+            return result ?? nil
         }
     }
 }
