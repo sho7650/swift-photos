@@ -16,8 +16,9 @@ actor VirtualImageLoader {
     private var cacheMisses: Int = 0
     private var totalLoads: Int = 0
     
-    // Completion callback for UI integration
+    // Completion callbacks for UI integration
     private var onImageLoaded: (@MainActor (UUID, SendableImage) -> Void)?
+    private var onImageLoadFailed: (@MainActor (UUID, Error) -> Void)?
     
     init(settings: PerformanceSettings = .default) {
         self.settings = settings
@@ -31,6 +32,11 @@ actor VirtualImageLoader {
     /// Set callback for when images finish loading
     func setImageLoadedCallback(_ callback: @escaping @MainActor (UUID, SendableImage) -> Void) {
         self.onImageLoaded = callback
+    }
+    
+    /// Set callback for when image loading fails
+    func setImageLoadFailedCallback(_ callback: @escaping @MainActor (UUID, Error) -> Void) {
+        self.onImageLoadFailed = callback
     }
     
     /// Update performance settings at runtime
@@ -259,6 +265,11 @@ actor VirtualImageLoader {
             loadingTasks.removeValue(forKey: photo.id)
             if !Task.isCancelled {
                 ProductionLogger.error("Failed to load image for photo \(photo.id): \(error)")
+                
+                // Notify UI that image loading failed
+                if let callback = onImageLoadFailed {
+                    await callback(photo.id, error)
+                }
             }
         }
     }

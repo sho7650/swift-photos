@@ -217,6 +217,12 @@ public final class UnifiedSlideshowViewModel {
                     self?.handleVirtualImageLoaded(photoId, image)
                 }
             }
+            
+            await virtualLoader.setImageLoadFailedCallback { [weak self] photoId, error in
+                Task { @MainActor [weak self] in
+                    self?.handleVirtualImageLoadFailed(photoId, error)
+                }
+            }
         }
         ProductionLogger.debug("UnifiedSlideshowViewModel: Virtual loader callback set up")
     }
@@ -346,6 +352,9 @@ public final class UnifiedSlideshowViewModel {
             self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
             ProductionLogger.error("UnifiedSlideshowViewModel: Repository slideshow creation failed - \(error)")
         }
+        
+        // Always reset loading state after slideshow creation
+        loadingState = .notLoading
     }
     
     private func createSlideshowWithLegacy(from folderURL: URL) async {
@@ -382,6 +391,9 @@ public final class UnifiedSlideshowViewModel {
             self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
             ProductionLogger.error("UnifiedSlideshowViewModel: Legacy slideshow creation failed - \(error)")
         }
+        
+        // Always reset loading state after slideshow creation
+        loadingState = .notLoading
     }
     
     // MARK: - Playback Controls (Unified)
@@ -511,16 +523,69 @@ public final class UnifiedSlideshowViewModel {
     }
     
     private func handleVirtualImageLoaded(_ photoId: UUID, _ image: SendableImage) {
-        guard let slideshow = slideshow,
-              let photoIndex = slideshow.photos.firstIndex(where: { $0.id == photoId }),
-              photoIndex == slideshow.currentIndex else { return }
-        
-        // Update current photo with loaded image
-        if slideshow.photos.first(where: { $0.id == photoId }) != nil {
-            // Note: Photo is immutable, so we update through the slideshow
-            refreshCounter += 1
-            ProductionLogger.debug("UnifiedSlideshowViewModel: Virtual image loaded for current photo")
+        guard var slideshow = slideshow,
+              let photoIndex = slideshow.photos.firstIndex(where: { $0.id == photoId }) else { 
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Photo not found in slideshow for virtual image load")
+            return 
         }
+        
+        // 1. Update Photo state
+        var updatedPhoto = slideshow.photos[photoIndex]
+        updatedPhoto.updateLoadState(.loaded(image))
+        do {
+            try slideshow.updatePhoto(at: photoIndex, with: updatedPhoto)
+        } catch {
+            ProductionLogger.error("UnifiedSlideshowViewModel: Failed to update photo at index \(photoIndex): \(error)")
+            return
+        }
+        
+        // 2. Update slideshow
+        self.slideshow = slideshow
+        
+        // 3. Update currentPhoto if this is the currently displayed photo
+        if photoIndex == slideshow.currentIndex {
+            self.currentPhoto = updatedPhoto
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Current photo '\(updatedPhoto.fileName)' loaded successfully - state: \(updatedPhoto.loadState.description)")
+        } else {
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Background photo '\(updatedPhoto.fileName)' loaded successfully - index: \(photoIndex)")
+        }
+        
+        // 4. Trigger UI update
+        refreshCounter += 1
+    }
+    
+    /// Handle image loading failures
+    private func handleVirtualImageLoadFailed(_ photoId: UUID, _ error: Error) {
+        guard var slideshow = slideshow,
+              let photoIndex = slideshow.photos.firstIndex(where: { $0.id == photoId }) else {
+            ProductionLogger.error("UnifiedSlideshowViewModel: Photo not found for failed load - \(error)")
+            return
+        }
+        
+        // 1. Update Photo state to failed
+        var failedPhoto = slideshow.photos[photoIndex]
+        let slideshowError = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
+        failedPhoto.updateLoadState(.failed(slideshowError))
+        do {
+            try slideshow.updatePhoto(at: photoIndex, with: failedPhoto)
+        } catch {
+            ProductionLogger.error("UnifiedSlideshowViewModel: Failed to update failed photo at index \(photoIndex): \(error)")
+            return
+        }
+        
+        // 2. Update slideshow
+        self.slideshow = slideshow
+        
+        // 3. Update currentPhoto if this is the currently displayed photo
+        if photoIndex == slideshow.currentIndex {
+            self.currentPhoto = failedPhoto
+            ProductionLogger.error("UnifiedSlideshowViewModel: Current photo '\(failedPhoto.fileName)' failed to load: \(error)")
+        } else {
+            ProductionLogger.error("UnifiedSlideshowViewModel: Background photo '\(failedPhoto.fileName)' failed to load: \(error)")
+        }
+        
+        // 4. Trigger UI update
+        refreshCounter += 1
     }
     
     // MARK: - Performance Metrics

@@ -5,6 +5,27 @@ Please refer to define for Architecture principles: @principles/coding-guideline
 Please refer to this for coding best practices: https://developer.apple.com/documentation/xcode/improving-build-efficiency-with-good-coding-practices and https://medium.com/@kalidoss.shanmugam/best-vs-worst-coding-practices-in-swift-20-key-examples-e70ca2c2a0f3 .
 Please refer to this for coding rules: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/
 
+## Cipher Integration
+
+### Memory Utilization Policy
+
+- Always record important design decisions in Cipher
+- Save error solutions with detailed steps
+- Document team-wide coding patterns
+
+### Content to Record
+
+1. Architecture decisions
+2. Debugging insights
+3. Performance optimization techniques
+4. Security-related implementation patterns
+
+### Recommended Timing for Memory Reference
+
+- Check related past implementations before implementing new features
+- Search for solutions to similar cases when encountering errors
+- Reference past review comments during code reviews
+
 ## Build & Development Commands
 
 ### Build Commands
@@ -77,7 +98,7 @@ The application uses Swift 6 `@Observable` ViewModels for state management:
 - **ModernSlideshowViewModel**: Main application state with photo loading, playback control, and slideshow management
   - Uses `@Observable` for better performance and Swift 6 compliance
   - Manages photo collections up to 100k+ images with virtual loading
-  - Integrates with all Modern* settings managers
+  - Integrates with all Modern\* settings managers
   - Provides thread-safe operations with `@MainActor` isolation
 
 **Note**: Legacy SlideshowViewModel is deprecated and will be removed in a future version.
@@ -95,15 +116,15 @@ The application uses a sophisticated multi-layered settings system with real-tim
 
 ### Settings Managers
 
-The application uses Modern* settings managers with Swift 6 `@Observable` pattern:
+The application uses Modern\* settings managers with Swift 6 `@Observable` pattern:
 
 - **ModernPerformanceSettingsManager**: Memory and performance configuration
 - **ModernSlideshowSettingsManager**: Timing and playback behavior
-- **ModernSortSettingsManager**: Photo ordering and sorting algorithms  
+- **ModernSortSettingsManager**: Photo ordering and sorting algorithms
 - **ModernTransitionSettingsManager**: Animation effects and transitions
 - **ModernUIControlSettingsManager**: UI controls and interaction behavior
 
-Each Modern* manager class provides:
+Each Modern\* manager class provides:
 
 - Persists settings to UserDefaults using JSON encoding
 - Swift 6 `@Observable` compliance for better performance
@@ -111,7 +132,7 @@ Each Modern* manager class provides:
 - Preset configurations and validation
 - Thread-safe operations with `@MainActor` isolation
 
-**Note**: Legacy *SettingsManager classes are deprecated and will be removed in a future version.
+**Note**: Legacy \*SettingsManager classes are deprecated and will be removed in a future version.
 
 ### Notification Pattern
 

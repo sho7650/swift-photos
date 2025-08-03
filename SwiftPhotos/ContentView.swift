@@ -137,9 +137,9 @@ struct ContentView: View {
                         Text(error.localizedDescription)
                     }
                 }
-                // Loading overlay for detailed feedback
+                // Loading overlay for detailed feedback - only show when no photos are loaded yet
                 .overlay {
-                    if viewModel.loadingState.isLoading {
+                    if viewModel.loadingState.isLoading && viewModel.slideshow?.currentPhoto == nil {
                         ZStack {
                             Color.black.opacity(0.8)
                                 .ignoresSafeArea()

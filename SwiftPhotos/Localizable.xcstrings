@@ -37,16 +37,6 @@
     "%lld photos" : {
 
     },
-    "%lld/%lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld/%2$lld"
-          }
-        }
-      }
-    },
     "• Alphabetical sorting provides fastest cache performance" : {
 
     },
@@ -68,15 +58,8 @@
     "🇺🇸 US English" : {
 
     },
-    "✅ SHOULD DISPLAY: %@ | Refresh: %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "✅ SHOULD DISPLAY: %1$@ | Refresh: %2$lld"
-          }
-        }
-      }
+    "✅ DISPLAYING: %@" : {
+
     },
     "💡" : {
 
@@ -986,6 +969,9 @@
     "Cache Hit Rate:" : {
 
     },
+    "Cache Hit Rate: %@" : {
+
+    },
     "Cache Validation" : {
 
     },
@@ -1136,9 +1122,6 @@
     "Clear All Recent Folders" : {
 
     },
-    "Clear Error" : {
-
-    },
     "Clear Menu" : {
 
     },
@@ -1149,9 +1132,6 @@
 
     },
     "Current Status" : {
-
-    },
-    "Currently using legacy fallback" : {
 
     },
     "Data Summary" : {
@@ -1383,9 +1363,6 @@
 
     },
     "Error Count:" : {
-
-    },
-    "Error Loading Image" : {
 
     },
     "error.file_corrupted" : {
@@ -1649,9 +1626,6 @@
 
     },
     "Failed to load image" : {
-
-    },
-    "Fallback Active" : {
 
     },
     "features.advanced_memory_management" : {
@@ -2104,9 +2078,6 @@
     "Legacy" : {
 
     },
-    "Legacy Operations: %lld" : {
-
-    },
     "Load Image" : {
 
     },
@@ -2116,16 +2087,10 @@
     "Loading components..." : {
 
     },
-    "Loading image..." : {
-
-    },
     "Loading images..." : {
 
     },
     "Loading slideshow..." : {
-
-    },
-    "Loading with Repository pattern..." : {
 
     },
     "Loading..." : {
@@ -2355,6 +2320,9 @@
     "Monitor Repository pattern performance and automatically handle issues" : {
 
     },
+    "No Photos" : {
+
+    },
     "No Photos Loaded" : {
 
     },
@@ -2362,6 +2330,9 @@
 
     },
     "Normal" : {
+
+    },
+    "Not Loaded: %@" : {
 
     },
     "Number of images to keep in memory around current photo" : {
@@ -2460,6 +2431,9 @@
 
     },
     "Performance" : {
+
+    },
+    "Performance Metrics" : {
 
     },
     "performance.advanced_settings" : {
@@ -2910,9 +2884,6 @@
     "Photos" : {
 
     },
-    "Preparing image..." : {
-
-    },
     "presets.default" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3029,43 +3000,16 @@
     "Repository" : {
 
     },
-    "Repository Error" : {
-
-    },
-    "Repository Health: %@" : {
-
-    },
-    "Repository Loading Failed" : {
-
-    },
     "Repository Mode" : {
-
-    },
-    "Repository operations: %lld" : {
-
-    },
-    "Repository Operations: %lld" : {
 
     },
     "Repository Pattern" : {
 
     },
-    "Repository Pattern Loading..." : {
-
-    },
     "Repository Settings" : {
 
     },
-    "Repository Status:" : {
-
-    },
-    "Repository: Image Not Loaded" : {
-
-    },
     "Reset Repository State" : {
-
-    },
-    "Retry" : {
 
     },
     "Retry with Legacy Mode" : {
@@ -3099,13 +3043,7 @@
     "Seed:" : {
 
     },
-    "Select a folder to start" : {
-
-    },
     "Select a folder to start slideshow" : {
-
-    },
-    "Select a folder to start slideshow with Repository pattern" : {
 
     },
     "Select Folder" : {
@@ -6244,9 +6182,6 @@
 
     },
     "Use the advanced Repository pattern for improved performance with large photo collections" : {
-
-    },
-    "Using legacy fallback" : {
 
     },
     "Validate cached data integrity" : {

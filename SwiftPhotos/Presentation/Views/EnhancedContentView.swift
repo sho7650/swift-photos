@@ -120,18 +120,6 @@ struct EnhancedContentView: View {
                     )
                     .id(currentPhoto.id)
                     
-                } else if viewModel.isLoading {
-                    // Loading state
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
-                        
-                        Text("Loading slideshow...")
-                            .foregroundColor(.white)
-                            .font(.headline)
-                    }
-                    
                 } else if let error = viewModel.error {
                     // Error state
                     VStack(spacing: 16) {
@@ -161,18 +149,20 @@ struct EnhancedContentView: View {
                 }
             }
             
-            // UI Controls Overlay
+            // UI Controls Overlay - only show when no photo is displayed
             VStack {
-                if uiControlStateManager.isControlsVisible {
+                if uiControlStateManager.isControlsVisible && viewModel.slideshow?.currentPhoto == nil {
                     repositoryAwareControlsOverlay(
                         viewModel: viewModel,
                         uiControlStateManager: uiControlStateManager
                     )
-                }
-                
-                // Repository Status Indicator (debug mode)
-                if performanceSettings.settings.aggressiveMemoryManagement {
-                    repositoryStatusIndicator
+                } else if uiControlStateManager.isControlsVisible && viewModel.slideshow?.currentPhoto != nil {
+                    // Show minimal controls only when photo is displayed
+                    MinimalControlsView(
+                        viewModel: viewModel,
+                        transitionSettings: transitionSettings,
+                        uiControlSettings: uiControlSettings
+                    )
                 }
                 
                 Spacer()

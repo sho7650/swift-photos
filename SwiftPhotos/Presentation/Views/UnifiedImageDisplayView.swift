@@ -89,13 +89,23 @@ public struct UnifiedImageDisplayView: View {
         .onChange(of: viewModel.currentPhoto?.id) { oldValue, newValue in
             handlePhotoChange(from: oldValue, to: newValue)
         }
+        .onChange(of: viewModel.refreshCounter) { _, _ in
+            // Force view refresh when refreshCounter changes
+        }
+        .onChange(of: viewModel.slideshow?.currentPhoto?.loadState) { _, _ in
+            // Force view refresh when photo load state changes
+        }
     }
     
     // MARK: - Private Views
     
     @ViewBuilder
     private func mainImageContent(geometry: GeometryProxy) -> some View {
-        if let photo = viewModel.currentPhoto {
+        if let slideshow = viewModel.slideshow,
+           let photo = slideshow.currentPhoto {
+            // Force view refresh by including refreshCounter in the view state
+            let _ = viewModel.refreshCounter
+            
             switch photo.loadState {
             case .loaded(let image):
                 loadedImageView(image: image, photo: photo, geometry: geometry)
