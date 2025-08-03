@@ -428,6 +428,41 @@ extension EnhancedInteractionCoordinator: @preconcurrency AdaptiveTimerManagerDe
             effectManager.setPerformanceMode(true)
         }
     }
+    
+    // MARK: - Timer Event Handlers
+    
+    public func handleTimerFired(purpose: TimerPurpose, timer: AdaptiveTimerProviding) {
+        logger.debug("🎯 EnhancedInteractionCoordinator: Timer fired for purpose: \(purpose.rawValue)")
+        
+        switch purpose {
+        case .autoHide:
+            // Handle auto-hide timer
+            break
+        case .animation:
+            // Handle animation timer
+            break
+        case .interaction:
+            // Handle interaction timer
+            break
+        case .performance:
+            // Handle performance timer
+            break
+        }
+    }
+    
+    public func handleTimerAdapted(purpose: TimerPurpose, timer: AdaptiveTimerProviding, newDuration: TimeInterval, reason: AdaptationReason) {
+        logger.debug("🎯 EnhancedInteractionCoordinator: Timer adapted for purpose: \(purpose.rawValue), new duration: \(newDuration)s, reason: \(reason.rawValue)")
+        
+        // Update performance metrics
+        performanceMetrics.adaptationCount += 1
+    }
+    
+    public func handleTimerError(purpose: TimerPurpose, timer: AdaptiveTimerProviding, error: TimerError) {
+        logger.error("🎯 EnhancedInteractionCoordinator: Timer error for purpose: \(purpose.rawValue), error: \(error.localizedDescription)")
+        
+        // Update performance metrics
+        performanceMetrics.errorCount += 1
+    }
 }
 
 // MARK: - Interaction Handlers
@@ -526,6 +561,7 @@ public struct InteractionPerformanceMetrics {
     public var interactionsPerSecond: Double = 0
     public var averageProcessingTime: TimeInterval = 0
     public var errorCount: Int = 0
+    public var adaptationCount: Int = 0
     public var componentStates: [ComponentType: Bool] = [:]
     
     mutating func startMonitoring() {
@@ -533,6 +569,7 @@ public struct InteractionPerformanceMetrics {
         interactionsPerSecond = 0
         averageProcessingTime = 0
         errorCount = 0
+        adaptationCount = 0
     }
     
     mutating func stopMonitoring() {
@@ -660,9 +697,34 @@ private class AdaptiveTimerCoordinatorDelegate: AdaptiveTimerDelegate {
     
     func timerDidFire(_ timer: AdaptiveTimerProviding) {
         // Handle timer firing
+        Task { @MainActor in
+            coordinator?.handleTimerFired(purpose: purpose, timer: timer)
+        }
     }
     
     func timerDidAdapt(_ timer: AdaptiveTimerProviding, newDuration: TimeInterval, reason: AdaptationReason) {
         // Log timer adaptation
+        Task { @MainActor in
+            coordinator?.handleTimerAdapted(purpose: purpose, timer: timer, newDuration: newDuration, reason: reason)
+        }
+    }
+    
+    func timerWasPaused(_ timer: AdaptiveTimerProviding) {
+        // Handle timer pause
+    }
+    
+    func timerWasResumed(_ timer: AdaptiveTimerProviding) {
+        // Handle timer resume
+    }
+    
+    func timerWasStopped(_ timer: AdaptiveTimerProviding) {
+        // Handle timer stop
+    }
+    
+    func timerDidEncounterError(_ timer: AdaptiveTimerProviding, error: TimerError) {
+        // Handle timer error
+        Task { @MainActor in
+            coordinator?.handleTimerError(purpose: purpose, timer: timer, error: error)
+        }
     }
 }

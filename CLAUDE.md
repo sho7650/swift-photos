@@ -368,7 +368,7 @@ The following enhancement tasks remain for future development:
 ### Phase 5: Integration & Sharing
 
 - **iCloud Photo Library**: Seamless integration with Apple's photo ecosystem
-- **Social Media Sharing**: Batch processing and direct sharing to social platforms
+- **Social Media Sharing**: Batch processing and direct sharhing to social platforms
 - **AirPlay Support**: Wireless presentation to Apple TV and compatible devices
 - **Cloud Storage Integration**: Support for Dropbox, Google Drive, OneDrive
 
