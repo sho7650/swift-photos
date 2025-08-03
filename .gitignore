@@ -5,7 +5,8 @@
 .DS_Store
 .AppleDouble
 .LSOverride
-Icon[]
+Icon[
+]
 
 # Thumbnails
 ._*
@@ -44,3 +45,12 @@ Temporary Items
 ## User settings
 xcuserdata/
 build/
+
+data/
+.env
+
+# Tool-specific cache and memory directories
+.serena/cache/
+.serena/memories/
+
+

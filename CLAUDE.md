@@ -26,6 +26,17 @@ Please refer to this for coding rules: https://docs.swift.org/swift-book/documen
 - Search for solutions to similar cases when encountering errors
 - Reference past review comments during code reviews
 
+### CLI command samples
+
+```
+/session list                       # List sessions
+/session new [id]                   # Create session
+/session switch <id>                # Switch session
+/config                             # Show config
+/stats                              # Show statistics
+/help                               # Show help
+```
+
 ## Build & Development Commands
 
 ### Build Commands
