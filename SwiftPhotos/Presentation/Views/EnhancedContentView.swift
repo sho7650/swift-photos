@@ -111,11 +111,12 @@ struct EnhancedContentView: View {
                 if viewModel.slideshow != nil,
                    let currentPhoto = viewModel.currentPhoto {
                     
-                    // Image display with Repository-aware transitions
-                    RepositoryImageDisplayView(
+                    // Image display with unified implementation
+                    UnifiedImageDisplayView(
                         viewModel: viewModel,
                         transitionSettings: transitionSettings,
-                        uiControlStateManager: uiControlStateManager
+                        uiControlStateManager: uiControlStateManager,
+                        enablePerformanceMetrics: true
                     )
                     .id(currentPhoto.id)
                     

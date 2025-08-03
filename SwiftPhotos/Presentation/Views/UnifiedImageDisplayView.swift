@@ -83,7 +83,7 @@ public struct UnifiedImageDisplayView: View {
         .onAppear {
             setupTransitionManager()
         }
-        .onChange(of: transitionSettings.currentSettings) { _, _ in
+        .onChange(of: transitionSettings.settings) { _, _ in
             setupTransitionManager()
         }
         .onChange(of: viewModel.currentPhoto?.id) { oldValue, newValue in
@@ -260,12 +260,15 @@ public struct UnifiedImageDisplayView: View {
     // MARK: - Helper Methods
     
     private func setupTransitionManager() {
-        transitionManager = ImageTransitionManager(transitionSettings: transitionSettings.currentSettings)
+        transitionManager = ImageTransitionManager(transitionSettings: transitionSettings)
     }
     
     private func getTransitionEffect() -> AnyTransition {
-        guard let manager = transitionManager else { return .opacity }
-        return manager.getTransition()
+        guard transitionSettings.settings.isEnabled else {
+            return .identity
+        }
+        
+        return transitionManager?.getTransitionModifier(for: transitionSettings.settings.effectType) ?? .identity
     }
     
     private func handlePhotoChange(from oldID: UUID?, to newID: UUID?) {
@@ -311,6 +314,11 @@ private class PreviewSlideshowViewModel: SlideshowViewModelProtocol {
     var currentPhoto: Photo? = nil
     var isPlaying: Bool = false
     var windowLevel: WindowLevel = .normal
+    var isLoading: Bool = false
+    var error: SlideshowError? = nil
+    var selectedFolderURL: URL? = nil
+    var loadingState: LoadingState = .notLoading
+    var refreshCounter: Int = 0
     
     func selectFolder() async {}
     func play() {}
@@ -318,4 +326,6 @@ private class PreviewSlideshowViewModel: SlideshowViewModelProtocol {
     func stop() {}
     func nextPhoto() async {}
     func previousPhoto() async {}
+    func clearError() {}
+    func setSlideshow(_ slideshow: Slideshow) {}
 }

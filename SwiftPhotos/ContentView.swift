@@ -82,8 +82,8 @@ struct ContentView: View {
     private func slideshowContentView(viewModel: any SlideshowViewModelProtocol, keyboardHandler: KeyboardHandler, uiControlStateManager: UIControlStateManager) -> some View {
                 ZStack {
                     // Main content with unified ViewModel approach
-                    // Use SimpleImageDisplayView for all ViewModel types (temporarily until consolidation)
-                    SimpleImageDisplayView(
+                    // Use UnifiedImageDisplayView for all ViewModel types
+                    UnifiedImageDisplayView(
                         viewModel: viewModel,
                         transitionSettings: transitionSettings,
                         uiControlStateManager: uiControlStateManager
