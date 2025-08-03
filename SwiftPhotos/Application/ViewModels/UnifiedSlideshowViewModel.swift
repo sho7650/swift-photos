@@ -46,10 +46,8 @@ public final class UnifiedSlideshowViewModel {
     private var timerId: UUID?
     private let timerPool = OptimizedTimerPool.shared
     
-    // MARK: - Performance Components (Shared)
-    private let virtualLoader: VirtualImageLoader
-    private let backgroundPreloader: BackgroundPreloader
-    private let targetImageLoader: TargetImageLoader
+    // MARK: - Performance Components (Unified)
+    private let unifiedImageLoader: UnifiedImageLoader
     private let performanceSettingsManager: ModernPerformanceSettingsManager
     private let slideshowSettingsManager: ModernSlideshowSettingsManager
     private let sortSettingsManager: ModernSortSettingsManager?
@@ -124,15 +122,13 @@ public final class UnifiedSlideshowViewModel {
         self.slideshowSettingsManager = slideshowSettings ?? ModernSlideshowSettingsManager()
         self.sortSettingsManager = sortSettings
         
-        // Initialize performance components
-        self.virtualLoader = VirtualImageLoader(settings: self.performanceSettingsManager.settings)
-        self.backgroundPreloader = BackgroundPreloader(settings: self.performanceSettingsManager.settings)
-        self.targetImageLoader = TargetImageLoader()
+        // Initialize unified performance component
+        self.unifiedImageLoader = UnifiedImageLoader(settings: self.performanceSettingsManager.settings)
         
         ProductionLogger.lifecycle("UnifiedSlideshowViewModel initialized with \(effectiveDomainService) pattern - window: \(self.performanceSettingsManager.settings.memoryWindowSize), threshold: \(self.performanceSettingsManager.settings.largeCollectionThreshold)")
         
         setupNotificationObservers()
-        setupVirtualLoaderCallback()
+        setupUnifiedLoaderCallback()
     }
     
     /// Convenience initializer for Repository pattern
@@ -210,21 +206,21 @@ public final class UnifiedSlideshowViewModel {
         ProductionLogger.debug("UnifiedSlideshowViewModel: Notification observers set up")
     }
     
-    private func setupVirtualLoaderCallback() {
+    private func setupUnifiedLoaderCallback() {
         Task {
-            await virtualLoader.setImageLoadedCallback { [weak self] photoId, image in
+            await unifiedImageLoader.setImageLoadedCallback { [weak self] photoId, image in
                 Task { @MainActor [weak self] in
-                    self?.handleVirtualImageLoaded(photoId, image)
+                    self?.handleUnifiedImageLoaded(photoId, image)
                 }
             }
             
-            await virtualLoader.setImageLoadFailedCallback { [weak self] photoId, error in
+            await unifiedImageLoader.setImageLoadFailedCallback { [weak self] photoId, error in
                 Task { @MainActor [weak self] in
-                    self?.handleVirtualImageLoadFailed(photoId, error)
+                    self?.handleUnifiedImageLoadFailed(photoId, error)
                 }
             }
         }
-        ProductionLogger.debug("UnifiedSlideshowViewModel: Virtual loader callback set up")
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Unified loader callback set up")
     }
     
     // MARK: - Public Slideshow Management
@@ -472,7 +468,7 @@ public final class UnifiedSlideshowViewModel {
         
         if photoCount > threshold {
             ProductionLogger.performance("UnifiedSlideshowViewModel: Large collection detected (\(photoCount) photos) - enabling virtual loading")
-            await virtualLoader.loadImageWindow(around: slideshow.currentIndex, photos: slideshow.photos)
+            await unifiedImageLoader.loadImageWindow(around: slideshow.currentIndex, photos: slideshow.photos)
         }
     }
     
@@ -483,7 +479,7 @@ public final class UnifiedSlideshowViewModel {
         let threshold = performanceSettingsManager.settings.largeCollectionThreshold
         
         if photoCount > threshold {
-            await virtualLoader.loadImageWindow(around: slideshow.currentIndex, photos: slideshow.photos)
+            await unifiedImageLoader.loadImageWindow(around: slideshow.currentIndex, photos: slideshow.photos)
         }
     }
     
@@ -515,14 +511,13 @@ public final class UnifiedSlideshowViewModel {
     }
     
     private func handlePerformanceSettingsChanged() {
-        ProductionLogger.debug("UnifiedSlideshowViewModel: Performance settings changed - updating virtual loader")
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Performance settings changed - updating unified loader")
         Task {
-            await virtualLoader.updateSettings(performanceSettingsManager.settings)
-            await backgroundPreloader.updateSettings(performanceSettingsManager.settings)
+            await unifiedImageLoader.updateSettings(performanceSettingsManager.settings)
         }
     }
     
-    private func handleVirtualImageLoaded(_ photoId: UUID, _ image: SendableImage) {
+    private func handleUnifiedImageLoaded(_ photoId: UUID, _ image: SendableImage) {
         guard var slideshow = slideshow,
               let photoIndex = slideshow.photos.firstIndex(where: { $0.id == photoId }) else { 
             ProductionLogger.debug("UnifiedSlideshowViewModel: Photo not found in slideshow for virtual image load")
@@ -555,7 +550,7 @@ public final class UnifiedSlideshowViewModel {
     }
     
     /// Handle image loading failures
-    private func handleVirtualImageLoadFailed(_ photoId: UUID, _ error: Error) {
+    private func handleUnifiedImageLoadFailed(_ photoId: UUID, _ error: Error) {
         guard var slideshow = slideshow,
               let photoIndex = slideshow.photos.firstIndex(where: { $0.id == photoId }) else {
             ProductionLogger.error("UnifiedSlideshowViewModel: Photo not found for failed load - \(error)")
