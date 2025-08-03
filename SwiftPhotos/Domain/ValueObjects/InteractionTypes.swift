@@ -54,6 +54,7 @@ public enum GestureType: String, CaseIterable, Codable, Sendable {
     case swipeDown = "swipeDown"
     case magnify = "magnify"
     case smartMagnify = "smartMagnify"
+    case hover = "hover"
     
     public var isDirectional: Bool {
         switch self {
@@ -290,13 +291,27 @@ public struct GestureConfiguration: Codable, Equatable, Sendable {
     public let simultaneousRecognition: Bool
     public let pressureSupport: Bool
     
+    // Additional properties for InteractionZoneView
+    public let minimumDragDistance: Double
+    public let minimumPinchDelta: Double
+    public let minimumRotationDelta: Double
+    public let enablePinchToZoom: Bool
+    public let enableRotation: Bool
+    public let swipeVelocityThreshold: Double
+    
     public init(
         enabledGestures: Set<GestureType> = Set(GestureType.allCases),
         minimumTouchCount: Int = 1,
         maximumTouchCount: Int = 5,
         recognitionDelay: TimeInterval = 0.1,
         simultaneousRecognition: Bool = true,
-        pressureSupport: Bool = true
+        pressureSupport: Bool = true,
+        minimumDragDistance: Double = 10.0,
+        minimumPinchDelta: Double = 0.01,
+        minimumRotationDelta: Double = 0.1,
+        enablePinchToZoom: Bool = true,
+        enableRotation: Bool = true,
+        swipeVelocityThreshold: Double = 200.0
     ) {
         self.enabledGestures = enabledGestures
         self.minimumTouchCount = max(1, minimumTouchCount)
@@ -304,6 +319,12 @@ public struct GestureConfiguration: Codable, Equatable, Sendable {
         self.recognitionDelay = max(0.0, recognitionDelay)
         self.simultaneousRecognition = simultaneousRecognition
         self.pressureSupport = pressureSupport
+        self.minimumDragDistance = max(0.0, minimumDragDistance)
+        self.minimumPinchDelta = max(0.0, minimumPinchDelta)
+        self.minimumRotationDelta = max(0.0, minimumRotationDelta)
+        self.enablePinchToZoom = enablePinchToZoom
+        self.enableRotation = enableRotation
+        self.swipeVelocityThreshold = max(0.0, swipeVelocityThreshold)
     }
     
     /// Configuration optimized for accessibility

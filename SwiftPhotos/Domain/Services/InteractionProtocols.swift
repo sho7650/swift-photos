@@ -286,7 +286,7 @@ public protocol AdaptiveTimerDelegate: AnyObject {
 }
 
 /// Configuration for adaptive timer behavior
-public struct TimerConfiguration: Codable, Equatable {
+public struct TimerConfiguration: Codable, Equatable, Sendable {
     public let baseDuration: TimeInterval
     public let minimumDuration: TimeInterval
     public let maximumDuration: TimeInterval
@@ -693,7 +693,7 @@ public protocol PositionObserver: AnyObject, Sendable {
 // MARK: - Supporting Types
 
 /// Configuration for position calculations
-public struct PositionConfiguration: Codable, Equatable {
+public struct PositionConfiguration: Codable, Equatable, Sendable {
     public let margins: EdgeInsets
     public let minimumSpacing: Double
     public let preferredAlignment: PositionAlignment
@@ -719,7 +719,7 @@ public struct PositionConfiguration: Codable, Equatable {
 }
 
 /// Position alignment preferences
-public enum PositionAlignment: String, CaseIterable, Codable {
+public enum PositionAlignment: String, CaseIterable, Codable, Sendable {
     case topLeading = "topLeading"
     case top = "top"
     case topTrailing = "topTrailing"

@@ -130,7 +130,9 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
         }
         
         debounceGestureUpdate {
-            self.performGestureProcessing(gestureData, at: location)
+            Task { @MainActor in
+                self.performGestureProcessing(gestureData, at: location)
+            }
         }
     }
     
@@ -243,7 +245,7 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
         }
     }
     
-    private func debounceGestureUpdate(_ action: @escaping () -> Void) {
+    private func debounceGestureUpdate(_ action: @escaping @Sendable () -> Void) {
         gestureDebounceTimer?.invalidate()
         gestureDebounceTimer = Timer.scheduledTimer(withTimeInterval: gestureDebounceInterval, repeats: false) { _ in
             Task { @MainActor in
