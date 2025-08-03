@@ -81,28 +81,14 @@ struct ContentView: View {
     @ViewBuilder
     private func slideshowContentView(viewModel: any SlideshowViewModelProtocol, keyboardHandler: KeyboardHandler, uiControlStateManager: UIControlStateManager) -> some View {
                 ZStack {
-                    // Main content with image hover cursor control
-                    // Handle different ViewModel types
-                    if let modernViewModel = viewModel as? ModernSlideshowViewModel {
-                        SimpleImageDisplayView(
-                            viewModel: modernViewModel,
-                            transitionSettings: transitionSettings,
-                            uiControlStateManager: uiControlStateManager
-                        )
-                        .ignoresSafeArea()
-                    } else if let enhancedViewModel = viewModel as? EnhancedModernSlideshowViewModel {
-                        // Repository pattern ViewModel - use a generic display approach
-                        RepositoryImageDisplayView(
-                            viewModel: enhancedViewModel,
-                            transitionSettings: transitionSettings,
-                            uiControlStateManager: uiControlStateManager
-                        )
-                        .ignoresSafeArea()
-                    } else {
-                        // Fallback for unknown ViewModel types
-                        Text("Unsupported ViewModel type")
-                            .foregroundColor(.white)
-                    }
+                    // Main content with unified ViewModel approach
+                    // Use SimpleImageDisplayView for all ViewModel types (temporarily until consolidation)
+                    SimpleImageDisplayView(
+                        viewModel: viewModel,
+                        transitionSettings: transitionSettings,
+                        uiControlStateManager: uiControlStateManager
+                    )
+                    .ignoresSafeArea()
                     
                     // Window level accessor
                     WindowLevelAccessor(windowLevel: viewModel.windowLevel)
@@ -237,36 +223,24 @@ struct ContentView: View {
             let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
-            // Create view model using Repository migration bridge for seamless pattern integration
-            let migrationBridge = RepositoryMigrationBridge.shared
-            let createdViewModel: any SlideshowViewModelProtocol
-            
-            // Check if Repository pattern should be used
-            if await migrationBridge.shouldUseRepositoryPattern() {
-                ProductionLogger.info("ContentView: Using Repository pattern ViewModel")
-                createdViewModel = await migrationBridge.createViewModel(
-                    fileAccess: secureFileAccess,
-                    performanceSettings: performanceSettings,
-                    slideshowSettings: slideshowSettings,
-                    sortSettings: sortSettings,
-                    localizationService: localizationService!
-                )
-            } else {
-                ProductionLogger.info("ContentView: Using Legacy ViewModel")
-                // Fallback to legacy ViewModel creation
-                createdViewModel = ModernSlideshowViewModel(domainService: domainService, fileAccess: secureFileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings, sortSettings: sortSettings)
-            }
+            // Create view model using ViewModelFactory unified approach
+            ProductionLogger.info("ContentView: Creating unified ViewModel with automatic architecture detection")
+            let createdViewModel = await ViewModelFactory.createSlideshowViewModel(
+                fileAccess: secureFileAccess,
+                performanceSettings: performanceSettings,
+                slideshowSettings: slideshowSettings,
+                sortSettings: sortSettings,
+                localizationService: localizationService!,
+                preferRepositoryPattern: true
+            )
             
             let createdKeyboardHandler = KeyboardHandler()
             
-            // Setup UI Control State Manager with type-appropriate ViewModel
-            let createdUIControlStateManager: UIControlStateManager
-            if let modernViewModel = createdViewModel as? ModernSlideshowViewModel {
-                createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: modernViewModel)
-            } else {
-                // For EnhancedModernSlideshowViewModel, create without specific ViewModel reference
-                createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings)
-            }
+            // Setup UI Control State Manager with unified ViewModel approach
+            let createdUIControlStateManager = UIControlStateManager(
+                uiControlSettings: uiControlSettings,
+                slideshowViewModel: createdViewModel
+            )
             
             // Setup keyboard handler connections for both ViewModel types
             createdKeyboardHandler.viewModel = createdViewModel
@@ -410,11 +384,7 @@ struct ContentView: View {
         }
         
         // Create slideshow from the selected folder with proper security scoped access
-        if let modernViewModel = viewModel as? ModernSlideshowViewModel {
-            modernViewModel.loadingState = .scanningFolder(0)
-            modernViewModel.error = nil
-        }
-        // For other ViewModel types, loading state is managed internally
+        viewModel.loadingState = .scanningFolder(0)
         viewModel.error = nil
         
         do {
@@ -435,10 +405,7 @@ struct ContentView: View {
             viewModel.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
         }
         
-        if let modernViewModel = viewModel as? ModernSlideshowViewModel {
-            modernViewModel.loadingState = .notLoading
-        }
-        // For other ViewModel types, loading state is managed internally
+        viewModel.loadingState = .notLoading
     }
     
     // MARK: - Fullscreen Management

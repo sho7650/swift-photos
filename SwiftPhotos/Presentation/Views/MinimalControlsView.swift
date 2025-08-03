@@ -202,11 +202,19 @@ public struct MinimalControlsView: View {
                 uiControlStateManager.handleGestureInteraction()
                 // Use standard navigation method available in protocol
                 Task {
-                    if let modernViewModel = viewModel as? ModernSlideshowViewModel {
-                        modernViewModel.fastGoToPhoto(at: targetIndex)
-                    } else {
-                        // Fallback for other ViewModel types
-                        await viewModel.nextPhoto() // Simple fallback - could be improved
+                    // Navigate to target photo using standard protocol methods
+                    guard let slideshow = viewModel.slideshow else { return }
+                    let currentIndex = slideshow.currentIndex
+                    
+                    // Navigate step by step to target (simplified approach)
+                    if targetIndex > currentIndex {
+                        for _ in currentIndex..<targetIndex {
+                            await viewModel.nextPhoto()
+                        }
+                    } else if targetIndex < currentIndex {
+                        for _ in targetIndex..<currentIndex {
+                            await viewModel.previousPhoto()
+                        }
                     }
                 }
             }

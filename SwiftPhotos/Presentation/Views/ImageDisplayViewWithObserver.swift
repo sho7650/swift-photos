@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 
 public struct ImageDisplayViewWithObserver: View {
-    var viewModel: ModernSlideshowViewModel
+    var viewModel: any SlideshowViewModelProtocol
     var transitionSettings: ModernTransitionSettingsManager
     @State private var transitionManager: ImageTransitionManager?
     @State private var currentPhotoID: UUID?
@@ -10,7 +10,7 @@ public struct ImageDisplayViewWithObserver: View {
     @State private var viewportSize: CGSize = .zero
     
     public init(
-        viewModel: ModernSlideshowViewModel,
+        viewModel: any SlideshowViewModelProtocol,
         transitionSettings: ModernTransitionSettingsManager
     ) {
         self.viewModel = viewModel

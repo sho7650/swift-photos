@@ -2,14 +2,14 @@ import SwiftUI
 import AppKit
 
 public struct SimpleImageDisplayView: View {
-    var viewModel: ModernSlideshowViewModel
+    var viewModel: any SlideshowViewModelProtocol
     var transitionSettings: ModernTransitionSettingsManager
     var uiControlStateManager: UIControlStateManager? = nil
     @State private var transitionManager: ImageTransitionManager?
     @State private var currentPhotoID: UUID?
     @State private var showImage = true
     
-    public init(viewModel: ModernSlideshowViewModel, transitionSettings: ModernTransitionSettingsManager, uiControlStateManager: UIControlStateManager? = nil) {
+    public init(viewModel: any SlideshowViewModelProtocol, transitionSettings: ModernTransitionSettingsManager, uiControlStateManager: UIControlStateManager? = nil) {
         self.viewModel = viewModel
         self.transitionSettings = transitionSettings
         self.uiControlStateManager = uiControlStateManager

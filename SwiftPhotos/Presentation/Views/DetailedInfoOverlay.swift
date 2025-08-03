@@ -130,14 +130,20 @@ public struct DetailedInfoOverlay: View {
             ) { targetIndex in
                 ProductionLogger.userAction("DetailedInfoOverlay: Progress bar clicked - jumping to photo \(targetIndex)")
                 uiControlStateManager.handleGestureInteraction()
-                // Use type checking for specific ViewModel methods
+                // Navigate to target photo using standard protocol methods
                 Task {
-                    if let modernViewModel = viewModel as? ModernSlideshowViewModel {
-                        modernViewModel.goToPhoto(at: targetIndex)
-                    } else {
-                        // Fallback for other ViewModel types - navigate step by step
-                        // This is a simplified fallback implementation
-                        await viewModel.nextPhoto()
+                    guard let slideshow = viewModel.slideshow else { return }
+                    let currentIndex = slideshow.currentIndex
+                    
+                    // Navigate step by step to target (simplified approach)
+                    if targetIndex > currentIndex {
+                        for _ in currentIndex..<targetIndex {
+                            await viewModel.nextPhoto()
+                        }
+                    } else if targetIndex < currentIndex {
+                        for _ in targetIndex..<currentIndex {
+                            await viewModel.previousPhoto()
+                        }
                     }
                 }
             }

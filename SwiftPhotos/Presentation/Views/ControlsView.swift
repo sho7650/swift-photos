@@ -2,10 +2,10 @@ import SwiftUI
 import AppKit
 
 public struct ControlsView: View {
-    var viewModel: ModernSlideshowViewModel
+    var viewModel: any SlideshowViewModelProtocol
     @Environment(\.localizationService) private var localizationService
     
-    public init(viewModel: ModernSlideshowViewModel) {
+    public init(viewModel: any SlideshowViewModelProtocol) {
         self.viewModel = viewModel
     }
     
@@ -118,7 +118,22 @@ public struct ControlsView: View {
                 totalCount: slideshow.count
             ) { targetIndex in
                 ProductionLogger.userAction("ControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
-                viewModel.goToPhoto(at: targetIndex)
+                Task {
+                    // Navigate to target photo using standard protocol methods
+                    guard let slideshow = viewModel.slideshow else { return }
+                    let currentIndex = slideshow.currentIndex
+                    
+                    // Navigate step by step to target (simplified approach)
+                    if targetIndex > currentIndex {
+                        for _ in currentIndex..<targetIndex {
+                            await viewModel.nextPhoto()
+                        }
+                    } else if targetIndex < currentIndex {
+                        for _ in targetIndex..<currentIndex {
+                            await viewModel.previousPhoto()
+                        }
+                    }
+                }
             }
             .frame(height: 8)  // DOUBLED: from 4 to 8 for better clickability
             

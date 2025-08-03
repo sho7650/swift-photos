@@ -8,69 +8,6 @@ public struct ViewModelFactory {
     
     // MARK: - Factory Methods
     
-    /// Create Enhanced ViewModel with Repository pattern (preferred)
-    public static func createEnhancedSlideshowViewModel(
-        fileAccess: SecureFileAccess,
-        performanceSettings: ModernPerformanceSettingsManager,
-        slideshowSettings: ModernSlideshowSettingsManager,
-        sortSettings: ModernSortSettingsManager,
-        localizationService: LocalizationService,
-        enableLegacyFallback: Bool = true
-    ) async -> EnhancedModernSlideshowViewModel {
-        
-        ProductionLogger.info("ViewModelFactory: Creating Enhanced ViewModel with Repository pattern")
-        
-        // Create ImageLoader for Repository integration
-        let imageLoader = ImageLoader()
-        
-        // Create Enhanced ViewModel with Repository pattern
-        let enhancedViewModel = await EnhancedModernSlideshowViewModel(
-            fileAccess: fileAccess,
-            imageLoader: imageLoader,
-            sortSettings: sortSettings,
-            localizationService: localizationService,
-            performanceSettings: performanceSettings,
-            slideshowSettings: slideshowSettings
-        )
-        
-        ProductionLogger.info("ViewModelFactory: Enhanced ViewModel created successfully")
-        return enhancedViewModel
-    }
-    
-    /// Create Legacy ViewModel (fallback)
-    public static func createLegacySlideshowViewModel(
-        fileAccess: SecureFileAccess,
-        performanceSettings: ModernPerformanceSettingsManager,
-        slideshowSettings: ModernSlideshowSettingsManager,
-        sortSettings: ModernSortSettingsManager,
-        localizationService: LocalizationService
-    ) -> ModernSlideshowViewModel {
-        
-        ProductionLogger.info("ViewModelFactory: Creating Legacy ViewModel")
-        
-        // Create traditional dependencies
-        let imageLoader = ImageLoader()
-        let imageCache = ImageCache()
-        let repository = FileSystemPhotoRepository(
-            fileAccess: fileAccess,
-            imageLoader: imageLoader,
-            sortSettings: sortSettings,
-            localizationService: localizationService
-        )
-        let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
-        
-        // Create legacy ViewModel
-        let legacyViewModel = ModernSlideshowViewModel(
-            domainService: domainService,
-            fileAccess: fileAccess,
-            performanceSettings: performanceSettings,
-            slideshowSettings: slideshowSettings,
-            sortSettings: sortSettings
-        )
-        
-        ProductionLogger.info("ViewModelFactory: Legacy ViewModel created successfully")
-        return legacyViewModel
-    }
     
     /// Create ViewModel with automatic architecture detection (UNIFIED IMPLEMENTATION)
     public static func createSlideshowViewModel(
@@ -234,24 +171,4 @@ public struct RepositoryReadinessStatus: Sendable {
 
 // MARK: - Protocol Conformance
 
-extension ModernSlideshowViewModel: SlideshowViewModelProtocol {
-    // Methods already implemented in the class
-}
-
-extension EnhancedModernSlideshowViewModel: SlideshowViewModelProtocol {
-    public func selectFolder() async {
-        await selectFolderAndLoadPhotos()
-    }
-    
-    public func play() {
-        startSlideshow()
-    }
-    
-    public func pause() {
-        stopSlideshow()
-    }
-    
-    public func stop() {
-        stopSlideshow()
-    }
-}
+// UnifiedSlideshowViewModel already conforms to SlideshowViewModelProtocol

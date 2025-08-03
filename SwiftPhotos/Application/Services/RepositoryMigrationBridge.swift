@@ -150,9 +150,9 @@ public class RepositoryMigrationBridge: ObservableObject {
         )
         
         // Update migration status based on result
-        if viewModel is EnhancedModernSlideshowViewModel {
+        if viewModel is UnifiedSlideshowViewModel {
             migrationStatus = .completed
-            ProductionLogger.info("RepositoryMigrationBridge: Using Repository-based ViewModel")
+            ProductionLogger.info("RepositoryMigrationBridge: Using Unified ViewModel with automatic architecture selection")
         } else {
             migrationStatus = .usingLegacy
             ProductionLogger.info("RepositoryMigrationBridge: Using Legacy ViewModel")

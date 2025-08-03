@@ -16,7 +16,7 @@ public class AdvancedGestureManager: ObservableObject {
     
     // MARK: - Private Properties
     
-    public let slideshowViewModel: ModernSlideshowViewModel
+    public let slideshowViewModel: any SlideshowViewModelProtocol
     private let gestureCoordinator: GestureCoordinator
     public let photoZoomState: PhotoZoomState
     private let logger = Logger(subsystem: "SwiftPhotos", category: "AdvancedGestureManager")
@@ -47,7 +47,7 @@ public class AdvancedGestureManager: ObservableObject {
     // MARK: - Initialization
     
     public init(
-        slideshowViewModel: ModernSlideshowViewModel,
+        slideshowViewModel: any SlideshowViewModelProtocol,
         gestureCoordinator: GestureCoordinator,
         photoZoomState: PhotoZoomState
     ) {

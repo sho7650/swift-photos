@@ -113,7 +113,7 @@ struct EnhancedContentView: View {
                     
                     // Image display with Repository-aware transitions
                     RepositoryImageDisplayView(
-                        viewModel: viewModel as! EnhancedModernSlideshowViewModel,
+                        viewModel: viewModel,
                         transitionSettings: transitionSettings,
                         uiControlStateManager: uiControlStateManager
                     )
@@ -327,7 +327,7 @@ struct EnhancedContentView: View {
             )
             
             // Determine if Repository pattern is being used
-            isUsingRepositoryPattern = createdViewModel is EnhancedModernSlideshowViewModel
+            isUsingRepositoryPattern = createdViewModel is UnifiedSlideshowViewModel
             
             // Create keyboard handler
             let createdKeyboardHandler = KeyboardHandler()
@@ -363,13 +363,14 @@ struct EnhancedContentView: View {
                 throw InitializationError.localizationServiceCreationFailed
             }
             
-            // Force legacy ViewModel creation
-            let legacyViewModel = ViewModelFactory.createLegacySlideshowViewModel(
+            // Use unified ViewModel creation with legacy preference
+            let legacyViewModel = await ViewModelFactory.createSlideshowViewModel(
                 fileAccess: secureFileAccess,
                 performanceSettings: performanceSettings,
                 slideshowSettings: slideshowSettings,
                 sortSettings: sortSettings,
-                localizationService: localizationService
+                localizationService: localizationService,
+                preferRepositoryPattern: false
             )
             
             let createdKeyboardHandler = KeyboardHandler()
@@ -401,12 +402,8 @@ struct EnhancedContentView: View {
     }
     
     private func setupKeyboardHandler(_ keyboardHandler: KeyboardHandler, with viewModel: any SlideshowViewModelProtocol) {
-        // Setup keyboard handler for both ViewModel types
-        if let modernViewModel = viewModel as? ModernSlideshowViewModel {
-            keyboardHandler.viewModel = modernViewModel
-        }
-        // Note: Enhanced ViewModel integration would need additional setup
-        
+        // Setup keyboard handler with unified ViewModel
+        keyboardHandler.viewModel = viewModel
         keyboardHandler.performanceSettings = performanceSettings
         keyboardHandler.onOpenSettings = openSettings
     }
