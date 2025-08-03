@@ -26,13 +26,13 @@ public class UIControlStateManager: ObservableObject {
     // MARK: - Private Properties
     
     private let uiControlSettings: ModernUIControlSettingsManager
-    private var hideTimer: LightweightAdaptiveTimer?
+    private var hideTimer: UnifiedAdaptiveTimer?
     private var mouseTrackingArea: NSTrackingArea?
     private var globalMouseMonitor: Any?
     private var lastInteractionTime: Date = Date()
-    private var minimumVisibilityTimer: LightweightAdaptiveTimer?
+    private var minimumVisibilityTimer: UnifiedAdaptiveTimer?
     private var interactionClearTimer: UUID?
-    private weak var slideshowViewModel: ModernSlideshowViewModel?
+    private weak var slideshowViewModel: (any SlideshowViewModelProtocol)?
     
     // Optimized timer pool for better performance
     private let timerPool = OptimizedTimerPool.shared
@@ -57,7 +57,7 @@ public class UIControlStateManager: ObservableObject {
     
     // MARK: - Initialization
     
-    public init(uiControlSettings: ModernUIControlSettingsManager, slideshowViewModel: ModernSlideshowViewModel? = nil) {
+    public init(uiControlSettings: ModernUIControlSettingsManager, slideshowViewModel: (any SlideshowViewModelProtocol)? = nil) {
         self.uiControlSettings = uiControlSettings
         self.slideshowViewModel = slideshowViewModel
         self.isDetailedInfoVisible = uiControlSettings.settings.showDetailedInfoByDefault
@@ -384,8 +384,8 @@ public class UIControlStateManager: ObservableObject {
             return
         }
         
-        // Use lightweight adaptive timer for better performance
-        hideTimer = LightweightAdaptiveTimer.forUIControls(baseDuration: hideDelay)
+        // Use unified adaptive timer for better performance
+        hideTimer = UnifiedAdaptiveTimer.forUIControls(baseDuration: hideDelay)
         hideTimer?.delegate = self
         hideTimer?.adaptationEnabled = true // Enable context-aware adaptation
         
@@ -433,7 +433,7 @@ public class UIControlStateManager: ObservableObject {
         minimumVisibilityTimer?.stop()
         
         // Use high-performance timer for minimum visibility (no adaptation needed)
-        minimumVisibilityTimer = LightweightAdaptiveTimer.highPerformance(
+        minimumVisibilityTimer = UnifiedAdaptiveTimer.highPerformance(
             baseDuration: uiControlSettings.settings.minimumVisibilityDuration
         )
         minimumVisibilityTimer?.delegate = self

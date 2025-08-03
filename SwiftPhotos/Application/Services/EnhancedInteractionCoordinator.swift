@@ -155,7 +155,7 @@ public class EnhancedInteractionCoordinator: ObservableObject {
     }
     
     /// Create an adaptive timer with coordinated behavior
-    public func createAdaptiveTimer(for purpose: TimerPurpose, configuration: TimerConfiguration? = nil) -> AdaptiveTimer {
+    public func createAdaptiveTimer(for purpose: TimerPurpose, configuration: TimerConfiguration? = nil) -> UnifiedAdaptiveTimer {
         let config = configuration ?? currentConfiguration.adaptiveTiming
         let timer = adaptiveTimerManager.createTimer(purpose: purpose, configuration: config)
         
@@ -408,14 +408,14 @@ extension EnhancedInteractionCoordinator: PositionObserver {
 // MARK: - AdaptiveTimerManagerDelegate
 
 extension EnhancedInteractionCoordinator: @preconcurrency AdaptiveTimerManagerDelegate {
-    nonisolated public func timerManager(_ manager: AdaptiveTimerManager, didCreateTimer timer: AdaptiveTimer, purpose: TimerPurpose) {
+    nonisolated public func timerManager(_ manager: AdaptiveTimerManager, didCreateTimer timer: UnifiedAdaptiveTimer, purpose: TimerPurpose) {
         let purposeValue = purpose.rawValue
         Task { @MainActor in
             logger.debug("🎯 EnhancedInteractionCoordinator: Timer created for \(purposeValue)")
         }
     }
     
-    nonisolated public func timerManager(_ manager: AdaptiveTimerManager, didAdaptTimer timer: AdaptiveTimer, newDuration: TimeInterval) {
+    nonisolated public func timerManager(_ manager: AdaptiveTimerManager, didAdaptTimer timer: UnifiedAdaptiveTimer, newDuration: TimeInterval) {
         Task { @MainActor in
             logger.debug("🎯 EnhancedInteractionCoordinator: Timer adapted to \(String(format: "%.1f", newDuration))s")
         }
@@ -599,12 +599,12 @@ public class AdaptiveTimerManager: ObservableObject {
     @Published public private(set) var activeTimerCount: Int = 0
     public weak var globalDelegate: AdaptiveTimerManagerDelegate?
     
-    private var timers: [UUID: AdaptiveTimer] = [:]
+    private var timers: [UUID: UnifiedAdaptiveTimer] = [:]
     private var adaptationEnabled: Bool = false
     private var fastResponseMode: Bool = false
     
-    public func createTimer(purpose: TimerPurpose, configuration: TimerConfiguration) -> AdaptiveTimer {
-        let timer = AdaptiveTimer(configuration: configuration)
+    public func createTimer(purpose: TimerPurpose, configuration: TimerConfiguration) -> UnifiedAdaptiveTimer {
+        let timer = UnifiedAdaptiveTimer(configuration: configuration)
         let timerId = UUID()
         timers[timerId] = timer
         activeTimerCount = timers.count
@@ -643,8 +643,8 @@ public class AdaptiveTimerManager: ObservableObject {
 
 /// Delegate for adaptive timer manager
 public protocol AdaptiveTimerManagerDelegate: AnyObject {
-    func timerManager(_ manager: AdaptiveTimerManager, didCreateTimer timer: AdaptiveTimer, purpose: TimerPurpose)
-    func timerManager(_ manager: AdaptiveTimerManager, didAdaptTimer timer: AdaptiveTimer, newDuration: TimeInterval)
+    func timerManager(_ manager: AdaptiveTimerManager, didCreateTimer timer: UnifiedAdaptiveTimer, purpose: TimerPurpose)
+    func timerManager(_ manager: AdaptiveTimerManager, didAdaptTimer timer: UnifiedAdaptiveTimer, newDuration: TimeInterval)
     func timerManagerDidEnterFastResponseMode(_ manager: AdaptiveTimerManager)
 }
 

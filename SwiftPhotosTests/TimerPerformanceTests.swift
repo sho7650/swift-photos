@@ -108,15 +108,15 @@ struct TimerPerformanceTests {
         #expect(foregroundStats.currentTickInterval < 0.05) // Should use faster tick rate
     }
     
-    // MARK: - LightweightAdaptiveTimer Performance Tests
+    // MARK: - UnifiedAdaptiveTimer Performance Tests
     
-    @Test func testLightweightTimerInitializationSpeed() async {
+    @Test func testUnifiedTimerInitializationSpeed() async {
         let iterations = 1000
         let startTime = CFAbsoluteTimeGetCurrent()
         
-        var timers: [LightweightAdaptiveTimer] = []
+        var timers: [UnifiedAdaptiveTimer] = []
         for _ in 0..<iterations {
-            let timer = LightweightAdaptiveTimer.forUIControls(baseDuration: 1.0)
+            let timer = UnifiedAdaptiveTimer.forUIControls(baseDuration: 1.0)
             timers.append(timer)
         }
         
@@ -132,8 +132,8 @@ struct TimerPerformanceTests {
         }
     }
     
-    @Test func testLightweightTimerAdaptationPerformance() async {
-        let timer = LightweightAdaptiveTimer.forUIControls(baseDuration: 1.0)
+    @Test func testUnifiedTimerAdaptationPerformance() async {
+        let timer = UnifiedAdaptiveTimer.forUIControls(baseDuration: 1.0)
         timer.adaptationEnabled = true
         
         let config = TimerConfiguration.autoHide(duration: 1.0)
@@ -168,23 +168,23 @@ struct TimerPerformanceTests {
         }
     }
     
-    @Test func testLightweightTimerMemoryUsage() async {
-        // Test that lightweight timer uses less memory than full adaptive timer
-        let lightweightTimer = LightweightAdaptiveTimer.forUIControls(baseDuration: 1.0)
-        let fullTimer = AdaptiveTimer()
+    @Test func testUnifiedTimerMemoryUsage() async {
+        // Test unified timer in different modes
+        let lightweightTimer = UnifiedAdaptiveTimer.forUIControls(baseDuration: 1.0)
+        let fullTimer = UnifiedAdaptiveTimer.fullAdaptive(baseDuration: 1.0)
         
         // Both timers should be lightweight in terms of initialization
         #expect(lightweightTimer.currentConfiguration.baseDuration == 1.0)
-        #expect(fullTimer.currentConfiguration.baseDuration == 5.0) // Default
+        #expect(fullTimer.currentConfiguration.baseDuration == 1.0)
         
-        // Lightweight timer should have simpler adaptation history
+        // Check adaptation history
         let lightweightHistory = lightweightTimer.getAdaptationHistory()
         let fullHistory = fullTimer.getAdaptationHistory()
         
         #expect(lightweightHistory.count == 0) // No history initially
         #expect(fullHistory.count == 0) // No history initially
         
-        // Test that adaptation history is limited in lightweight version
+        // Test that adaptation behavior differs between implementations
         lightweightTimer.adaptationEnabled = true
         fullTimer.adaptationEnabled = true
         
@@ -204,7 +204,7 @@ struct TimerPerformanceTests {
             lightweightTimer.stop()
             fullTimer.stop()
             
-            // Both should have some adaptation history, but lightweight should be more efficient
+            // Both should have some adaptation history, but may differ in implementation details
             let lightweightHistoryAfter = lightweightTimer.getAdaptationHistory()
             let fullHistoryAfter = fullTimer.getAdaptationHistory()
             
@@ -338,8 +338,8 @@ struct TimerPerformanceTests {
         timerPool.cancelTimer(timerId) // Clean up (though it should be completed)
     }
     
-    @Test func testLightweightTimerPrecision() async {
-        let timer = LightweightAdaptiveTimer.highPerformance(baseDuration: 0.1)
+    @Test func testUnifiedTimerPrecision() async {
+        let timer = UnifiedAdaptiveTimer.highPerformance(baseDuration: 0.1)
         let targetDuration: TimeInterval = 0.1
         let tolerance: TimeInterval = 1.0 // 1s tolerance for CI/testing environments
         
@@ -366,6 +366,49 @@ struct TimerPerformanceTests {
             
         } catch {
             #expect(Bool(false), "Timer should start successfully: \(error)")
+        }
+    }
+    
+    @Test func testUnifiedTimerImplementationSelection() async {
+        // Test automatic implementation selection
+        let autoTimer = UnifiedAdaptiveTimer()
+        #expect(autoTimer.adaptationEnabled == true)
+        
+        // Test forced lightweight mode
+        let lightweightTimer = UnifiedAdaptiveTimer.highPerformance(baseDuration: 0.5)
+        #expect(lightweightTimer.adaptationEnabled == false)
+        
+        // Test full adaptive mode
+        let fullTimer = UnifiedAdaptiveTimer.fullAdaptive(baseDuration: 1.0)
+        #expect(fullTimer.adaptationEnabled == true)
+        
+        // Test factory methods produce different configurations
+        let uiTimer = UnifiedAdaptiveTimer.forUIControls(baseDuration: 3.0)
+        let batteryTimer = UnifiedAdaptiveTimer.batteryOptimized(baseDuration: 3.0)
+        
+        #expect(uiTimer.currentConfiguration.baseDuration == 3.0)
+        #expect(batteryTimer.currentConfiguration.baseDuration == 3.0)
+        
+        // Test that timers can start and stop cleanly
+        do {
+            try autoTimer.start(with: TimerConfiguration(baseDuration: 0.1))
+            try lightweightTimer.start(with: TimerConfiguration(baseDuration: 0.1))
+            try fullTimer.start(with: TimerConfiguration(baseDuration: 0.1))
+            try uiTimer.start(with: TimerConfiguration(baseDuration: 0.1))
+            try batteryTimer.start(with: TimerConfiguration(baseDuration: 0.1))
+            
+            // Wait briefly
+            try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
+            
+            // Stop all timers
+            autoTimer.stop()
+            lightweightTimer.stop()
+            fullTimer.stop()
+            uiTimer.stop()
+            batteryTimer.stop()
+            
+        } catch {
+            #expect(Bool(false), "All timer types should start successfully: \(error)")
         }
     }
 }
