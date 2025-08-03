@@ -38,7 +38,8 @@ public final class EnhancedModernSlideshowViewModel {
     // MARK: - Legacy Dependencies (for backward compatibility)
     private let legacyDomainService: SlideshowDomainService?
     private let fileAccess: SecureFileAccess
-    private var timer: Timer?
+    private var timerId: UUID?
+    private let timerPool = OptimizedTimerPool.shared
     
     // Performance optimizations for large collections
     private let virtualLoader: VirtualImageLoader
@@ -59,6 +60,9 @@ public final class EnhancedModernSlideshowViewModel {
     
     // MARK: - State Management
     private var isCreatingSlideshow = false
+    
+    // MARK: - Performance Monitoring
+    private let performanceMonitor = PerformanceMonitor.shared
     
     // MARK: - Initialization
     
@@ -94,6 +98,11 @@ public final class EnhancedModernSlideshowViewModel {
         self.targetImageLoader = TargetImageLoader()
         
         ProductionLogger.lifecycle("EnhancedSlideshowViewModel initialized with Repository pattern support")
+        
+        // Start performance monitoring if enabled
+        if performanceMonitoring {
+            performanceMonitor.startMonitoring()
+        }
         
         setupNotificationObservers()
         setupVirtualLoaderCallback()
@@ -263,6 +272,9 @@ public final class EnhancedModernSlideshowViewModel {
         ProductionLogger.lifecycle("EnhancedSlideshowViewModel: Creating slideshow from folder: \(folderURL.path)")
         operationCount += 1
         
+        // Start performance monitoring for slideshow creation
+        performanceMonitor.startOperation("slideshow_creation")
+        
         do {
             // Cancel any existing loading operations
             await cancelExistingOperations()
@@ -289,6 +301,9 @@ public final class EnhancedModernSlideshowViewModel {
                 ProductionLogger.error("EnhancedSlideshowViewModel: Repository pattern failed and legacy fallback disabled")
                 self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
                 loadingState = .notLoading
+                
+                // End performance monitoring
+                performanceMonitor.endOperation("slideshow_creation")
             }
         }
     }
@@ -393,6 +408,10 @@ public final class EnhancedModernSlideshowViewModel {
         }
         
         loadingState = .notLoading
+        
+        // End performance monitoring
+        performanceMonitor.endOperation("slideshow_creation")
+        
         ProductionLogger.lifecycle("EnhancedSlideshowViewModel: Slideshow creation finalized")
     }
     
@@ -493,6 +512,7 @@ public final class EnhancedModernSlideshowViewModel {
     public func getPerformanceMetrics() async -> EnhancedViewModelMetrics {
         let domainMetrics = modernDomainService.getPerformanceMetrics()
         let repositoryHealth = await repositoryContainer.performHealthCheck()
+        let performanceReport = performanceMonitor.getPerformanceReport()
         
         return EnhancedViewModelMetrics(
             totalOperations: operationCount,
@@ -501,7 +521,8 @@ public final class EnhancedModernSlideshowViewModel {
             repositorySuccessRate: domainMetrics.successRate,
             repositoryHealth: repositoryHealth,
             isUsingLegacyFallback: legacyOperationCount > 0,
-            performanceMonitoringEnabled: performanceMonitoring
+            performanceMonitoringEnabled: performanceMonitoring,
+            systemPerformance: performanceReport
         )
     }
     
@@ -769,9 +790,13 @@ public final class EnhancedModernSlideshowViewModel {
         // Use settings from SlideshowSettingsManager
         let interval = slideshowSettingsManager.settings.slideDuration
         
-        ProductionLogger.debug("EnhancedSlideshowViewModel.startTimer: Using interval \(interval) seconds from settings")
+        ProductionLogger.debug("EnhancedSlideshowViewModel.startTimer: Using interval \(interval) seconds from optimized timer pool")
         
-        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+        timerId = timerPool.scheduleTimer(
+            duration: interval,
+            tolerance: 0.1, // 100ms tolerance for better efficiency
+            repeats: true
+        ) { [weak self] in
             Task { @MainActor in
                 await self?.nextPhoto()
             }
@@ -779,8 +804,10 @@ public final class EnhancedModernSlideshowViewModel {
     }
     
     private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
+        if let timerId = timerId {
+            timerPool.cancelTimer(timerId)
+            self.timerId = nil
+        }
     }
     
     private func reinitializeVirtualLoader() async {
@@ -942,6 +969,27 @@ public struct EnhancedViewModelMetrics: Sendable {
     public let repositoryHealth: RepositoryHealthStatus
     public let isUsingLegacyFallback: Bool
     public let performanceMonitoringEnabled: Bool
+    public let systemPerformance: PerformanceReport?
+    
+    public init(
+        totalOperations: Int,
+        repositoryOperations: Int,
+        legacyOperations: Int,
+        repositorySuccessRate: Double,
+        repositoryHealth: RepositoryHealthStatus,
+        isUsingLegacyFallback: Bool,
+        performanceMonitoringEnabled: Bool,
+        systemPerformance: PerformanceReport? = nil
+    ) {
+        self.totalOperations = totalOperations
+        self.repositoryOperations = repositoryOperations
+        self.legacyOperations = legacyOperations
+        self.repositorySuccessRate = repositorySuccessRate
+        self.repositoryHealth = repositoryHealth
+        self.isUsingLegacyFallback = isUsingLegacyFallback
+        self.performanceMonitoringEnabled = performanceMonitoringEnabled
+        self.systemPerformance = systemPerformance
+    }
     
     public var repositoryUsageRate: Double {
         guard totalOperations > 0 else { return 0.0 }
@@ -951,5 +999,13 @@ public struct EnhancedViewModelMetrics: Sendable {
     public var legacyUsageRate: Double {
         guard totalOperations > 0 else { return 0.0 }
         return Double(legacyOperations) / Double(totalOperations)
+    }
+    
+    public var memoryUsageMB: UInt64 {
+        return systemPerformance?.currentMetrics.memoryUsageMB ?? 0
+    }
+    
+    public var peakMemoryUsageMB: UInt64 {
+        return systemPerformance?.peakMemoryUsage ?? 0
     }
 }

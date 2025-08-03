@@ -14,6 +14,12 @@ actor BackgroundPreloader {
     private var successfulPreloads: Int = 0
     private var failedPreloads: Int = 0
     
+    // Intelligent preloading
+    private var navigationHistory: [Int] = []
+    private var lastNavigationTime: Date = Date()
+    private var navigationDirection: NavigationDirection = .unknown
+    private let maxHistorySize = 10
+    
     struct PreloadItem: Comparable, Sendable {
         let photo: Photo
         let priority: Int
@@ -21,6 +27,12 @@ actor BackgroundPreloader {
         static func < (lhs: PreloadItem, rhs: PreloadItem) -> Bool {
             return lhs.priority > rhs.priority // Higher priority first
         }
+    }
+    
+    enum NavigationDirection {
+        case forward
+        case backward
+        case unknown
     }
     
     init(settings: PerformanceSettings = .default) {
@@ -39,8 +51,11 @@ actor BackgroundPreloader {
         ProductionLogger.debug("BackgroundPreloader: Settings updated - concurrent loads: \(maxConcurrentLoads)")
     }
     
-    /// Schedule photos for preloading with priorities - supports unlimited collections
+    /// Schedule photos for preloading with intelligent direction-based priorities
     func schedulePreload(photos: [Photo], currentIndex: Int, windowSize: Int? = nil) async {
+        // Update navigation tracking
+        updateNavigationHistory(currentIndex: currentIndex)
+        
         // Use settings-based window size or provided size
         let effectiveWindowSize = windowSize ?? settings.preloadDistance
         
@@ -54,24 +69,29 @@ actor BackgroundPreloader {
         preloadTasks.removeAll()
         priorityQueue.clear()
         
-        // Calculate preload range efficiently for large collections
-        let startIndex = max(0, currentIndex - maxPreloadScope)
-        let endIndex = min(photos.count - 1, currentIndex + maxPreloadScope)
+        // Calculate asymmetric preload range based on navigation direction
+        let (startIndex, endIndex) = calculateIntelligentPreloadRange(
+            currentIndex: currentIndex,
+            photos: photos,
+            maxScope: maxPreloadScope
+        )
         
-        // Add photos to priority queue with distance-based priority
+        // Add photos to priority queue with intelligent priority calculation
         for index in startIndex...endIndex {
             let photo = photos[index]
-            let distance = abs(index - currentIndex)
+            let priority = calculateIntelligentPriority(
+                index: index,
+                currentIndex: currentIndex,
+                direction: navigationDirection,
+                photos: photos
+            )
             
-            // Exponential priority decay for better performance
-            let priority = max(0, 100 - (distance * distance / 10))
-            
-            if photo.loadState.isNotLoaded {
+            if photo.loadState.isNotLoaded && priority > 0 {
                 priorityQueue.enqueue(PreloadItem(photo: photo, priority: priority))
             }
         }
         
-        ProductionLogger.performance("BackgroundPreloader: Scheduled \(priorityQueue.count) photos for preload (range: \(startIndex)-\(endIndex))")
+        ProductionLogger.performance("BackgroundPreloader: Scheduled \(priorityQueue.count) photos for preload (range: \(startIndex)-\(endIndex), direction: \(navigationDirection))")
         
         // Start preloading
         await processPreloadQueue()
@@ -157,6 +177,118 @@ actor BackgroundPreloader {
             successRate: successRate,
             activeLoads: preloadTasks.count
         )
+    }
+    
+    // MARK: - Intelligent Preloading Methods
+    
+    /// Update navigation history and detect direction patterns
+    private func updateNavigationHistory(currentIndex: Int) {
+        let now = Date()
+        
+        // Add to history
+        navigationHistory.append(currentIndex)
+        if navigationHistory.count > maxHistorySize {
+            navigationHistory.removeFirst()
+        }
+        
+        // Detect navigation direction from recent history
+        if navigationHistory.count >= 3 {
+            let recentMoves = Array(navigationHistory.suffix(3))
+            let direction1 = recentMoves[1] - recentMoves[0]
+            let direction2 = recentMoves[2] - recentMoves[1]
+            
+            if direction1 > 0 && direction2 > 0 {
+                navigationDirection = .forward
+            } else if direction1 < 0 && direction2 < 0 {
+                navigationDirection = .backward
+            } else {
+                navigationDirection = .unknown
+            }
+        }
+        
+        lastNavigationTime = now
+    }
+    
+    /// Calculate intelligent preload range based on navigation patterns
+    private func calculateIntelligentPreloadRange(
+        currentIndex: Int,
+        photos: [Photo],
+        maxScope: Int
+    ) -> (startIndex: Int, endIndex: Int) {
+        
+        switch navigationDirection {
+        case .forward:
+            // Bias towards loading ahead
+            let forwardBias = Int(Double(maxScope) * 0.7)
+            let backwardScope = maxScope - forwardBias
+            return (
+                startIndex: max(0, currentIndex - backwardScope),
+                endIndex: min(photos.count - 1, currentIndex + forwardBias)
+            )
+            
+        case .backward:
+            // Bias towards loading behind
+            let backwardBias = Int(Double(maxScope) * 0.7)
+            let forwardScope = maxScope - backwardBias
+            return (
+                startIndex: max(0, currentIndex - backwardBias),
+                endIndex: min(photos.count - 1, currentIndex + forwardScope)
+            )
+            
+        case .unknown:
+            // Symmetric loading
+            let halfScope = maxScope / 2
+            return (
+                startIndex: max(0, currentIndex - halfScope),
+                endIndex: min(photos.count - 1, currentIndex + halfScope)
+            )
+        }
+    }
+    
+    /// Calculate intelligent priority based on direction and patterns
+    private func calculateIntelligentPriority(
+        index: Int,
+        currentIndex: Int,
+        direction: NavigationDirection,
+        photos: [Photo]
+    ) -> Int {
+        
+        let distance = abs(index - currentIndex)
+        let isForward = index > currentIndex
+        
+        // Base priority decreases with distance
+        let basePriority = max(0, 100 - (distance * distance / 10))
+        
+        // Direction-based bonus
+        let directionBonus: Double
+        switch direction {
+        case .forward:
+            directionBonus = isForward ? 1.5 : 0.7
+        case .backward:
+            directionBonus = isForward ? 0.7 : 1.5
+        case .unknown:
+            directionBonus = 1.0
+        }
+        
+        // Adjacent photos get highest priority
+        let adjacencyBonus = distance <= 1 ? 1.8 : 1.0
+        
+        // File size consideration (smaller files load faster)
+        let fileSizeBonus: Double
+        if photos.indices.contains(index) {
+            let photo = photos[index]
+            // Prioritize smaller files slightly (if metadata available)
+            if let fileSize = photo.metadata?.fileSize {
+                fileSizeBonus = fileSize < 5_000_000 ? 1.1 : 1.0 // 5MB threshold
+            } else {
+                fileSizeBonus = 1.0 // No metadata available, neutral priority
+            }
+        } else {
+            fileSizeBonus = 1.0
+        }
+        
+        let finalPriority = Double(basePriority) * directionBonus * adjacencyBonus * fileSizeBonus
+        return max(0, Int(finalPriority))
     }
 }
 

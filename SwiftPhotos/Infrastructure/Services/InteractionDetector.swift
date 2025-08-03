@@ -67,7 +67,7 @@ public class InteractionDetector: InteractionDetecting, ObservableObject {
     // Performance optimization
     private var statisticsCollectionEnabled: Bool = true
     private var debugMode: Bool = false
-    private var performanceMetrics = PerformanceMetrics()
+    private var performanceMetrics = InteractionPerformanceMetrics()
     
     // MARK: - Initialization
     
@@ -591,7 +591,7 @@ private struct WeakObserver {
     weak var observer: InteractionObserver?
 }
 
-private struct PerformanceMetrics {
+private struct InteractionPerformanceMetrics {
     private var eventCounts: [Double] = []
     private let maxSamples = 100
     
