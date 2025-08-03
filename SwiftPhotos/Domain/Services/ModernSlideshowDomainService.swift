@@ -12,6 +12,8 @@ public class ModernSlideshowDomainService: ObservableObject {
     private let metadataRepository: any MetadataRepositoryProtocol
     private let settingsRepository: any SettingsRepositoryProtocol
     private var repositoryContainer: RepositoryContainer
+    private let sortSettings: ModernSortSettingsManager
+    private let localizationService: LocalizationService
     
     // MARK: - Configuration
     private let maxConcurrentLoads: Int
@@ -31,6 +33,8 @@ public class ModernSlideshowDomainService: ObservableObject {
         cacheRepository: any ImageCacheRepositoryProtocol,
         metadataRepository: any MetadataRepositoryProtocol,
         settingsRepository: any SettingsRepositoryProtocol,
+        sortSettings: ModernSortSettingsManager,
+        localizationService: LocalizationService,
         maxConcurrentLoads: Int = 5,
         performanceMonitoring: Bool = true
     ) {
@@ -39,15 +43,19 @@ public class ModernSlideshowDomainService: ObservableObject {
         self.metadataRepository = metadataRepository
         self.settingsRepository = settingsRepository
         self.repositoryContainer = RepositoryContainer.shared
+        self.sortSettings = sortSettings
+        self.localizationService = localizationService
         self.maxConcurrentLoads = maxConcurrentLoads
         self.performanceMonitoring = performanceMonitoring
         
-        ProductionLogger.info("ModernSlideshowDomainService: Initialized with custom repositories")
+        ProductionLogger.info("ModernSlideshowDomainService: Initialized with custom repositories and sort settings")
     }
     
     /// Initialize with RepositoryContainer (recommended for production)
     public convenience init(
         repositoryContainer: RepositoryContainer = RepositoryContainer.shared,
+        sortSettings: ModernSortSettingsManager,
+        localizationService: LocalizationService,
         maxConcurrentLoads: Int = 5,
         performanceMonitoring: Bool = true
     ) async {
@@ -61,6 +69,8 @@ public class ModernSlideshowDomainService: ObservableObject {
             cacheRepository: cacheRepo,
             metadataRepository: metadataRepo,
             settingsRepository: settingsRepo,
+            sortSettings: sortSettings,
+            localizationService: localizationService,
             maxConcurrentLoads: maxConcurrentLoads,
             performanceMonitoring: performanceMonitoring
         )
@@ -88,9 +98,14 @@ public class ModernSlideshowDomainService: ObservableObject {
             ProductionLogger.debug("ModernSlideshowDomainService: Found \(imageURLs.count) image URLs")
             
             // Convert ImageURLs to Photos
-            let photos = imageURLs.map { imageURL in
+            var photos = imageURLs.map { imageURL in
                 Photo(imageURL: imageURL)
             }
+            
+            // Apply sorting based on current sort settings
+            let currentSettings = sortSettings.settings
+            photos = await sortPhotos(photos, using: currentSettings)
+            ProductionLogger.debug("ModernSlideshowDomainService: Applied sorting: \(currentSettings.order.displayName) \(currentSettings.direction.displayName)")
             
             // Create slideshow
             let slideshow = Slideshow(photos: photos, interval: interval, mode: mode)
@@ -301,6 +316,148 @@ public class ModernSlideshowDomainService: ObservableObject {
             colorSpace: colorSpace
         )
     }
+    
+    // MARK: - Photo Sorting Methods
+    
+    /// Sort photos according to the specified sort settings
+    private func sortPhotos(_ photos: [Photo], using sortSettings: SortSettings) async -> [Photo] {
+        ProductionLogger.debug("ModernSlideshowDomainService: Sorting \(photos.count) photos by \(sortSettings.order.displayName)")
+        
+        switch sortSettings.order {
+        case .fileName:
+            return await sortByFileName(photos, direction: sortSettings.direction)
+            
+        case .creationDate:
+            let direction = sortSettings.direction
+            return await sortByCreationDate(photos, direction: direction)
+            
+        case .modificationDate:
+            let direction = sortSettings.direction
+            return await sortByModificationDate(photos, direction: direction)
+            
+        case .fileSize:
+            let direction = sortSettings.direction
+            return await sortByFileSize(photos, direction: direction)
+            
+        case .random:
+            return sortByRandom(photos, seed: sortSettings.randomSeed)
+        }
+    }
+    
+    /// Sort photos by file name using locale-aware comparison
+    private func sortByFileName(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        let locale = localizationService.currentLocale
+        
+        let sorted = photos.sorted { photo1, photo2 in
+            let name1 = photo1.fileName
+            let name2 = photo2.fileName
+            
+            switch direction {
+            case .ascending:
+                return name1.localizedCaseInsensitiveCompare(name2) == .orderedAscending
+            case .descending:
+                return name1.localizedCaseInsensitiveCompare(name2) == .orderedDescending
+            }
+        }
+        
+        ProductionLogger.debug("ModernSlideshowDomainService: Sorted by file name (\(direction.displayName)) using locale: \(locale.identifier)")
+        return sorted
+    }
+    
+    /// Sort photos by creation date
+    private func sortByCreationDate(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        // Load creation dates for all photos
+        var photosWithDates: [(Photo, Date?)] = []
+        
+        for photo in photos {
+            do {
+                let metadata = try await loadMetadata(for: photo)
+                var updatedPhoto = photo
+                updatedPhoto.updateMetadata(metadata)
+                photosWithDates.append((updatedPhoto, metadata?.creationDate))
+            } catch {
+                // If metadata loading fails, use the original photo with no date
+                photosWithDates.append((photo, nil))
+            }
+        }
+        
+        let sorted = photosWithDates.sorted { item1, item2 in
+            let date1 = item1.1 ?? Date.distantPast
+            let date2 = item2.1 ?? Date.distantPast
+            return direction == .ascending ? date1 < date2 : date1 > date2
+        }.map { $0.0 }
+        
+        ProductionLogger.debug("ModernSlideshowDomainService: Sorted by creation date (\(direction.displayName))")
+        return sorted
+    }
+    
+    /// Sort photos by modification date
+    private func sortByModificationDate(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        // Load modification dates for all photos
+        var photosWithDates: [(Photo, Date?)] = []
+        
+        for photo in photos {
+            if let modificationDate = getModificationDate(for: photo.imageURL.url) {
+                photosWithDates.append((photo, modificationDate))
+            } else {
+                photosWithDates.append((photo, Date.distantPast))
+            }
+        }
+        
+        let sorted = photosWithDates.sorted { item1, item2 in
+            let date1 = item1.1 ?? Date.distantPast
+            let date2 = item2.1 ?? Date.distantPast
+            return direction == .ascending ? date1 < date2 : date1 > date2
+        }.map { $0.0 }
+        
+        ProductionLogger.debug("ModernSlideshowDomainService: Sorted by modification date (\(direction.displayName))")
+        return sorted
+    }
+    
+    /// Sort photos by file size
+    private func sortByFileSize(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        // Load file sizes for all photos
+        var photosWithSizes: [(Photo, Int64)] = []
+        
+        for photo in photos {
+            do {
+                let metadata = try await loadMetadata(for: photo)
+                var updatedPhoto = photo
+                updatedPhoto.updateMetadata(metadata)
+                let fileSize = metadata?.fileSize ?? 0
+                photosWithSizes.append((updatedPhoto, fileSize))
+            } catch {
+                // If metadata loading fails, use the original photo with size 0
+                photosWithSizes.append((photo, 0))
+            }
+        }
+        
+        let sorted = photosWithSizes.sorted { item1, item2 in
+            return direction == .ascending ? item1.1 < item2.1 : item1.1 > item2.1
+        }.map { $0.0 }
+        
+        ProductionLogger.debug("ModernSlideshowDomainService: Sorted by file size (\(direction.displayName))")
+        return sorted
+    }
+    
+    /// Sort photos randomly with consistent seed
+    private func sortByRandom(_ photos: [Photo], seed: UInt64) -> [Photo] {
+        var generator = SeededRandomNumberGenerator(seed: seed)
+        let shuffled = photos.shuffled(using: &generator)
+        ProductionLogger.debug("ModernSlideshowDomainService: Sorted randomly with seed \(seed)")
+        return shuffled
+    }
+    
+    /// Get modification date for a file URL
+    private func getModificationDate(for url: URL) -> Date? {
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            return attributes[.modificationDate] as? Date
+        } catch {
+            ProductionLogger.warning("ModernSlideshowDomainService: Failed to get modification date for \(url.path): \(error)")
+            return nil
+        }
+    }
 }
 
 // MARK: - Supporting Types
@@ -358,18 +515,29 @@ extension ModernSlideshowDomainService {
                 imageRepository: imageRepo,
                 cacheRepository: cacheRepo,
                 metadataRepository: metadataRepo,
-                settingsRepository: settingsRepo
+                settingsRepository: settingsRepo,
+                sortSettings: sortSettings,
+                localizationService: localizationService
             )
             
         } catch {
             ProductionLogger.error("ModernSlideshowDomainService: Failed to create with legacy support: \(error)")
-            // Fallback to modern-only implementation
-            return await ModernSlideshowDomainService()
+            // Fallback to modern-only implementation with default repositories
+            return await ModernSlideshowDomainService(
+                sortSettings: sortSettings,
+                localizationService: localizationService
+            )
         }
     }
     
     /// Create a domain service with modern repositories only
-    public static func createModernOnly() async -> ModernSlideshowDomainService {
-        return await ModernSlideshowDomainService()
+    public static func createModernOnly(
+        sortSettings: ModernSortSettingsManager,
+        localizationService: LocalizationService
+    ) async -> ModernSlideshowDomainService {
+        return await ModernSlideshowDomainService(
+            sortSettings: sortSettings,
+            localizationService: localizationService
+        )
     }
 }
