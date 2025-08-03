@@ -361,10 +361,8 @@ public final class UnifiedAdaptiveTimer: AdaptiveTimerProviding, ObservableObjec
         }
     }
     
-    deinit {
-        timer?.invalidate()
-        updateTimer?.invalidate()
-    }
+    // Note: In Swift 6, we rely on proper lifecycle management
+    // Ensure stop() is called explicitly when done with the timer
 }
 
 // MARK: - Factory Methods
