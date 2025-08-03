@@ -72,7 +72,7 @@ public struct ViewModelFactory {
         return legacyViewModel
     }
     
-    /// Create ViewModel with automatic Repository pattern detection
+    /// Create ViewModel with automatic architecture detection (UNIFIED IMPLEMENTATION)
     public static func createSlideshowViewModel(
         fileAccess: SecureFileAccess,
         performanceSettings: ModernPerformanceSettingsManager,
@@ -82,31 +82,67 @@ public struct ViewModelFactory {
         preferRepositoryPattern: Bool = true
     ) async -> any SlideshowViewModelProtocol {
         
-        if preferRepositoryPattern {
-            // Try to create Enhanced ViewModel with Repository pattern
-            let enhancedViewModel = await createEnhancedSlideshowViewModel(
+        ProductionLogger.info("ViewModelFactory: Creating Unified ViewModel with automatic architecture detection")
+        
+        // Check Repository pattern availability
+        let repositoryContainer = RepositoryContainer.shared
+        let healthStatus = await repositoryContainer.performHealthCheck()
+        let repositoryReady = healthStatus.isHealthy
+        
+        if preferRepositoryPattern && repositoryReady {
+            // Use Repository pattern
+            let modernDomainService = await ModernSlideshowDomainService(
+                repositoryContainer: repositoryContainer,
+                sortSettings: sortSettings,
+                localizationService: localizationService
+            )
+            
+            let unifiedViewModel = UnifiedSlideshowViewModel(
+                modernDomainService: modernDomainService,
+                repositoryContainer: repositoryContainer,
+                imageRepositoryFactory: ImageRepositoryFactory.createModernOnly(),
+                legacyDomainService: nil,
                 fileAccess: fileAccess,
                 performanceSettings: performanceSettings,
                 slideshowSettings: slideshowSettings,
                 sortSettings: sortSettings,
-                localizationService: localizationService,
-                enableLegacyFallback: true
+                enableLegacyFallback: true,
+                performanceMonitoring: true,
+                preferRepositoryPattern: true
             )
             
-            ProductionLogger.info("ViewModelFactory: Successfully created Repository-based ViewModel")
-            return enhancedViewModel
+            ProductionLogger.info("ViewModelFactory: Created Unified ViewModel with Repository pattern")
+            return unifiedViewModel
+            
+        } else {
+            // Use Legacy pattern
+            let imageLoader = ImageLoader()
+            let imageCache = ImageCache()
+            let repository = FileSystemPhotoRepository(
+                fileAccess: fileAccess,
+                imageLoader: imageLoader,
+                sortSettings: sortSettings,
+                localizationService: localizationService
+            )
+            let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
+            
+            let unifiedViewModel = UnifiedSlideshowViewModel(
+                modernDomainService: nil,
+                repositoryContainer: nil,
+                imageRepositoryFactory: nil,
+                legacyDomainService: domainService,
+                fileAccess: fileAccess,
+                performanceSettings: performanceSettings,
+                slideshowSettings: slideshowSettings,
+                sortSettings: sortSettings,
+                enableLegacyFallback: true,
+                performanceMonitoring: true,
+                preferRepositoryPattern: false
+            )
+            
+            ProductionLogger.info("ViewModelFactory: Created Unified ViewModel with Legacy pattern")
+            return unifiedViewModel
         }
-        
-        // Fallback to legacy ViewModel
-        let legacyViewModel = createLegacySlideshowViewModel(
-            fileAccess: fileAccess,
-            performanceSettings: performanceSettings,
-            slideshowSettings: slideshowSettings,
-            sortSettings: sortSettings,
-            localizationService: localizationService
-        )
-        
-        return legacyViewModel
     }
     
     // MARK: - Health Check
