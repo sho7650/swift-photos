@@ -2,8 +2,8 @@ import Foundation
 import Combine
 import os.log
 
-/// Unified adaptive timer that selects between AdaptiveTimer and LightweightAdaptiveTimer
-/// based on configuration requirements for optimal performance
+/// Unified adaptive timer that provides timer functionality with configurable behavior
+/// Consolidates features from previous AdaptiveTimer and LightweightAdaptiveTimer implementations
 @MainActor
 public final class UnifiedAdaptiveTimer: AdaptiveTimerProviding, ObservableObject {
     
@@ -21,7 +21,6 @@ public final class UnifiedAdaptiveTimer: AdaptiveTimerProviding, ObservableObjec
         didSet {
             if adaptationEnabled != oldValue {
                 logger.info("🔄 UnifiedAdaptiveTimer: Adaptation \(self.adaptationEnabled ? "enabled" : "disabled")")
-                updateFromActiveTimer()
             }
         }
     }
@@ -31,36 +30,29 @@ public final class UnifiedAdaptiveTimer: AdaptiveTimerProviding, ObservableObjec
     // MARK: - Implementation Selection
     
     public enum ImplementationMode {
-        case automatic      // Automatically select best implementation
-        case adaptive      // Force use of full adaptive implementation
-        case lightweight   // Force use of lightweight implementation
+        case automatic      // Automatically select best implementation features
+        case adaptive      // Use full adaptive features
+        case lightweight   // Use lightweight implementation
     }
     
     // MARK: - Private Properties
     
-    private var activeTimer: AdaptiveTimerProviding
+    private var timer: Timer?
+    private var startTime: Date?
+    private var pauseTime: Date?
+    private var cumulativeElapsedTime: TimeInterval = 0
+    private var adaptationHistory: [TimingAdaptation] = []
     private let logger = Logger(subsystem: "SwiftPhotos", category: "UnifiedAdaptiveTimer")
-    private var isUsingAdaptive: Bool
+    private let mode: ImplementationMode
+    private var updateTimer: Timer?
     
     // MARK: - Initialization
     
     public init(configuration: TimerConfiguration? = nil, mode: ImplementationMode = .automatic) {
         self.currentConfiguration = configuration ?? TimerConfiguration(baseDuration: 5.0)
+        self.mode = mode
         
-        // Select and create optimal implementation
-        let useAdaptive = Self.shouldUseAdaptive(for: self.currentConfiguration, mode: mode)
-        self.isUsingAdaptive = useAdaptive
-        
-        if useAdaptive {
-            self.activeTimer = AdaptiveTimer(configuration: self.currentConfiguration)
-        } else {
-            self.activeTimer = LightweightAdaptiveTimer(configuration: self.currentConfiguration)
-        }
-        
-        // Setup delegation
-        self.activeTimer.delegate = TimerDelegateForwarder(parent: self)
-        
-        logger.info("🔄 UnifiedAdaptiveTimer: Initialized with \(self.implementationName)")
+        logger.info("🔄 UnifiedAdaptiveTimer: Initialized in \(self.implementationDescription) mode")
     }
     
     // MARK: - AdaptiveTimerProviding Implementation
@@ -71,24 +63,33 @@ public final class UnifiedAdaptiveTimer: AdaptiveTimerProviding, ObservableObjec
         }
         
         self.currentConfiguration = configuration
+        self.totalDuration = configuration.baseDuration
+        self.remainingTime = totalDuration
+        self.elapsedTime = 0
+        self.cumulativeElapsedTime = 0
+        self.startTime = Date()
+        self.pauseTime = nil
+        self.isRunning = true
+        self.isPaused = false
         
-        // Check if we need to switch implementation
-        let shouldUseAdaptive = Self.shouldUseAdaptive(for: configuration, mode: .automatic)
-        if shouldUseAdaptive != isUsingAdaptive {
-            try switchImplementation(useAdaptive: shouldUseAdaptive)
+        // Start main timer
+        startMainTimer()
+        
+        // Start update timer for UI updates (if not in lightweight mode)
+        if mode != .lightweight {
+            startUpdateTimer()
         }
         
-        try activeTimer.start(with: configuration)
-        updateFromActiveTimer()
-        
-        logger.info("🔄 UnifiedAdaptiveTimer: Started with \(self.implementationName)")
+        logger.info("🔄 UnifiedAdaptiveTimer: Started with duration \(configuration.baseDuration)s")
     }
     
     public func pause() {
         guard isRunning && !isPaused else { return }
         
-        activeTimer.pause()
-        updateFromActiveTimer()
+        pauseTime = Date()
+        isPaused = true
+        timer?.invalidate()
+        updateTimer?.invalidate()
         
         logger.debug("🔄 UnifiedAdaptiveTimer: Paused")
         delegate?.timerWasPaused(self)
@@ -97,8 +98,19 @@ public final class UnifiedAdaptiveTimer: AdaptiveTimerProviding, ObservableObjec
     public func resume() {
         guard isRunning && isPaused else { return }
         
-        activeTimer.resume()
-        updateFromActiveTimer()
+        // Add paused time to cumulative elapsed time
+        if let pauseTime = pauseTime, let startTime = startTime {
+            cumulativeElapsedTime = Date().timeIntervalSince(startTime)
+        }
+        
+        // Restart timers with remaining time
+        startMainTimer()
+        if mode != .lightweight {
+            startUpdateTimer()
+        }
+        
+        pauseTime = nil
+        isPaused = false
         
         logger.debug("🔄 UnifiedAdaptiveTimer: Resumed")
         delegate?.timerWasResumed(self)
@@ -107,8 +119,18 @@ public final class UnifiedAdaptiveTimer: AdaptiveTimerProviding, ObservableObjec
     public func stop() {
         guard isRunning else { return }
         
-        activeTimer.stop()
-        updateFromActiveTimer()
+        timer?.invalidate()
+        updateTimer?.invalidate()
+        timer = nil
+        updateTimer = nil
+        
+        isRunning = false
+        isPaused = false
+        remainingTime = 0
+        elapsedTime = totalDuration
+        startTime = nil
+        pauseTime = nil
+        cumulativeElapsedTime = 0
         
         logger.info("🔄 UnifiedAdaptiveTimer: Stopped")
         delegate?.timerWasStopped(self)
@@ -117,159 +139,231 @@ public final class UnifiedAdaptiveTimer: AdaptiveTimerProviding, ObservableObjec
     public func extend(by duration: TimeInterval) {
         guard isRunning else { return }
         
-        activeTimer.extend(by: duration)
-        updateFromActiveTimer()
+        totalDuration += duration
+        remainingTime += duration
+        
+        // Restart timer with new duration
+        timer?.invalidate()
+        startMainTimer()
         
         logger.debug("🔄 UnifiedAdaptiveTimer: Extended by \(duration)s")
     }
     
     public func adaptTiming(based context: TimingContext) {
-        guard adaptationEnabled && isRunning else { return }
+        guard adaptationEnabled && isRunning && mode != .lightweight else { return }
         
-        activeTimer.adaptTiming(based: context)
-        updateFromActiveTimer()
+        let adaptationFactor = calculateAdaptationFactor(context: context)
+        let newDuration = max(
+            currentConfiguration.minimumDuration,
+            min(currentConfiguration.maximumDuration, totalDuration * adaptationFactor)
+        )
+        
+        if abs(newDuration - totalDuration) > 0.1 { // Only adapt if change is significant
+            let oldDuration = totalDuration
+            totalDuration = newDuration
+            remainingTime = max(0, remainingTime * adaptationFactor)
+            
+            // Record adaptation
+            let adaptation = TimingAdaptation(
+                timestamp: Date().timeIntervalSince1970,
+                previousDuration: oldDuration,
+                newDuration: newDuration,
+                reason: getAdaptationReason(context: context),
+                context: context,
+                confidence: 1.0
+            )
+            adaptationHistory.append(adaptation)
+            
+            // Keep history manageable
+            if adaptationHistory.count > 100 {
+                adaptationHistory.removeFirst(50)
+            }
+            
+            // Restart timer with new duration
+            timer?.invalidate()
+            startMainTimer()
+            
+            delegate?.timerDidAdapt(self, newDuration: newDuration, reason: adaptation.reason)
+        }
     }
     
     public func reset() {
-        activeTimer.reset()
-        updateFromActiveTimer()
+        timer?.invalidate()
+        updateTimer?.invalidate()
+        timer = nil
+        updateTimer = nil
+        
+        isRunning = false
+        isPaused = false
+        remainingTime = currentConfiguration.baseDuration
+        elapsedTime = 0
+        totalDuration = currentConfiguration.baseDuration
+        startTime = nil
+        pauseTime = nil
+        cumulativeElapsedTime = 0
         
         logger.debug("🔄 UnifiedAdaptiveTimer: Reset")
     }
     
     public func getAdaptationHistory(limit: Int = 50) -> [TimingAdaptation] {
-        return activeTimer.getAdaptationHistory(limit: limit)
+        return Array(adaptationHistory.suffix(limit))
     }
     
     public func updateConfiguration(_ configuration: TimerConfiguration) throws {
+        let wasRunning = isRunning
+        let wasPaused = isPaused
+        let savedRemainingTime = remainingTime
+        
+        if wasRunning {
+            stop()
+        }
+        
         self.currentConfiguration = configuration
         
-        // Check if we need to switch implementation
-        let shouldUseAdaptive = Self.shouldUseAdaptive(for: configuration, mode: .automatic)
-        if shouldUseAdaptive != isUsingAdaptive {
-            let wasRunning = isRunning
-            let wasPaused = isPaused
+        if wasRunning {
+            try start(with: configuration)
             
-            if wasRunning {
-                stop()
+            // Adjust remaining time proportionally
+            if savedRemainingTime > 0 {
+                remainingTime = min(configuration.baseDuration, savedRemainingTime)
+                totalDuration = configuration.baseDuration
             }
             
-            try switchImplementation(useAdaptive: shouldUseAdaptive)
-            
-            if wasRunning {
-                try start(with: configuration)
-                if wasPaused {
-                    pause()
-                }
+            if wasPaused {
+                pause()
             }
         }
         
         logger.info("🔄 UnifiedAdaptiveTimer: Configuration updated")
     }
     
-    // MARK: - Implementation Management
+    // MARK: - Private Timer Implementation
     
-    private static func shouldUseAdaptive(
-        for configuration: TimerConfiguration,
-        mode: ImplementationMode
-    ) -> Bool {
-        switch mode {
-        case .adaptive:
-            return true
-        case .lightweight:
-            return false
-        case .automatic:
-            // Use adaptive for complex features, lightweight for performance
-            let hasComplexFeatures = configuration.learningEnabled
-            let needsHighPerformance = configuration.coalescingEnabled || configuration.backgroundOptimization
-            let isShortDuration = configuration.baseDuration < 1.0
-            
-            if hasComplexFeatures {
-                return true
-            } else if needsHighPerformance || isShortDuration {
-                return false
-            } else {
-                return true
+    private func startMainTimer() {
+        timer?.invalidate()
+        
+        timer = Timer.scheduledTimer(withTimeInterval: remainingTime, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                self?.handleTimerFired()
             }
         }
     }
     
-    private func switchImplementation(useAdaptive: Bool) throws {
-        // Create new implementation
-        let newTimer: AdaptiveTimerProviding
-        if useAdaptive {
-            newTimer = AdaptiveTimer(configuration: currentConfiguration)
-        } else {
-            newTimer = LightweightAdaptiveTimer(configuration: currentConfiguration)
+    private func startUpdateTimer() {
+        updateTimer?.invalidate()
+        
+        // Update every 0.1 seconds for smooth UI updates
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateElapsedTime()
+            }
+        }
+    }
+    
+    private func handleTimerFired() {
+        guard isRunning && !isPaused else { return }
+        
+        timer?.invalidate()
+        updateTimer?.invalidate()
+        timer = nil
+        updateTimer = nil
+        
+        isRunning = false
+        isPaused = false
+        remainingTime = 0
+        elapsedTime = totalDuration
+        
+        logger.debug("🔄 UnifiedAdaptiveTimer: Timer fired")
+        delegate?.timerDidFire(self)
+    }
+    
+    private func updateElapsedTime() {
+        guard isRunning && !isPaused, let startTime = startTime else { return }
+        
+        let totalElapsed = Date().timeIntervalSince(startTime) + cumulativeElapsedTime
+        elapsedTime = min(totalElapsed, totalDuration)
+        remainingTime = max(0, totalDuration - elapsedTime)
+    }
+    
+    // MARK: - Adaptation Logic
+    
+    private func calculateAdaptationFactor(context: TimingContext) -> Double {
+        // Base adaptation on various context factors
+        var factor = 1.0
+        
+        // User activity level adjustments
+        switch context.userActivity {
+        case .idle:
+            factor *= 1.5 // Longer intervals when idle
+        case .light:
+            factor *= 1.2 // Slightly longer when light activity
+        case .moderate:
+            factor *= 1.0 // No change for moderate activity
+        case .active:
+            factor *= 0.9 // Slightly shorter when active
+        case .intensive:
+            factor *= 0.8 // Shorter intervals when highly intensive
         }
         
-        // Setup delegation
-        newTimer.delegate = TimerDelegateForwarder(parent: self)
+        // App state adjustments
+        switch context.appState {
+        case .foreground, .fullscreen, .slideshow:
+            factor *= 1.0 // No change when foreground/fullscreen/slideshow
+        case .background:
+            factor *= 2.0 // Much longer in background
+        case .minimized, .inactive:
+            factor *= 1.5 // Longer when minimized or inactive
+        }
         
-        // Switch
-        self.activeTimer = newTimer
-        self.isUsingAdaptive = useAdaptive
+        // System load adjustments
+        switch context.systemLoad {
+        case .low:
+            factor *= 1.0 // No change for low load
+        case .normal:
+            factor *= 1.0 // No change for normal load
+        case .high:
+            factor *= 1.5 // Longer intervals under high load
+        case .critical:
+            factor *= 2.0 // Much longer under critical load
+        }
         
-        updateFromActiveTimer()
-        logger.info("🔄 UnifiedAdaptiveTimer: Switched to \(self.implementationName)")
+        // Battery level adjustments
+        if let batteryLevel = context.batteryLevel, batteryLevel < 0.2 {
+            factor *= 2.0 // Much longer when battery is low
+        }
+        
+        return max(0.5, min(3.0, factor)) // Clamp between 0.5x and 3.0x
     }
     
-    fileprivate func updateFromActiveTimer() {
-        isRunning = activeTimer.isRunning
-        isPaused = activeTimer.isPaused
-        remainingTime = activeTimer.remainingTime
-        elapsedTime = activeTimer.elapsedTime
-        totalDuration = activeTimer.totalDuration
+    private func getAdaptationReason(context: TimingContext) -> AdaptationReason {
+        // Determine primary reason for adaptation
+        if context.appState == .background {
+            return .appState
+        } else if context.systemLoad == .high || context.systemLoad == .critical {
+            return .systemLoad
+        } else if let batteryLevel = context.batteryLevel, batteryLevel < 0.2 {
+            return .batteryOptimization
+        } else if context.userActivity == .intensive || context.userActivity == .active {
+            return .userBehavior
+        } else {
+            return .manual
+        }
     }
     
-    private var implementationName: String {
-        return isUsingAdaptive ? "Adaptive" : "Lightweight"
-    }
-}
-
-// MARK: - Delegation Forwarder
-
-private class TimerDelegateForwarder: AdaptiveTimerDelegate {
-    weak var parent: UnifiedAdaptiveTimer?
-    
-    init(parent: UnifiedAdaptiveTimer) {
-        self.parent = parent
+    private var implementationDescription: String {
+        switch mode {
+        case .automatic:
+            return "automatic"
+        case .adaptive:
+            return "adaptive"
+        case .lightweight:
+            return "lightweight"
+        }
     }
     
-    func timerDidFire(_ timer: AdaptiveTimerProviding) {
-        guard let parent = parent else { return }
-        parent.updateFromActiveTimer()
-        parent.delegate?.timerDidFire(parent)
-    }
-    
-    func timerDidAdapt(_ timer: AdaptiveTimerProviding, newDuration: TimeInterval, reason: AdaptationReason) {
-        guard let parent = parent else { return }
-        parent.updateFromActiveTimer()
-        parent.delegate?.timerDidAdapt(parent, newDuration: newDuration, reason: reason)
-    }
-    
-    func timerWasPaused(_ timer: AdaptiveTimerProviding) {
-        guard let parent = parent else { return }
-        parent.updateFromActiveTimer()
-        // Don't forward - we handle this ourselves
-    }
-    
-    func timerWasResumed(_ timer: AdaptiveTimerProviding) {
-        guard let parent = parent else { return }
-        parent.updateFromActiveTimer()
-        // Don't forward - we handle this ourselves
-    }
-    
-    func timerWasStopped(_ timer: AdaptiveTimerProviding) {
-        guard let parent = parent else { return }
-        parent.updateFromActiveTimer()
-        // Don't forward - we handle this ourselves
-    }
-    
-    func timerDidEncounterError(_ timer: AdaptiveTimerProviding, error: TimerError) {
-        guard let parent = parent else { return }
-        parent.updateFromActiveTimer()
-        parent.delegate?.timerDidEncounterError(parent, error: error)
+    deinit {
+        timer?.invalidate()
+        updateTimer?.invalidate()
     }
 }
 
