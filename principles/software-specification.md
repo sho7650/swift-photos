@@ -18,7 +18,7 @@ Application Layer (ViewModels)
     ↓
 Domain Layer (Use Cases, Models)
     ↓
-Data Layer (Repositories, Services)
+Data Layer (Repositories, Services)h
     ↓
 Infrastructure Layer (File System, Network)
 ```

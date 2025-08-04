@@ -6,6 +6,22 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		CA4AD0282E40C38B00929B85 /* Periphery */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = CA4AD0292E40C38B00929B85 /* Build configuration list for PBXAggregateTarget "Periphery" */;
+			buildPhases = (
+				CA4AD02C2E40C3A100929B85 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = Periphery;
+			packageProductDependencies = (
+			);
+			productName = Periphery;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXContainerItemProxy section */
 		CA8181222E2FC420001B9EEF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -173,6 +189,9 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					CA4AD0282E40C38B00929B85 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 					CA8181122E2FC41E001B9EEF = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -203,6 +222,7 @@
 				CA8181122E2FC41E001B9EEF /* Swift Photos */,
 				CA8181202E2FC420001B9EEF /* Swift PhotosTests */,
 				CA81812A2E2FC420001B9EEF /* Swift PhotosUITests */,
+				CA4AD0282E40C38B00929B85 /* Periphery */,
 			);
 		};
 /* End PBXProject section */
@@ -230,6 +250,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		CA4AD02C2E40C3A100929B85 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nperiphery scan --project 'Swift Photos.xcodeproj' --schemes 'Swift Photos' --targets 'Swift Photos' --format xcode\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		CA81810F2E2FC41E001B9EEF /* Sources */ = {
@@ -269,6 +309,24 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		CA4AD02A2E40C38B00929B85 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = TU59724Z2P;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		CA4AD02B2E40C38B00929B85 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = TU59724Z2P;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		CA8181332E2FC420001B9EEF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -558,6 +616,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		CA4AD0292E40C38B00929B85 /* Build configuration list for PBXAggregateTarget "Periphery" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA4AD02A2E40C38B00929B85 /* Debug */,
+				CA4AD02B2E40C38B00929B85 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		CA81810E2E2FC41E001B9EEF /* Build configuration list for PBXProject "Swift Photos" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

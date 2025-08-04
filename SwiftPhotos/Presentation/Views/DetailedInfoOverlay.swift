@@ -123,10 +123,11 @@ public struct DetailedInfoOverlay: View {
             }
             
             // Full-width progress bar
-            DetailedProgressBar(
+            UnifiedProgressBar(
                 progress: slideshow.progress,
                 currentIndex: slideshow.currentIndex,
-                totalCount: slideshow.count
+                totalCount: slideshow.count,
+                style: .detailed
             ) { targetIndex in
                 ProductionLogger.userAction("DetailedInfoOverlay: Progress bar clicked - jumping to photo \(targetIndex)")
                 uiControlStateManager.handleGestureInteraction()
@@ -364,78 +365,7 @@ private struct DetailedControlButton: View {
     }
 }
 
-/// Enhanced progress bar for detailed view
-private struct DetailedProgressBar: View {
-    let progress: Double
-    let currentIndex: Int
-    let totalCount: Int
-    let onJumpToIndex: (Int) -> Void
-    
-    @State private var isHovering = false
-    @State private var hoveredIndex: Int?
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                // Background track
-                Rectangle()
-                    .fill(Color.secondary.opacity(0.3))
-                    .frame(height: 8)
-                    .cornerRadius(4)
-                
-                // Progress fill
-                Rectangle()
-                    .fill(Color.accentColor)
-                    .frame(width: geometry.size.width * progress, height: 8)
-                    .cornerRadius(4)
-                    .animation(.easeInOut(duration: 0.2), value: progress)
-                
-                // Hover preview
-                if isHovering, let hoveredIndex = hoveredIndex {
-                    let hoveredProgress = Double(hoveredIndex) / Double(max(1, totalCount - 1))
-                    Rectangle()
-                        .fill(Color.white.opacity(0.4))
-                        .frame(width: 2, height: 12)
-                        .position(x: geometry.size.width * hoveredProgress, y: 6)
-                        .transition(.opacity)
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture { location in
-                handleTap(at: location, in: geometry)
-            }
-            .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isHovering = hovering
-                }
-            }
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        updateHoveredIndex(at: value.location, in: geometry)
-                    }
-            )
-        }
-    }
-    
-    private func handleTap(at location: CGPoint, in geometry: GeometryProxy) {
-        let relativeX = location.x / geometry.size.width
-        let clampedProgress = max(0, min(1, relativeX))
-        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
-        let validIndex = max(0, min(totalCount - 1, targetIndex))
-        
-        if validIndex != currentIndex {
-            onJumpToIndex(validIndex)
-        }
-    }
-    
-    private func updateHoveredIndex(at location: CGPoint, in geometry: GeometryProxy) {
-        let relativeX = location.x / geometry.size.width
-        let clampedProgress = max(0, min(1, relativeX))
-        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
-        hoveredIndex = max(0, min(totalCount - 1, targetIndex))
-    }
-}
+// Note: DetailedProgressBar has been replaced by UnifiedProgressBar with .detailed style
 
 /// Enhanced blurred background for detailed info
 private struct BlurredDetailedBackground: View {

@@ -193,10 +193,11 @@ public struct MinimalControlsView: View {
     private func compactProgressBar(slideshow: Slideshow) -> some View {
         VStack(spacing: 4) {
             // Compact interactive progress bar
-            CompactProgressBar(
+            UnifiedProgressBar(
                 progress: slideshow.progress,
                 currentIndex: slideshow.currentIndex,
-                totalCount: slideshow.count
+                totalCount: slideshow.count,
+                style: .compact
             ) { targetIndex in
                 ProductionLogger.userAction("MinimalControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
                 uiControlStateManager.handleGestureInteraction()
@@ -249,63 +250,7 @@ private struct ControlButton: View {
     }
 }
 
-/// Compact progress bar for minimal controls
-private struct CompactProgressBar: View {
-    let progress: Double
-    let currentIndex: Int
-    let totalCount: Int
-    let onJumpToIndex: (Int) -> Void
-    
-    @State private var isHovering = false
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                // Background track
-                Rectangle()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(height: 4)
-                    .cornerRadius(2)
-                
-                // Progress fill
-                Rectangle()
-                    .fill(Color.white.opacity(0.8))
-                    .frame(width: geometry.size.width * progress, height: 4)
-                    .cornerRadius(2)
-                    .animation(.easeInOut(duration: 0.2), value: progress)
-                
-                // Hover indicator
-                if isHovering {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.2))
-                        .frame(height: 4)
-                        .cornerRadius(2)
-                        .transition(.opacity)
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture { location in
-                handleTap(at: location, in: geometry)
-            }
-            .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isHovering = hovering
-                }
-            }
-        }
-    }
-    
-    private func handleTap(at location: CGPoint, in geometry: GeometryProxy) {
-        let relativeX = location.x / geometry.size.width
-        let clampedProgress = max(0, min(1, relativeX))
-        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
-        let validIndex = max(0, min(totalCount - 1, targetIndex))
-        
-        if validIndex != currentIndex {
-            onJumpToIndex(validIndex)
-        }
-    }
-}
+// Note: CompactProgressBar has been replaced by UnifiedProgressBar with .compact style
 
 /// Blurred background component with configurable intensity and opacity
 private struct BlurredBackground: View {
