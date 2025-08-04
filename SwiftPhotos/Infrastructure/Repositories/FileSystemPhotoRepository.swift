@@ -4,10 +4,10 @@ import AppKit
 public final class FileSystemPhotoRepository: SlideshowRepository, @unchecked Sendable {
     private let fileAccess: SecureFileAccess
     private let imageLoader: ImageLoader
-    private let sortSettings: ModernSortSettingsManager
+    private let sortSettings: SortSettingsManagerProtocol
     private let localizationService: LocalizationService
     
-    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: ModernSortSettingsManager, localizationService: LocalizationService) {
+    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: SortSettingsManagerProtocol, localizationService: LocalizationService) {
         self.fileAccess = fileAccess
         self.imageLoader = imageLoader
         self.sortSettings = sortSettings

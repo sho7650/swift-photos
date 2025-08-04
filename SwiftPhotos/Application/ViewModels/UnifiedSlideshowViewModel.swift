@@ -48,9 +48,7 @@ public final class UnifiedSlideshowViewModel {
     
     // MARK: - Performance Components (Unified)
     private let unifiedImageLoader: UnifiedImageLoader
-    private let performanceSettingsManager: ModernPerformanceSettingsManager
-    private let slideshowSettingsManager: ModernSlideshowSettingsManager
-    private let sortSettingsManager: ModernSortSettingsManager?
+    private let settingsCoordinator: UnifiedAppSettingsCoordinator
     
     // MARK: - Configuration
     private let enableLegacyFallback: Bool
@@ -96,9 +94,7 @@ public final class UnifiedSlideshowViewModel {
         
         // Shared dependencies
         fileAccess: SecureFileAccess,
-        performanceSettings: ModernPerformanceSettingsManager? = nil,
-        slideshowSettings: ModernSlideshowSettingsManager? = nil,
-        sortSettings: ModernSortSettingsManager? = nil,
+        settingsCoordinator: UnifiedAppSettingsCoordinator? = nil,
         
         // Configuration
         enableLegacyFallback: Bool = true,
@@ -117,15 +113,13 @@ public final class UnifiedSlideshowViewModel {
         self.performanceMonitoring = performanceMonitoring
         self.preferRepositoryPattern = preferRepositoryPattern
         
-        // Initialize settings managers
-        self.performanceSettingsManager = performanceSettings ?? ModernPerformanceSettingsManager()
-        self.slideshowSettingsManager = slideshowSettings ?? ModernSlideshowSettingsManager()
-        self.sortSettingsManager = sortSettings
+        // Initialize unified settings coordinator
+        self.settingsCoordinator = settingsCoordinator ?? UnifiedAppSettingsCoordinator()
         
         // Initialize unified performance component
-        self.unifiedImageLoader = UnifiedImageLoader(settings: self.performanceSettingsManager.settings)
+        self.unifiedImageLoader = UnifiedImageLoader(settings: self.settingsCoordinator.performance.settings)
         
-        ProductionLogger.lifecycle("UnifiedSlideshowViewModel initialized with \(effectiveDomainService) pattern - window: \(self.performanceSettingsManager.settings.memoryWindowSize), threshold: \(self.performanceSettingsManager.settings.largeCollectionThreshold)")
+        ProductionLogger.lifecycle("UnifiedSlideshowViewModel initialized with \(effectiveDomainService) pattern - window: \(self.settingsCoordinator.performance.settings.memoryWindowSize), threshold: \(self.settingsCoordinator.performance.settings.largeCollectionThreshold)")
         
         setupNotificationObservers()
         setupUnifiedLoaderCallback()
@@ -135,9 +129,7 @@ public final class UnifiedSlideshowViewModel {
     public convenience init(
         modernDomainService: ModernSlideshowDomainService,
         fileAccess: SecureFileAccess,
-        performanceSettings: ModernPerformanceSettingsManager? = nil,
-        slideshowSettings: ModernSlideshowSettingsManager? = nil,
-        sortSettings: ModernSortSettingsManager? = nil
+        settingsCoordinator: UnifiedAppSettingsCoordinator? = nil
     ) {
         self.init(
             modernDomainService: modernDomainService,
@@ -145,9 +137,7 @@ public final class UnifiedSlideshowViewModel {
             imageRepositoryFactory: ImageRepositoryFactory.createModernOnly(),
             legacyDomainService: nil,
             fileAccess: fileAccess,
-            performanceSettings: performanceSettings,
-            slideshowSettings: slideshowSettings,
-            sortSettings: sortSettings,
+            settingsCoordinator: settingsCoordinator,
             enableLegacyFallback: false,
             performanceMonitoring: true,
             preferRepositoryPattern: true
@@ -158,9 +148,7 @@ public final class UnifiedSlideshowViewModel {
     public convenience init(
         legacyDomainService: SlideshowDomainService,
         fileAccess: SecureFileAccess,
-        performanceSettings: ModernPerformanceSettingsManager? = nil,
-        slideshowSettings: ModernSlideshowSettingsManager? = nil,
-        sortSettings: ModernSortSettingsManager? = nil
+        settingsCoordinator: UnifiedAppSettingsCoordinator? = nil
     ) {
         self.init(
             modernDomainService: nil,
@@ -168,9 +156,7 @@ public final class UnifiedSlideshowViewModel {
             imageRepositoryFactory: nil,
             legacyDomainService: legacyDomainService,
             fileAccess: fileAccess,
-            performanceSettings: performanceSettings,
-            slideshowSettings: slideshowSettings,
-            sortSettings: sortSettings,
+            settingsCoordinator: settingsCoordinator,
             enableLegacyFallback: true,
             performanceMonitoring: true,
             preferRepositoryPattern: false
@@ -323,7 +309,7 @@ public final class UnifiedSlideshowViewModel {
         do {
             loadingState = .scanningFolder(0)
             
-            let customInterval = try SlideshowInterval(slideshowSettingsManager.settings.slideDuration)
+            let customInterval = try SlideshowInterval(settingsCoordinator.slideshow.settings.slideDuration)
             let mode: Slideshow.SlideshowMode = .sequential
             
             ProductionLogger.debug("UnifiedSlideshowViewModel: Creating slideshow with Repository pattern")
@@ -337,7 +323,7 @@ public final class UnifiedSlideshowViewModel {
             
             if !newSlideshow.isEmpty {
                 await handleLargeCollectionOptimization()
-                if slideshowSettingsManager.settings.autoStart {
+                if settingsCoordinator.slideshow.settings.autoStart {
                     play()
                 }
             }
@@ -362,7 +348,7 @@ public final class UnifiedSlideshowViewModel {
         do {
             loadingState = .scanningFolder(0)
             
-            let customInterval = try SlideshowInterval(slideshowSettingsManager.settings.slideDuration)
+            let customInterval = try SlideshowInterval(settingsCoordinator.slideshow.settings.slideDuration)
             let mode: Slideshow.SlideshowMode = .sequential
             
             ProductionLogger.debug("UnifiedSlideshowViewModel: Creating slideshow with Legacy pattern")
@@ -376,7 +362,7 @@ public final class UnifiedSlideshowViewModel {
             
             if !newSlideshow.isEmpty {
                 await handleLargeCollectionOptimization()
-                if slideshowSettingsManager.settings.autoStart {
+                if settingsCoordinator.slideshow.settings.autoStart {
                     play()
                 }
             }
@@ -402,7 +388,7 @@ public final class UnifiedSlideshowViewModel {
         
         stopTimer()
         
-        let interval = slideshowSettingsManager.settings.slideDuration
+        let interval = settingsCoordinator.slideshow.settings.slideDuration
         
         timerId = timerPool.every(interval) { [weak self] in
             Task { @MainActor [weak self] in
@@ -464,7 +450,7 @@ public final class UnifiedSlideshowViewModel {
         guard let slideshow = slideshow else { return }
         
         let photoCount = slideshow.photos.count
-        let threshold = performanceSettingsManager.settings.largeCollectionThreshold
+        let threshold = settingsCoordinator.performance.settings.largeCollectionThreshold
         
         if photoCount > threshold {
             ProductionLogger.performance("UnifiedSlideshowViewModel: Large collection detected (\(photoCount) photos) - enabling virtual loading")
@@ -476,7 +462,7 @@ public final class UnifiedSlideshowViewModel {
         guard let slideshow = slideshow else { return }
         
         let photoCount = slideshow.photos.count
-        let threshold = performanceSettingsManager.settings.largeCollectionThreshold
+        let threshold = settingsCoordinator.performance.settings.largeCollectionThreshold
         
         if photoCount > threshold {
             await unifiedImageLoader.loadImageWindow(around: slideshow.currentIndex, photos: slideshow.photos)
@@ -513,7 +499,7 @@ public final class UnifiedSlideshowViewModel {
     private func handlePerformanceSettingsChanged() {
         ProductionLogger.debug("UnifiedSlideshowViewModel: Performance settings changed - updating unified loader")
         Task {
-            await unifiedImageLoader.updateSettings(performanceSettingsManager.settings)
+            await unifiedImageLoader.updateSettings(settingsCoordinator.performance.settings)
         }
     }
     

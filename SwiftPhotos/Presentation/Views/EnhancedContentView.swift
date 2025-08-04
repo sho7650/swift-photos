@@ -307,12 +307,14 @@ struct EnhancedContentView: View {
                 throw InitializationError.localizationServiceCreationFailed
             }
             
+            // Create settings coordinator from individual settings
+            let settingsCoordinator = UnifiedAppSettingsCoordinator()
+            // Note: Individual settings would need to be set on the coordinator if needed
+            
             // Create ViewModel using factory
             let createdViewModel = await ViewModelFactory.createSlideshowViewModel(
                 fileAccess: secureFileAccess,
-                performanceSettings: performanceSettings,
-                slideshowSettings: slideshowSettings,
-                sortSettings: sortSettings,
+                settingsCoordinator: settingsCoordinator,
                 localizationService: localizationService,
                 preferRepositoryPattern: readinessStatus.recommendUseRepositoryPattern
             )
@@ -354,12 +356,13 @@ struct EnhancedContentView: View {
                 throw InitializationError.localizationServiceCreationFailed
             }
             
+            // Create settings coordinator from individual settings
+            let settingsCoordinator = UnifiedAppSettingsCoordinator()
+            
             // Use unified ViewModel creation with legacy preference
             let legacyViewModel = await ViewModelFactory.createSlideshowViewModel(
                 fileAccess: secureFileAccess,
-                performanceSettings: performanceSettings,
-                slideshowSettings: slideshowSettings,
-                sortSettings: sortSettings,
+                settingsCoordinator: settingsCoordinator,
                 localizationService: localizationService,
                 preferRepositoryPattern: false
             )

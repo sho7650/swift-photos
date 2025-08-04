@@ -325,10 +325,11 @@ public enum FactoryError: LocalizedError, Sendable {
 extension ImageRepositoryFactory {
     
     /// Create factory with legacy repository from existing dependencies
+    @MainActor
     public static func createWithLegacySupport(
         fileAccess: SecureFileAccess,
         imageLoader: ImageLoader,
-        sortSettings: ModernSortSettingsManager,
+        sortSettings: SortSettingsManagerProtocol,
         localizationService: LocalizationService,
         configuration: FactoryConfiguration = .default
     ) async -> ImageRepositoryFactory {

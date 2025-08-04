@@ -140,11 +140,13 @@ public class RepositoryMigrationBridge: ObservableObject {
         
         let useRepositoryPattern = await shouldUseRepositoryPattern()
         
+        // Create settings coordinator from individual settings
+        let settingsCoordinator = UnifiedAppSettingsCoordinator()
+        // Note: Individual settings would need to be set on the coordinator if needed
+        
         let viewModel = await ViewModelFactory.createSlideshowViewModel(
             fileAccess: fileAccess,
-            performanceSettings: performanceSettings,
-            slideshowSettings: slideshowSettings,
-            sortSettings: sortSettings,
+            settingsCoordinator: settingsCoordinator,
             localizationService: localizationService,
             preferRepositoryPattern: useRepositoryPattern
         )

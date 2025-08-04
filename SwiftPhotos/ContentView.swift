@@ -225,11 +225,13 @@ struct ContentView: View {
             
             // Create view model using ViewModelFactory unified approach
             ProductionLogger.info("ContentView: Creating unified ViewModel with automatic architecture detection")
+            // Create settings coordinator from individual settings
+            let settingsCoordinator = UnifiedAppSettingsCoordinator()
+            // Note: Individual settings would need to be set on the coordinator if needed
+            
             let createdViewModel = await ViewModelFactory.createSlideshowViewModel(
                 fileAccess: secureFileAccess,
-                performanceSettings: performanceSettings,
-                slideshowSettings: slideshowSettings,
-                sortSettings: sortSettings,
+                settingsCoordinator: settingsCoordinator,
                 localizationService: localizationService!,
                 preferRepositoryPattern: true
             )

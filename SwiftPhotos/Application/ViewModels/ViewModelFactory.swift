@@ -12,9 +12,7 @@ public struct ViewModelFactory {
     /// Create ViewModel with automatic architecture detection (UNIFIED IMPLEMENTATION)
     public static func createSlideshowViewModel(
         fileAccess: SecureFileAccess,
-        performanceSettings: ModernPerformanceSettingsManager,
-        slideshowSettings: ModernSlideshowSettingsManager,
-        sortSettings: ModernSortSettingsManager,
+        settingsCoordinator: UnifiedAppSettingsCoordinator,
         localizationService: LocalizationService,
         preferRepositoryPattern: Bool = true
     ) async -> any SlideshowViewModelProtocol {
@@ -30,7 +28,7 @@ public struct ViewModelFactory {
             // Use Repository pattern
             let modernDomainService = await ModernSlideshowDomainService(
                 repositoryContainer: repositoryContainer,
-                sortSettings: sortSettings,
+                sortSettings: settingsCoordinator.sort,
                 localizationService: localizationService
             )
             
@@ -40,9 +38,7 @@ public struct ViewModelFactory {
                 imageRepositoryFactory: ImageRepositoryFactory.createModernOnly(),
                 legacyDomainService: nil,
                 fileAccess: fileAccess,
-                performanceSettings: performanceSettings,
-                slideshowSettings: slideshowSettings,
-                sortSettings: sortSettings,
+                settingsCoordinator: settingsCoordinator,
                 enableLegacyFallback: true,
                 performanceMonitoring: true,
                 preferRepositoryPattern: true
@@ -58,7 +54,7 @@ public struct ViewModelFactory {
             let repository = FileSystemPhotoRepository(
                 fileAccess: fileAccess,
                 imageLoader: imageLoader,
-                sortSettings: sortSettings,
+                sortSettings: settingsCoordinator.sort,
                 localizationService: localizationService
             )
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
@@ -69,9 +65,7 @@ public struct ViewModelFactory {
                 imageRepositoryFactory: nil,
                 legacyDomainService: domainService,
                 fileAccess: fileAccess,
-                performanceSettings: performanceSettings,
-                slideshowSettings: slideshowSettings,
-                sortSettings: sortSettings,
+                settingsCoordinator: settingsCoordinator,
                 enableLegacyFallback: true,
                 performanceMonitoring: true,
                 preferRepositoryPattern: false

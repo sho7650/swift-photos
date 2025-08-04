@@ -73,6 +73,22 @@ public final class ModernPerformanceSettingsManager {
         ProductionLogger.debug("PerformanceSettings reset to defaults")
     }
     
+    public func validateSettings() -> Bool {
+        // Validation logic for performance settings
+        return settings.memoryWindowSize > 0 && 
+               settings.maxMemoryUsageMB > 0 && 
+               settings.maxConcurrentLoads > 0
+    }
+    
+    public func exportSettings() throws -> Data {
+        return try JSONEncoder().encode(settings)
+    }
+    
+    public func importSettings(from data: Data) throws {
+        let importedSettings = try JSONDecoder().decode(PerformanceSettings.self, from: data)
+        settings = importedSettings
+    }
+    
     // MARK: - Private Methods
     
     private func loadSettings() {
@@ -132,6 +148,20 @@ public final class ModernSlideshowSettingsManager {
     public func resetToDefaults() {
         settings = .default
         ProductionLogger.debug("SlideshowSettings reset to defaults")
+    }
+    
+    public func validateSettings() -> Bool {
+        // Validation logic for slideshow settings
+        return settings.slideDuration > 0
+    }
+    
+    public func exportSettings() throws -> Data {
+        return try JSONEncoder().encode(settings)
+    }
+    
+    public func importSettings(from data: Data) throws {
+        let importedSettings = try JSONDecoder().decode(SlideshowSettings.self, from: data)
+        settings = importedSettings
     }
     
     // MARK: - Private Methods
@@ -223,6 +253,20 @@ public final class ModernSortSettingsManager {
         ProductionLogger.debug("SortSettings reset to defaults")
     }
     
+    public func validateSettings() -> Bool {
+        // Validation logic for sort settings
+        return true // SortSettings are always valid
+    }
+    
+    public func exportSettings() throws -> Data {
+        return try JSONEncoder().encode(settings)
+    }
+    
+    public func importSettings(from data: Data) throws {
+        let importedSettings = try JSONDecoder().decode(SortSettings.self, from: data)
+        settings = importedSettings
+    }
+    
     // MARK: - Private Methods
     
     private func loadSettings() {
@@ -289,6 +333,20 @@ public final class ModernTransitionSettingsManager {
     public func resetToDefaults() {
         settings = .default
         ProductionLogger.debug("TransitionSettings reset to defaults")
+    }
+    
+    public func validateSettings() -> Bool {
+        // Validation logic for transition settings
+        return settings.duration > 0 && settings.intensity >= 0 && settings.intensity <= 1
+    }
+    
+    public func exportSettings() throws -> Data {
+        return try JSONEncoder().encode(settings)
+    }
+    
+    public func importSettings(from data: Data) throws {
+        let importedSettings = try JSONDecoder().decode(TransitionSettings.self, from: data)
+        settings = importedSettings
     }
     
     // MARK: - Private Methods
@@ -372,6 +430,20 @@ public final class ModernUIControlSettingsManager {
             settings = .subtle
         }
         ProductionLogger.debug("UIControlSettings preset applied: \(preset)")
+    }
+    
+    public func validateSettings() -> Bool {
+        // Validation logic for UI control settings
+        return settings.autoHideDelay > 0 && settings.backgroundBlurIntensity >= 0
+    }
+    
+    public func exportSettings() throws -> Data {
+        return try JSONEncoder().encode(settings)
+    }
+    
+    public func importSettings(from data: Data) throws {
+        let importedSettings = try JSONDecoder().decode(UIControlSettings.self, from: data)
+        settings = importedSettings
     }
     
     // MARK: - Private Methods

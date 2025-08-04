@@ -12,7 +12,7 @@ public class ModernSlideshowDomainService: ObservableObject {
     private let metadataRepository: any MetadataRepositoryProtocol
     private let settingsRepository: any SettingsRepositoryProtocol
     private var repositoryContainer: RepositoryContainer
-    private let sortSettings: ModernSortSettingsManager
+    private let sortSettings: SortSettingsManagerProtocol
     private let localizationService: LocalizationService
     
     // MARK: - Configuration
@@ -33,7 +33,7 @@ public class ModernSlideshowDomainService: ObservableObject {
         cacheRepository: any ImageCacheRepositoryProtocol,
         metadataRepository: any MetadataRepositoryProtocol,
         settingsRepository: any SettingsRepositoryProtocol,
-        sortSettings: ModernSortSettingsManager,
+        sortSettings: SortSettingsManagerProtocol,
         localizationService: LocalizationService,
         maxConcurrentLoads: Int = 5,
         performanceMonitoring: Bool = true
@@ -54,7 +54,7 @@ public class ModernSlideshowDomainService: ObservableObject {
     /// Initialize with RepositoryContainer (recommended for production)
     public convenience init(
         repositoryContainer: RepositoryContainer = RepositoryContainer.shared,
-        sortSettings: ModernSortSettingsManager,
+        sortSettings: SortSettingsManagerProtocol,
         localizationService: LocalizationService,
         maxConcurrentLoads: Int = 5,
         performanceMonitoring: Bool = true
@@ -549,7 +549,7 @@ extension ModernSlideshowDomainService {
     public static func createWithLegacySupport(
         fileAccess: SecureFileAccess,
         imageLoader: ImageLoader,
-        sortSettings: ModernSortSettingsManager,
+        sortSettings: SortSettingsManagerProtocol,
         localizationService: LocalizationService
     ) async -> ModernSlideshowDomainService {
         
@@ -588,7 +588,7 @@ extension ModernSlideshowDomainService {
     
     /// Create a domain service with modern repositories only
     public static func createModernOnly(
-        sortSettings: ModernSortSettingsManager,
+        sortSettings: SortSettingsManagerProtocol,
         localizationService: LocalizationService
     ) async -> ModernSlideshowDomainService {
         return await ModernSlideshowDomainService(
