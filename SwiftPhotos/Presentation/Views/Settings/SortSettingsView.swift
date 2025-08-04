@@ -49,12 +49,28 @@ struct SortSettingsView: View {
                     Picker(L10n.SettingsString.sortOrder(), selection: Binding(
                         get: { settings.settings.order },
                         set: { newOrder in
+                            // ENHANCED DEBUGGING: Trace Settings Window manager instance
+                            let settingsManagerAddress = "\(Unmanaged.passUnretained(settings).toOpaque())"
+                            ProductionLogger.debug("SortSettingsView: Settings manager instance: \(settingsManagerAddress)")
+                            ProductionLogger.debug("SortSettingsView: User selected sort order: \(newOrder.displayName)")
+                            
                             let newSettings = SortSettings(
                                 order: newOrder,
                                 direction: settings.settings.direction,
                                 randomSeed: newOrder == .random ? UInt64.random(in: 0...UInt64.max) : settings.settings.randomSeed
                             )
+                            
+                            ProductionLogger.debug("SortSettingsView: About to save settings: \(newSettings)")
                             settings.updateSettings(newSettings)
+                            
+                            // Verify what was actually saved to UserDefaults
+                            if let data = UserDefaults.standard.data(forKey: "SwiftPhotosSortSettings"),
+                               let savedSettings = try? JSONDecoder().decode(SortSettings.self, from: data) {
+                                ProductionLogger.debug("SortSettingsView: UserDefaults after save: \(savedSettings)")
+                                ProductionLogger.debug("SortSettingsView: UserDefaults sort order after save: \(savedSettings.order.displayName)")
+                            } else {
+                                ProductionLogger.debug("SortSettingsView: Failed to read back saved settings from UserDefaults")
+                            }
                         }
                     )) {
                         ForEach(SortSettings.SortOrder.allCases, id: \.self) { order in
@@ -82,12 +98,30 @@ struct SortSettingsView: View {
                         Picker(L10n.SettingsString.sortDirection(), selection: Binding(
                             get: { settings.settings.direction },
                             set: { newDirection in
+                                // ENHANCED DEBUGGING: Trace direction picker changes
+                                let settingsManagerAddress = "\(Unmanaged.passUnretained(settings).toOpaque())"
+                                ProductionLogger.debug("SortSettingsView: Direction picker - Settings manager instance: \(settingsManagerAddress)")
+                                ProductionLogger.debug("SortSettingsView: Direction picker - Current direction: \(settings.settings.direction.displayName)")
+                                ProductionLogger.debug("SortSettingsView: Direction picker - User selected new direction: \(newDirection.displayName)")
+                                
                                 let newSettings = SortSettings(
                                     order: settings.settings.order,
                                     direction: newDirection,
                                     randomSeed: settings.settings.randomSeed
                                 )
+                                
+                                ProductionLogger.debug("SortSettingsView: Direction picker - About to save settings: \(newSettings)")
+                                ProductionLogger.debug("SortSettingsView: Direction picker - New settings direction: \(newSettings.direction.displayName)")
                                 settings.updateSettings(newSettings)
+                                
+                                // Verify what was actually saved to UserDefaults
+                                if let data = UserDefaults.standard.data(forKey: "SwiftPhotosSortSettings"),
+                                   let savedSettings = try? JSONDecoder().decode(SortSettings.self, from: data) {
+                                    ProductionLogger.debug("SortSettingsView: Direction picker - UserDefaults after save: \(savedSettings)")
+                                    ProductionLogger.debug("SortSettingsView: Direction picker - UserDefaults direction after save: \(savedSettings.direction.displayName)")
+                                } else {
+                                    ProductionLogger.debug("SortSettingsView: Direction picker - Failed to read back saved settings from UserDefaults")
+                                }
                             }
                         )) {
                             ForEach(SortSettings.SortDirection.allCases, id: \.self) { direction in

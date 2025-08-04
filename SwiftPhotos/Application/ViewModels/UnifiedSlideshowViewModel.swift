@@ -309,6 +309,12 @@ public final class UnifiedSlideshowViewModel {
         do {
             loadingState = .scanningFolder(0)
             
+            // Generate new random seed if sort order is random (for fresh folder loads)
+            if settingsCoordinator.sort.settings.order == .random {
+                ProductionLogger.debug("UnifiedSlideshowViewModel: Generating new random seed for folder load with random sort")
+                settingsCoordinator.sort.regenerateRandomSeedSilently()
+            }
+            
             let customInterval = try SlideshowInterval(settingsCoordinator.slideshow.settings.slideDuration)
             let mode: Slideshow.SlideshowMode = .sequential
             
@@ -339,6 +345,47 @@ public final class UnifiedSlideshowViewModel {
         loadingState = .notLoading
     }
     
+    /// Create slideshow for sort change without regenerating random seeds unnecessarily
+    private func createSlideshowForSortChange(from folderURL: URL) async {
+        guard let modernDomainService = modernDomainService else {
+            error = SlideshowError.repositoryNotAvailable
+            return
+        }
+        
+        do {
+            loadingState = .scanningFolder(0)
+            
+            // DON'T regenerate random seed here - it was already handled in handleSortSettingsChanged() if needed
+            // This method is specifically for sort changes, not fresh folder loads
+            
+            let customInterval = try SlideshowInterval(settingsCoordinator.slideshow.settings.slideDuration)
+            let mode: Slideshow.SlideshowMode = .sequential
+            
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Creating slideshow for sort change with Repository pattern")
+            let newSlideshow = try await modernDomainService.createSlideshow(
+                from: folderURL,
+                interval: customInterval,
+                mode: mode
+            )
+            
+            setSlideshow(newSlideshow)
+            
+            if !newSlideshow.isEmpty {
+                await handleLargeCollectionOptimization()
+                // Don't auto-start on sort changes - let user control playback
+            }
+            
+            ProductionLogger.info("UnifiedSlideshowViewModel: Repository slideshow created for sort change with \(newSlideshow.photos.count) photos")
+            
+        } catch {
+            self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
+            ProductionLogger.error("UnifiedSlideshowViewModel: Repository slideshow creation for sort change failed - \(error)")
+        }
+        
+        // Always reset loading state after slideshow creation
+        loadingState = .notLoading
+    }
+    
     private func createSlideshowWithLegacy(from folderURL: URL) async {
         guard let legacyDomainService = legacyDomainService else {
             error = SlideshowError.domainServiceNotAvailable
@@ -347,6 +394,12 @@ public final class UnifiedSlideshowViewModel {
         
         do {
             loadingState = .scanningFolder(0)
+            
+            // Generate new random seed if sort order is random (for fresh folder loads)
+            if settingsCoordinator.sort.settings.order == .random {
+                ProductionLogger.debug("UnifiedSlideshowViewModel: Generating new random seed for folder load with random sort")
+                settingsCoordinator.sort.regenerateRandomSeedSilently()
+            }
             
             let customInterval = try SlideshowInterval(settingsCoordinator.slideshow.settings.slideDuration)
             let mode: Slideshow.SlideshowMode = .sequential
@@ -418,6 +471,22 @@ public final class UnifiedSlideshowViewModel {
     
     // MARK: - Photo Navigation (Unified)
     
+    /// Reset slideshow to first photo (useful after sort changes)
+    public func resetToFirstPhoto() {
+        guard var slideshow = slideshow, !slideshow.isEmpty else { return }
+        
+        do {
+            try slideshow.setCurrentIndex(0)
+            self.slideshow = slideshow
+            currentPhoto = slideshow.currentPhoto
+            refreshCounter += 1
+            
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Reset to first photo successfully")
+        } catch {
+            ProductionLogger.error("UnifiedSlideshowViewModel: Failed to reset to first photo: \(error)")
+        }
+    }
+    
     public func nextPhoto() async {
         guard var slideshow = slideshow else { return }
         
@@ -474,13 +543,67 @@ public final class UnifiedSlideshowViewModel {
     private func handleSortSettingsChanged() {
         guard let _ = slideshow, let folderURL = selectedFolderURL else { return }
         
-        // Cancel any existing sort reload task
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Sort settings changed - reloading slideshow dynamically")
+        
+        // ENHANCED DEBUGGING: Trace settings manager instance and UserDefaults values
+        let settingsManagerAddress = "\(Unmanaged.passUnretained(settingsCoordinator).toOpaque())"
+        let sortManagerAddress = "\(Unmanaged.passUnretained(settingsCoordinator.sort).toOpaque())"
+        
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Settings manager instance: \(settingsManagerAddress)")
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Sort manager instance: \(sortManagerAddress)")
+        
+        // Read directly from UserDefaults to verify what's actually stored
+        if let data = UserDefaults.standard.data(forKey: "SwiftPhotosSortSettings"),
+           let sortSettingsFromUserDefaults = try? JSONDecoder().decode(SortSettings.self, from: data) {
+            ProductionLogger.debug("UnifiedSlideshowViewModel: UserDefaults contains SortSettings: \(sortSettingsFromUserDefaults)")
+            ProductionLogger.debug("UnifiedSlideshowViewModel: UserDefaults sort order: \(sortSettingsFromUserDefaults.order.displayName)")
+        } else {
+            ProductionLogger.debug("UnifiedSlideshowViewModel: UserDefaults has no SortSettings data or failed to decode")
+        }
+        
+        // CRITICAL FIX: Capture the current sort settings IMMEDIATELY when notification is received
+        // Don't read them after the async delay where settings might be stale
+        let currentSortOrder = settingsCoordinator.sort.settings.order
+        let currentSortDirection = settingsCoordinator.sort.settings.direction
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Captured sort order from settingsCoordinator: \(currentSortOrder.displayName)")
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Captured sort direction from settingsCoordinator: \(currentSortDirection.displayName)")
+        
+        // Also check the underlying ModernSortSettingsManager directly
+        let modernSortSettings = settingsCoordinator.sort.settings
+        ProductionLogger.debug("UnifiedSlideshowViewModel: ModernSortSettingsManager settings: order=\(modernSortSettings.order.displayName), direction=\(modernSortSettings.direction.displayName), seed=\(modernSortSettings.randomSeed)")
+        
+        // CRITICAL: Track direction changes specifically
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Sort direction captured: \(modernSortSettings.direction.displayName)")
+        
+        // Stop current playback if running
+        if slideshow?.isPlaying == true {
+            pause()
+        }
+        
+        // Cancel any existing sort reload task first to prevent accumulation
         sortReloadTask?.cancel()
         
         sortReloadTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second debounce
+            // Wait for debouncing to handle rapid setting changes
+            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 second debounce
             
             guard !Task.isCancelled else { return }
+            
+            // Generate new random seed if sort order is random (do this just before reload)
+            // Use captured sort settings from notification time
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Current sort order for seed check: \(currentSortOrder.displayName)")
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Current sort direction for reload: \(currentSortDirection.displayName)")
+            
+            if currentSortOrder == .random {
+                ProductionLogger.debug("UnifiedSlideshowViewModel: Generating new random seed for dynamic sort change to random")
+                self?.settingsCoordinator.sort.regenerateRandomSeedSilently()
+            } else {
+                ProductionLogger.debug("UnifiedSlideshowViewModel: NOT generating random seed - sort order is \(currentSortOrder.displayName)")
+            }
+            
+            // Verify direction is still correct before reload
+            let currentDirectionBeforeReload = self?.settingsCoordinator.sort.settings.direction
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Direction verification before reload: captured=\(currentSortDirection.displayName), current=\(currentDirectionBeforeReload?.displayName ?? "nil")")
             
             await self?.reloadSlideshowForSortChange(from: folderURL)
         }
@@ -489,10 +612,28 @@ public final class UnifiedSlideshowViewModel {
     private func reloadSlideshowForSortChange(from folderURL: URL) async {
         ProductionLogger.debug("UnifiedSlideshowViewModel: Reloading slideshow for sort settings change")
         
+        // Clear current state to ensure clean reload
+        currentPhoto = nil
+        
         if shouldUseRepositoryPattern {
-            await createSlideshowWithRepository(from: folderURL)
+            await createSlideshowForSortChange(from: folderURL)
         } else {
             await createSlideshowWithLegacy(from: folderURL)
+        }
+        
+        // Ensure we start from the first photo after sort change
+        if var newSlideshow = slideshow, !newSlideshow.isEmpty {
+            // Force reset to first photo
+            do {
+                try newSlideshow.setCurrentIndex(0)
+                self.slideshow = newSlideshow
+                self.currentPhoto = newSlideshow.currentPhoto
+                refreshCounter += 1
+                
+                ProductionLogger.info("UnifiedSlideshowViewModel: Sort reload complete - showing first of \(newSlideshow.photos.count) photos")
+            } catch {
+                ProductionLogger.error("UnifiedSlideshowViewModel: Failed to reset to first photo: \(error)")
+            }
         }
     }
     

@@ -202,8 +202,10 @@ public final class ModernSlideshowSettingsManager {
 public final class ModernSortSettingsManager {
     
     // MARK: - Published Properties
-    public var settings: SortSettings = .default {
-        didSet {
+    public var settings: SortSettings {
+        get { _settings }
+        set {
+            _settings = newValue
             saveSettings()
             sendNotification()
             ProductionLogger.debug("SortSettings updated: \(settings)")
@@ -213,6 +215,7 @@ public final class ModernSortSettingsManager {
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
     private let settingsKey = "SwiftPhotosSortSettings"
+    private var _settings: SortSettings = .default
     
     // MARK: - Initialization
     
@@ -224,7 +227,20 @@ public final class ModernSortSettingsManager {
     // MARK: - Public Methods
     
     public func updateSettings(_ newSettings: SortSettings) {
+        // ENHANCED DEBUGGING: Trace direction changes in ModernSortSettingsManager
+        let currentDirection = settings.direction
+        let newDirection = newSettings.direction
+        
+        ProductionLogger.debug("ModernSortSettingsManager: updateSettings called")
+        ProductionLogger.debug("ModernSortSettingsManager: Current settings: \(settings)")
+        ProductionLogger.debug("ModernSortSettingsManager: New settings: \(newSettings)")
+        ProductionLogger.debug("ModernSortSettingsManager: Direction change: \(currentDirection.displayName) → \(newDirection.displayName)")
+        
         settings = newSettings
+        
+        // Verify the settings were actually updated
+        ProductionLogger.debug("ModernSortSettingsManager: Settings after update: \(settings)")
+        ProductionLogger.debug("ModernSortSettingsManager: Final direction: \(settings.direction.displayName)")
     }
     
     public func regenerateRandomSeed() {
@@ -244,7 +260,9 @@ public final class ModernSortSettingsManager {
             direction: settings.direction,
             randomSeed: UInt64.random(in: 1...UInt64.max)
         )
-        settings = newSettings
+        // Update settings without triggering didSet (to avoid infinite loop)
+        _settings = newSettings
+        saveSettings()
         ProductionLogger.debug("Random seed regenerated silently: \(newSettings.randomSeed)")
     }
     
@@ -272,10 +290,10 @@ public final class ModernSortSettingsManager {
     private func loadSettings() {
         if let data = userDefaults.data(forKey: settingsKey),
            let loadedSettings = try? JSONDecoder().decode(SortSettings.self, from: data) {
-            settings = loadedSettings
+            _settings = loadedSettings
             ProductionLogger.debug("SortSettings loaded from UserDefaults")
         } else {
-            settings = .default
+            _settings = .default
             ProductionLogger.debug("SortSettings using defaults (no saved settings found)")
         }
     }
