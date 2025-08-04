@@ -202,20 +202,8 @@ public struct MinimalControlsView: View {
                 uiControlStateManager.handleGestureInteraction()
                 // Use standard navigation method available in protocol
                 Task {
-                    // Navigate to target photo using standard protocol methods
-                    guard let slideshow = viewModel.slideshow else { return }
-                    let currentIndex = slideshow.currentIndex
-                    
-                    // Navigate step by step to target (simplified approach)
-                    if targetIndex > currentIndex {
-                        for _ in currentIndex..<targetIndex {
-                            await viewModel.nextPhoto()
-                        }
-                    } else if targetIndex < currentIndex {
-                        for _ in targetIndex..<currentIndex {
-                            await viewModel.previousPhoto()
-                        }
-                    }
+                    // Jump directly to target photo using the new direct navigation method
+                    await viewModel.jumpToPhoto(at: targetIndex)
                 }
             }
             .frame(height: 4)

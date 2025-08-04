@@ -336,6 +336,7 @@ private class PreviewSlideshowViewModel: SlideshowViewModelProtocol {
     func stop() {}
     func nextPhoto() async {}
     func previousPhoto() async {}
+    func jumpToPhoto(at index: Int) async {}
     func clearError() {}
     func setSlideshow(_ slideshow: Slideshow) {}
 }

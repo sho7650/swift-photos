@@ -132,19 +132,8 @@ public struct DetailedInfoOverlay: View {
                 uiControlStateManager.handleGestureInteraction()
                 // Navigate to target photo using standard protocol methods
                 Task {
-                    guard let slideshow = viewModel.slideshow else { return }
-                    let currentIndex = slideshow.currentIndex
-                    
-                    // Navigate step by step to target (simplified approach)
-                    if targetIndex > currentIndex {
-                        for _ in currentIndex..<targetIndex {
-                            await viewModel.nextPhoto()
-                        }
-                    } else if targetIndex < currentIndex {
-                        for _ in targetIndex..<currentIndex {
-                            await viewModel.previousPhoto()
-                        }
-                    }
+                    // Jump directly to target photo using the new direct navigation method
+                    await viewModel.jumpToPhoto(at: targetIndex)
                 }
             }
             .frame(height: 8)

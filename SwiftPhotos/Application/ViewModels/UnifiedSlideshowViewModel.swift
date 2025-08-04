@@ -513,6 +513,33 @@ public final class UnifiedSlideshowViewModel {
         ProductionLogger.debug("UnifiedSlideshowViewModel: Moved back to photo \(slideshow.currentIndex + 1)/\(slideshow.photos.count)")
     }
     
+    public func jumpToPhoto(at index: Int) async {
+        guard var slideshow = slideshow else { return }
+        guard slideshow.photos.indices.contains(index) else {
+            ProductionLogger.error("UnifiedSlideshowViewModel: Invalid jump index \(index) for collection of \(slideshow.photos.count) photos")
+            return
+        }
+        
+        ProductionLogger.userAction("UnifiedSlideshowViewModel: 🎯 Jumping directly to photo \(index + 1)/\(slideshow.photos.count)")
+        
+        // Stop slideshow if playing to prevent conflicts
+        stop()
+        
+        do {
+            try slideshow.setCurrentIndex(index)
+            self.slideshow = slideshow
+            currentPhoto = slideshow.currentPhoto
+            refreshCounter += 1
+            
+            // Handle large collection navigation for the new position
+            await handleLargeCollectionNavigation()
+            
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Successfully jumped to photo \(slideshow.currentIndex + 1)/\(slideshow.photos.count)")
+        } catch {
+            ProductionLogger.error("UnifiedSlideshowViewModel: Failed to jump to photo \(index): \(error)")
+        }
+    }
+    
     // MARK: - Performance Optimization (Unified)
     
     private func handleLargeCollectionOptimization() async {

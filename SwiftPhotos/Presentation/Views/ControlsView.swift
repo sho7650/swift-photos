@@ -119,20 +119,8 @@ public struct ControlsView: View {
             ) { targetIndex in
                 ProductionLogger.userAction("ControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
                 Task {
-                    // Navigate to target photo using standard protocol methods
-                    guard let slideshow = viewModel.slideshow else { return }
-                    let currentIndex = slideshow.currentIndex
-                    
-                    // Navigate step by step to target (simplified approach)
-                    if targetIndex > currentIndex {
-                        for _ in currentIndex..<targetIndex {
-                            await viewModel.nextPhoto()
-                        }
-                    } else if targetIndex < currentIndex {
-                        for _ in targetIndex..<currentIndex {
-                            await viewModel.previousPhoto()
-                        }
-                    }
+                    // Jump directly to target photo using the new direct navigation method
+                    await viewModel.jumpToPhoto(at: targetIndex)
                 }
             }
             .frame(height: 8)  // DOUBLED: from 4 to 8 for better clickability
