@@ -15,18 +15,28 @@ struct SortSettingsView: View {
             ) {
                 VStack(spacing: 8) {
                     HStack(spacing: 12) {
-                        Button(L10n.ButtonString.alphabetical()) { settings.updateSettings(.alphabetical) }
+                        Button(L10n.ButtonString.alphabetical()) { 
+                            applyPresetPreservingDirection(.alphabetical)
+                        }
                             .buttonStyle(.bordered)
-                        Button(L10n.ButtonString.chronological()) { settings.updateSettings(.chronological) }
+                        Button(L10n.ButtonString.chronological()) { 
+                            applyPresetPreservingDirection(.chronological)
+                        }
                             .buttonStyle(.bordered)
-                        Button(L10n.ButtonString.newestFirst()) { settings.updateSettings(.newestFirst) }
+                        Button(L10n.ButtonString.newestFirst()) { 
+                            applyPresetWithDirectionOverride(.newestFirst)
+                        }
                             .buttonStyle(.bordered)
-                        Button(L10n.ButtonString.largestFirst()) { settings.updateSettings(.largestFirst) }
+                        Button(L10n.ButtonString.largestFirst()) { 
+                            applyPresetWithDirectionOverride(.largestFirst)
+                        }
                             .buttonStyle(.bordered)
                     }
                     
                     HStack {
-                        Button(L10n.ButtonString.random()) { settings.updateSettings(.randomized) }
+                        Button(L10n.ButtonString.random()) { 
+                            applyPresetWithDirectionOverride(.randomized)
+                        }
                             .buttonStyle(.bordered)
                         
                         if settings.settings.order == .random {
@@ -199,6 +209,45 @@ struct SortSettingsView: View {
         }
         .padding(.horizontal, 32)
         .padding(.bottom, 32)
+    }
+    
+    // MARK: - Helper Methods
+    
+    /// Apply preset while preserving user's current direction preference (for order-only presets)
+    private func applyPresetPreservingDirection(_ preset: SortSettings) {
+        // ENHANCED DEBUGGING: Trace preset application with direction preservation
+        let currentDirection = settings.settings.direction
+        let presetDirection = preset.direction
+        
+        ProductionLogger.debug("SortSettingsView: Applying preset with direction preservation")
+        ProductionLogger.debug("SortSettingsView: Preset: \(preset.order.displayName) (default direction: \(presetDirection.displayName))")
+        ProductionLogger.debug("SortSettingsView: Current user direction: \(currentDirection.displayName)")
+        
+        // Create new settings that uses the preset's order but preserves user's direction
+        let newSettings = SortSettings(
+            order: preset.order,
+            direction: currentDirection, // Preserve user's current direction preference
+            randomSeed: preset.order == .random ? UInt64.random(in: 0...UInt64.max) : settings.settings.randomSeed
+        )
+        
+        ProductionLogger.debug("SortSettingsView: Final preset settings: order=\(newSettings.order.displayName), direction=\(newSettings.direction.displayName)")
+        settings.updateSettings(newSettings)
+    }
+    
+    /// Apply preset that explicitly overrides direction (for semantic presets like "Newest First")
+    private func applyPresetWithDirectionOverride(_ preset: SortSettings) {
+        // ENHANCED DEBUGGING: Trace preset application with direction override
+        let currentDirection = settings.settings.direction
+        let presetDirection = preset.direction
+        
+        ProductionLogger.debug("SortSettingsView: Applying preset with direction override")
+        ProductionLogger.debug("SortSettingsView: Preset: \(preset.order.displayName) → \(presetDirection.displayName)")
+        ProductionLogger.debug("SortSettingsView: Overriding user direction: \(currentDirection.displayName) → \(presetDirection.displayName)")
+        
+        // Use the preset exactly as defined (including its direction)
+        settings.updateSettings(preset)
+        
+        ProductionLogger.debug("SortSettingsView: Applied preset with override: order=\(preset.order.displayName), direction=\(preset.direction.displayName)")
     }
 }
 
