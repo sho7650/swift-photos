@@ -19,6 +19,62 @@ public final class UnifiedSlideshowViewModel {
     public var refreshCounter: Int = 0
     public var windowLevel: WindowLevel = .normal
     
+    // Performance tracking integration
+    public var stats: UnifiedPerformanceStats? {
+        PerformanceMetricsManager.shared.unifiedStats
+    }
+    
+    // SlideshowViewModelProtocol conformance properties
+    public var canNavigateNext: Bool {
+        guard let slideshow = slideshow else { return false }
+        return !slideshow.isEmpty && slideshow.currentIndex < slideshow.photos.count - 1
+    }
+    
+    public var canNavigatePrevious: Bool {
+        guard let slideshow = slideshow else { return false }
+        return !slideshow.isEmpty && slideshow.currentIndex > 0
+    }
+    
+    public var progress: Double {
+        guard let slideshow = slideshow, !slideshow.isEmpty else { return 0.0 }
+        return Double(slideshow.currentIndex + 1) / Double(slideshow.photos.count)
+    }
+    
+    public var folderSelectionState: FolderSelectionState {
+        if isLoading {
+            return .selecting
+        } else if let url = selectedFolderURL {
+            return .selected(url)
+        } else if let error = error {
+            return .failed(error)
+        } else {
+            return .idle
+        }
+    }
+    
+    public var loadingProgress: Double {
+        // For now, return simple loading state - could be enhanced with actual progress
+        return isLoading ? 0.5 : 1.0
+    }
+    
+    public var estimatedTimeRemaining: TimeInterval? {
+        // Could implement actual time estimation based on loading patterns
+        return nil
+    }
+    
+    public var processedPhotoCount: Int {
+        slideshow?.photos.filter { $0.loadState.isLoaded }.count ?? 0
+    }
+    
+    public var totalPhotoCount: Int {
+        slideshow?.photos.count ?? 0
+    }
+    
+    public var isGlobalSlideshow: Bool {
+        // Could track if this is a global slideshow vs folder-specific
+        false
+    }
+    
     public var currentPhoto: Photo? = nil {
         didSet {
             let currentIndex = slideshow?.currentIndex ?? -1
@@ -123,6 +179,12 @@ public final class UnifiedSlideshowViewModel {
         
         setupNotificationObservers()
         setupUnifiedLoaderCallback()
+        
+        // Start unified performance monitoring
+        if performanceMonitoring {
+            PerformanceMetricsManager.shared.startMonitoring()
+            ProductionLogger.debug("UnifiedSlideshowViewModel: Unified performance monitoring started")
+        }
     }
     
     /// Convenience initializer for Repository pattern
@@ -306,6 +368,9 @@ public final class UnifiedSlideshowViewModel {
             return
         }
         
+        // Track slideshow creation performance
+        PerformanceMetricsManager.shared.performanceMonitor.startOperation("SlideshowCreation")
+        
         do {
             loadingState = .scanningFolder(0)
             
@@ -340,6 +405,9 @@ public final class UnifiedSlideshowViewModel {
             self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
             ProductionLogger.error("UnifiedSlideshowViewModel: Repository slideshow creation failed - \(error)")
         }
+        
+        // End performance tracking
+        PerformanceMetricsManager.shared.performanceMonitor.endOperation("SlideshowCreation")
         
         // Always reset loading state after slideshow creation
         loadingState = .notLoading
@@ -392,6 +460,9 @@ public final class UnifiedSlideshowViewModel {
             return
         }
         
+        // Track slideshow creation performance
+        PerformanceMetricsManager.shared.performanceMonitor.startOperation("SlideshowCreation")
+        
         do {
             loadingState = .scanningFolder(0)
             
@@ -426,6 +497,9 @@ public final class UnifiedSlideshowViewModel {
             self.error = error as? SlideshowError ?? SlideshowError.loadingFailed(underlying: error)
             ProductionLogger.error("UnifiedSlideshowViewModel: Legacy slideshow creation failed - \(error)")
         }
+        
+        // End performance tracking
+        PerformanceMetricsManager.shared.performanceMonitor.endOperation("SlideshowCreation")
         
         // Always reset loading state after slideshow creation
         loadingState = .notLoading

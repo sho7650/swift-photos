@@ -330,6 +330,18 @@ private class PreviewSlideshowViewModel: SlideshowViewModelProtocol {
     var loadingState: LoadingState = .notLoading
     var refreshCounter: Int = 0
     
+    // Performance tracking properties
+    var stats: UnifiedPerformanceStats? = nil
+    var canNavigateNext: Bool = false
+    var canNavigatePrevious: Bool = false
+    var progress: Double = 0.0
+    var folderSelectionState: FolderSelectionState = .idle
+    var loadingProgress: Double = 0.0
+    var estimatedTimeRemaining: TimeInterval? = nil
+    var processedPhotoCount: Int = 0
+    var totalPhotoCount: Int = 0
+    var isGlobalSlideshow: Bool = false
+    
     func selectFolder() async {}
     func play() {}
     func pause() {}

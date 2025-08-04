@@ -168,6 +168,16 @@ struct EnhancedContentView: View {
                 
                 Spacer()
             }
+            
+            // Performance Overlay - show when aggressive memory management is enabled
+            if performanceSettings.settings.aggressiveMemoryManagement {
+                UnifiedPerformanceOverlay(
+                    displayMode: .detailed,
+                    position: .topTrailing,
+                    enabledCategories: Set(PerformanceCategory.allCases),
+                    refreshInterval: 2.0
+                )
+            }
         }
         .focusable()
     }

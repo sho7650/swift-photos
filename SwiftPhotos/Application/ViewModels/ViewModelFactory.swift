@@ -128,6 +128,14 @@ public struct ViewModelFactory {
 
 // MARK: - Supporting Types
 
+/// Folder selection state for UI
+public enum FolderSelectionState: Sendable {
+    case idle
+    case selecting
+    case selected(URL)
+    case failed(Error)
+}
+
 /// Protocol to unify different ViewModel types
 @MainActor
 public protocol SlideshowViewModelProtocol: AnyObject {
@@ -139,6 +147,18 @@ public protocol SlideshowViewModelProtocol: AnyObject {
     var windowLevel: WindowLevel { get set }
     var loadingState: LoadingState { get set }
     var refreshCounter: Int { get set }
+    
+    // Performance tracking
+    var stats: UnifiedPerformanceStats? { get }
+    var canNavigateNext: Bool { get }
+    var canNavigatePrevious: Bool { get }
+    var progress: Double { get }
+    var folderSelectionState: FolderSelectionState { get }
+    var loadingProgress: Double { get }
+    var estimatedTimeRemaining: TimeInterval? { get }
+    var processedPhotoCount: Int { get }
+    var totalPhotoCount: Int { get }
+    var isGlobalSlideshow: Bool { get }
     
     func selectFolder() async
     func play()
