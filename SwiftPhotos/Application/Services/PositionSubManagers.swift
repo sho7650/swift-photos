@@ -365,12 +365,12 @@ public final class PositionSettingsManager: ObservableObject {
     
     @Published public var positionSettings: PositionSettings
     
-    private let settingsCoordinator: UnifiedAppSettingsCoordinator
+    private let settingsCoordinator: AppSettingsCoordinator
     private let logger = Logger(subsystem: "SwiftPhotos", category: "PositionSettingsManager")
     
     // MARK: - Initialization
     
-    public init(settingsCoordinator: UnifiedAppSettingsCoordinator) {
+    public init(settingsCoordinator: AppSettingsCoordinator) {
         self.settingsCoordinator = settingsCoordinator
         
         // Initialize with default settings (extend UIControlSettings or create new)

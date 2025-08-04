@@ -147,13 +147,6 @@ public class EnhancedInteractionCoordinator: ObservableObject {
         }
     }
     
-    /// Register an interaction zone
-    public func registerInteractionZone(_ zone: InteractionZone, in view: InteractionZoneView) {
-        view.addZone(zone)
-        
-        logger.debug("🎯 EnhancedInteractionCoordinator: Registered interaction zone \(zone.id)")
-    }
-    
     /// Create an adaptive timer with coordinated behavior
     public func createAdaptiveTimer(for purpose: TimerPurpose, configuration: TimerConfiguration? = nil) -> UnifiedAdaptiveTimer {
         let config = configuration ?? currentConfiguration.adaptiveTiming

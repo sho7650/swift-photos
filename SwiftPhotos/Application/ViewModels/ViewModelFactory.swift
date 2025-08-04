@@ -12,7 +12,7 @@ public struct ViewModelFactory {
     /// Create ViewModel with automatic architecture detection (UNIFIED IMPLEMENTATION)
     public static func createSlideshowViewModel(
         fileAccess: SecureFileAccess,
-        settingsCoordinator: UnifiedAppSettingsCoordinator,
+        settingsCoordinator: AppSettingsCoordinator,
         localizationService: LocalizationService,
         preferRepositoryPattern: Bool = true
     ) async -> any SlideshowViewModelProtocol {

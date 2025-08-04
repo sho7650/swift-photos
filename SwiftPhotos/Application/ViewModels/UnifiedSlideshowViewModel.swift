@@ -48,7 +48,7 @@ public final class UnifiedSlideshowViewModel {
     
     // MARK: - Performance Components (Unified)
     private let unifiedImageLoader: UnifiedImageLoader
-    private let settingsCoordinator: UnifiedAppSettingsCoordinator
+    private let settingsCoordinator: AppSettingsCoordinator
     
     // MARK: - Configuration
     private let enableLegacyFallback: Bool
@@ -94,7 +94,7 @@ public final class UnifiedSlideshowViewModel {
         
         // Shared dependencies
         fileAccess: SecureFileAccess,
-        settingsCoordinator: UnifiedAppSettingsCoordinator? = nil,
+        settingsCoordinator: AppSettingsCoordinator? = nil,
         
         // Configuration
         enableLegacyFallback: Bool = true,
@@ -114,7 +114,7 @@ public final class UnifiedSlideshowViewModel {
         self.preferRepositoryPattern = preferRepositoryPattern
         
         // Initialize unified settings coordinator
-        self.settingsCoordinator = settingsCoordinator ?? UnifiedAppSettingsCoordinator()
+        self.settingsCoordinator = settingsCoordinator ?? AppSettingsCoordinator()
         
         // Initialize unified performance component
         self.unifiedImageLoader = UnifiedImageLoader(settings: self.settingsCoordinator.performance.settings)
@@ -129,7 +129,7 @@ public final class UnifiedSlideshowViewModel {
     public convenience init(
         modernDomainService: ModernSlideshowDomainService,
         fileAccess: SecureFileAccess,
-        settingsCoordinator: UnifiedAppSettingsCoordinator? = nil
+        settingsCoordinator: AppSettingsCoordinator? = nil
     ) {
         self.init(
             modernDomainService: modernDomainService,
@@ -148,7 +148,7 @@ public final class UnifiedSlideshowViewModel {
     public convenience init(
         legacyDomainService: SlideshowDomainService,
         fileAccess: SecureFileAccess,
-        settingsCoordinator: UnifiedAppSettingsCoordinator? = nil
+        settingsCoordinator: AppSettingsCoordinator? = nil
     ) {
         self.init(
             modernDomainService: nil,

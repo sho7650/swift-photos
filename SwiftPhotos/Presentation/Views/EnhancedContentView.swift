@@ -21,7 +21,7 @@ struct EnhancedContentView: View {
     @State private var uiControlSettings = ModernUIControlSettingsManager()
     @State private var localizationSettings = ModernLocalizationSettingsManager()
     @State private var settingsWindowManager = SettingsWindowManager()
-    @State private var settingsCoordinator: UnifiedAppSettingsCoordinator?
+    @State private var settingsCoordinator: AppSettingsCoordinator?
     
     // MARK: - Body
     var body: some View {
@@ -309,7 +309,7 @@ struct EnhancedContentView: View {
             }
             
             // Create settings coordinator from individual settings
-            let settingsCoordinator = UnifiedAppSettingsCoordinator()
+            let settingsCoordinator = AppSettingsCoordinator()
             // Note: Individual settings would need to be set on the coordinator if needed
             
             // Create ViewModel using factory
@@ -359,7 +359,7 @@ struct EnhancedContentView: View {
             }
             
             // Create settings coordinator from individual settings
-            let settingsCoordinator = UnifiedAppSettingsCoordinator()
+            let settingsCoordinator = AppSettingsCoordinator()
             
             // Use unified ViewModel creation with legacy preference
             let legacyViewModel = await ViewModelFactory.createSlideshowViewModel(

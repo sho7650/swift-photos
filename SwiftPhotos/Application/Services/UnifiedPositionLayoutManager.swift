@@ -50,7 +50,7 @@ public final class UnifiedPositionLayoutManager {
     // MARK: - Initialization
     
     public init(
-        settingsCoordinator: UnifiedAppSettingsCoordinator,
+        settingsCoordinator: AppSettingsCoordinator,
         performanceSettings: PerformanceSettings? = nil
     ) {
         // Initialize screen configuration first

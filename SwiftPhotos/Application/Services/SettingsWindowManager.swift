@@ -7,7 +7,7 @@ public class SettingsWindowManager: ObservableObject {
     private var settingsWindow: NSWindow?
     
     public func openSettingsWindow(
-        settingsCoordinator: UnifiedAppSettingsCoordinator,
+        settingsCoordinator: AppSettingsCoordinator,
         recentFilesManager: RecentFilesManager? = nil
     ) {
         // Close existing window if open
@@ -18,19 +18,19 @@ public class SettingsWindowManager: ObservableObject {
         let settingsCoordinatorAddress = "\(Unmanaged.passUnretained(settingsCoordinator).toOpaque())"
         ProductionLogger.debug("SettingsWindowManager: Using settings coordinator instance: \(settingsCoordinatorAddress)")
         
-        // Extract the underlying Modern* managers from UnifiedAppSettingsCoordinator
-        // These are the SAME instances that UnifiedSlideshowViewModel uses via UnifiedSortSettingsManager
-        let modernSortSettings = settingsCoordinator.sort.underlyingManager
+        // Extract the Modern* managers from AppSettingsCoordinator
+        // These are the SAME instances that SlideshowViewModel uses directly
+        let modernSortSettings = settingsCoordinator.sort
         let modernSortSettingsAddress = "\(Unmanaged.passUnretained(modernSortSettings).toOpaque())"
         ProductionLogger.debug("SettingsWindowManager: Using ModernSortSettingsManager instance: \(modernSortSettingsAddress)")
         
         // Create new modern sidebar-based settings window using the SAME settings managers
         let settingsView = SidebarSettingsWindow(
-            performanceSettings: createPerformanceManagerFromCoordinator(settingsCoordinator),
-            slideshowSettings: createSlideshowManagerFromCoordinator(settingsCoordinator),
-            sortSettings: modernSortSettings, // Use the SAME instance as UnifiedSlideshowViewModel
-            transitionSettings: createTransitionManagerFromCoordinator(settingsCoordinator),
-            uiControlSettings: createUIControlManagerFromCoordinator(settingsCoordinator),
+            performanceSettings: settingsCoordinator.performance,
+            slideshowSettings: settingsCoordinator.slideshow,
+            sortSettings: settingsCoordinator.sort,
+            transitionSettings: settingsCoordinator.transition,
+            uiControlSettings: settingsCoordinator.uiControl,
             localizationSettings: ModernLocalizationSettingsManager()
         )
         .environmentObject(recentFilesManager ?? RecentFilesManager())
@@ -81,33 +81,5 @@ public class SettingsWindowManager: ObservableObject {
         return settingsWindow?.isVisible ?? false
     }
     
-    // MARK: - Helper Methods for Settings Manager Extraction
-    
-    private func createPerformanceManagerFromCoordinator(_ coordinator: UnifiedAppSettingsCoordinator) -> ModernPerformanceSettingsManager {
-        // Create a ModernPerformanceSettingsManager that uses the same settings
-        let manager = ModernPerformanceSettingsManager()
-        manager.updateSettings(coordinator.performance.settings)
-        return manager
-    }
-    
-    private func createSlideshowManagerFromCoordinator(_ coordinator: UnifiedAppSettingsCoordinator) -> ModernSlideshowSettingsManager {
-        // Create a ModernSlideshowSettingsManager that uses the same settings
-        let manager = ModernSlideshowSettingsManager()
-        manager.updateSettings(coordinator.slideshow.settings)
-        return manager
-    }
-    
-    private func createTransitionManagerFromCoordinator(_ coordinator: UnifiedAppSettingsCoordinator) -> ModernTransitionSettingsManager {
-        // Create a ModernTransitionSettingsManager that uses the same settings
-        let manager = ModernTransitionSettingsManager()
-        manager.updateSettings(coordinator.transition.settings)
-        return manager
-    }
-    
-    private func createUIControlManagerFromCoordinator(_ coordinator: UnifiedAppSettingsCoordinator) -> ModernUIControlSettingsManager {
-        // Create a ModernUIControlSettingsManager that uses the same settings
-        let manager = ModernUIControlSettingsManager()
-        manager.updateSettings(coordinator.uiControl.settings)
-        return manager
-    }
+    // Note: Now using AppSettingsCoordinator managers directly - no need for helper methods
 }

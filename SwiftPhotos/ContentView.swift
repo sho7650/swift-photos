@@ -15,11 +15,7 @@ struct ContentView: View {
     @State private var uiControlStateManager: UIControlStateManager?
     @State private var isInitialized = false
     @State private var secureFileAccess = SecureFileAccess()
-    @State private var performanceSettings = ModernPerformanceSettingsManager()
-    @State private var slideshowSettings = ModernSlideshowSettingsManager()
-    @State private var sortSettings = ModernSortSettingsManager()
-    @State private var transitionSettings = ModernTransitionSettingsManager()
-    @State private var uiControlSettings = ModernUIControlSettingsManager()
+    @State private var appSettingsCoordinator = AppSettingsCoordinator()
     @State private var localizationSettings: ModernLocalizationSettingsManager?
     @StateObject private var settingsWindowManager = SettingsWindowManager()
     @EnvironmentObject private var recentFilesManager: RecentFilesManager
@@ -85,7 +81,7 @@ struct ContentView: View {
                     // Use UnifiedImageDisplayView for all ViewModel types
                     UnifiedImageDisplayView(
                         viewModel: viewModel,
-                        transitionSettings: transitionSettings,
+                        transitionSettings: appSettingsCoordinator.transition,
                         uiControlStateManager: uiControlStateManager
                     )
                     .ignoresSafeArea()
@@ -99,7 +95,7 @@ struct ContentView: View {
                     MinimalControlsView(
                         viewModel: viewModel,
                         uiControlStateManager: uiControlStateManager,
-                        uiControlSettings: uiControlSettings,
+                        uiControlSettings: appSettingsCoordinator.uiControl,
                         localizationService: localizationService
                     )
                     .shortcutTooltip("Hide/Show Controls", shortcut: "H")
@@ -108,7 +104,7 @@ struct ContentView: View {
                     DetailedInfoOverlay(
                         viewModel: viewModel,
                         uiControlStateManager: uiControlStateManager,
-                        uiControlSettings: uiControlSettings,
+                        uiControlSettings: appSettingsCoordinator.uiControl,
                         localizationService: localizationService
                     )
                 }
@@ -220,14 +216,14 @@ struct ContentView: View {
             // Create dependencies safely using persistent SecureFileAccess
             let imageLoader = ImageLoader()
             let imageCache = ImageCache()
-            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings, localizationService: localizationService!)
+            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: appSettingsCoordinator.sort, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
             // Create view model using ViewModelFactory unified approach
             ProductionLogger.info("ContentView: Creating unified ViewModel with automatic architecture detection")
             // Create settings coordinator from individual settings
-            let settingsCoordinator = UnifiedAppSettingsCoordinator()
-            // Note: Individual settings would need to be set on the coordinator if needed
+            // Use the unified AppSettingsCoordinator instance
+            let settingsCoordinator = appSettingsCoordinator
             
             let createdViewModel = await ViewModelFactory.createSlideshowViewModel(
                 fileAccess: secureFileAccess,
@@ -240,13 +236,13 @@ struct ContentView: View {
             
             // Setup UI Control State Manager with unified ViewModel approach
             let createdUIControlStateManager = UIControlStateManager(
-                uiControlSettings: uiControlSettings,
+                uiControlSettings: appSettingsCoordinator.uiControl,
                 slideshowViewModel: createdViewModel
             )
             
             // Setup keyboard handler connections for both ViewModel types
             createdKeyboardHandler.viewModel = createdViewModel
-            createdKeyboardHandler.performanceSettings = performanceSettings
+            createdKeyboardHandler.performanceSettings = appSettingsCoordinator.performance
             createdKeyboardHandler.onOpenSettings = {
                 settingsWindowManager.openSettingsWindow(
                     settingsCoordinator: settingsCoordinator,
@@ -375,9 +371,9 @@ struct ContentView: View {
         viewModel.selectedFolderURL = url
         
         // Generate new random seed if sort order is random
-        if sortSettings.settings.order == .random {
+        if appSettingsCoordinator.sort.settings.order == .random {
             ProductionLogger.debug("Generating new random seed for menu folder selection")
-            sortSettings.regenerateRandomSeedSilently()
+            appSettingsCoordinator.sort.regenerateRandomSeedSilently()
         }
         
         // Create slideshow from the selected folder with proper security scoped access
@@ -447,12 +443,12 @@ struct ContentView: View {
             
             let imageLoader = ImageLoader()
             let imageCache = ImageCache()
-            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings, localizationService: localizationService!)
+            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: appSettingsCoordinator.sort, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
             // Apply slideshow settings
             let mode: Slideshow.SlideshowMode = .sequential
-            let customInterval = try SlideshowInterval(slideshowSettings.settings.slideDuration)
+            let customInterval = try SlideshowInterval(appSettingsCoordinator.slideshow.settings.slideDuration)
             
             ProductionLogger.debug("Creating slideshow with domain service")
             let newSlideshow = try await domainService.createSlideshow(
@@ -467,14 +463,14 @@ struct ContentView: View {
             
             if !newSlideshow.isEmpty {
                 // Auto-recommend settings for collection size
-                let recommendedSettings = performanceSettings.recommendedSettings(for: newSlideshow.photos.count)
-                if recommendedSettings != performanceSettings.settings {
+                let recommendedSettings = appSettingsCoordinator.performance.recommendedSettings(for: newSlideshow.photos.count)
+                if recommendedSettings != appSettingsCoordinator.performance.settings {
                     ProductionLogger.info("Auto-applying recommended settings for \(newSlideshow.photos.count) photos")
-                    performanceSettings.updateSettings(recommendedSettings)
+                    appSettingsCoordinator.performance.updateSettings(recommendedSettings)
                 }
                 
                 // Load current image
-                if newSlideshow.photos.count > performanceSettings.settings.largeCollectionThreshold {
+                if newSlideshow.photos.count > appSettingsCoordinator.performance.settings.largeCollectionThreshold {
                     ProductionLogger.performance("Large collection detected - using virtual loading")
                     // Use viewModel's internal loading mechanisms
                     viewModel.currentPhoto = newSlideshow.currentPhoto
@@ -486,7 +482,7 @@ struct ContentView: View {
                 }
                 
                 // Auto-start slideshow if enabled
-                if slideshowSettings.settings.autoStart {
+                if appSettingsCoordinator.slideshow.settings.autoStart {
                     ProductionLogger.debug("Auto-starting slideshow per settings")
                     viewModel.play()
                 }
