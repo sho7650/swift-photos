@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "%@ %@" : {
       "localizations" : {
         "en" : {
@@ -1770,6 +1773,9 @@
 
     },
     "interface.when_paused" : {
+
+    },
+    "Keyboard shortcut: %@" : {
 
     },
     "keyboard.accessibility" : {
