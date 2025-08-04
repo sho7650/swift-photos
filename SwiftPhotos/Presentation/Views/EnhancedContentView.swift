@@ -21,6 +21,7 @@ struct EnhancedContentView: View {
     @State private var uiControlSettings = ModernUIControlSettingsManager()
     @State private var localizationSettings = ModernLocalizationSettingsManager()
     @State private var settingsWindowManager = SettingsWindowManager()
+    @State private var settingsCoordinator: UnifiedAppSettingsCoordinator?
     
     // MARK: - Body
     var body: some View {
@@ -336,6 +337,7 @@ struct EnhancedContentView: View {
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
             self.uiControlStateManager = createdUIControlStateManager
+            self.settingsCoordinator = settingsCoordinator
             self.isInitializing = false
             
             ProductionLogger.lifecycle("EnhancedContentView: Application initialized successfully with \(isUsingRepositoryPattern ? "Repository" : "Legacy") pattern")
@@ -377,6 +379,7 @@ struct EnhancedContentView: View {
             self.viewModel = legacyViewModel
             self.keyboardHandler = createdKeyboardHandler
             self.uiControlStateManager = createdUIControlStateManager
+            self.settingsCoordinator = settingsCoordinator
             self.isUsingRepositoryPattern = false
             self.isInitializing = false
             self.initializationError = nil
@@ -403,13 +406,13 @@ struct EnhancedContentView: View {
     }
     
     private func openSettings() {
+        guard let settingsCoordinator = settingsCoordinator else {
+            ProductionLogger.error("EnhancedContentView: Cannot open settings - settingsCoordinator is nil")
+            return
+        }
+        
         settingsWindowManager.openSettingsWindow(
-            performanceSettings: performanceSettings,
-            slideshowSettings: slideshowSettings,
-            sortSettings: sortSettings,
-            transitionSettings: transitionSettings,
-            uiControlSettings: uiControlSettings,
-            localizationSettings: localizationSettings
+            settingsCoordinator: settingsCoordinator
         )
     }
 }

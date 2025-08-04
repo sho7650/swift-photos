@@ -249,12 +249,7 @@ struct ContentView: View {
             createdKeyboardHandler.performanceSettings = performanceSettings
             createdKeyboardHandler.onOpenSettings = {
                 settingsWindowManager.openSettingsWindow(
-                    performanceSettings: performanceSettings,
-                    slideshowSettings: slideshowSettings,
-                    sortSettings: sortSettings,
-                    transitionSettings: transitionSettings,
-                    uiControlSettings: uiControlSettings,
-                    localizationSettings: createdLocalizationSettings,
+                    settingsCoordinator: settingsCoordinator,
                     recentFilesManager: recentFilesManager
                 )
             }
@@ -382,7 +377,7 @@ struct ContentView: View {
         // Generate new random seed if sort order is random
         if sortSettings.settings.order == .random {
             ProductionLogger.debug("Generating new random seed for menu folder selection")
-            sortSettings.regenerateRandomSeed()
+            sortSettings.regenerateRandomSeedSilently()
         }
         
         // Create slideshow from the selected folder with proper security scoped access

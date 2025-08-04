@@ -104,6 +104,7 @@ public class ModernSlideshowDomainService: ObservableObject {
             
             // Apply sorting based on current sort settings
             let currentSettings = sortSettings.settings
+            ProductionLogger.debug("ModernSlideshowDomainService: Retrieved sort settings: \(currentSettings.order.displayName) \(currentSettings.direction.displayName), randomSeed: \(currentSettings.randomSeed)")
             photos = await sortPhotos(photos, using: currentSettings)
             ProductionLogger.debug("ModernSlideshowDomainService: Applied sorting: \(currentSettings.order.displayName) \(currentSettings.direction.displayName)")
             

@@ -199,6 +199,11 @@ public final class UnifiedSortSettingsManager: SortSettingsManagerProtocol {
         set { modernSortSettings.settings = newValue }
     }
     
+    /// Expose the underlying ModernSortSettingsManager for Settings Window synchronization
+    public var underlyingManager: ModernSortSettingsManager {
+        return modernSortSettings
+    }
+    
     public init() {
         self.modernSortSettings = ModernSortSettingsManager()
     }
