@@ -116,7 +116,7 @@ struct EnhancedContentView: View {
                     UnifiedImageDisplayView(
                         viewModel: viewModel,
                         transitionSettings: transitionSettings,
-                        uiControlStateManager: unifiedInteractionManager.legacyUIControlManager,
+                        uiControlStateManager: unifiedInteractionManager.uiControlManager,
                         enablePerformanceMetrics: true
                     )
                     .id(currentPhoto.id)

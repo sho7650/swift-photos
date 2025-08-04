@@ -434,12 +434,17 @@ public final class UnifiedSlideshowViewModel {
     // MARK: - Playback Controls (Unified)
     
     public func play() {
-        guard let slideshow = slideshow, !slideshow.isEmpty else {
+        guard var slideshow = slideshow, !slideshow.isEmpty else {
             ProductionLogger.debug("UnifiedSlideshowViewModel: Cannot play - no slideshow or empty slideshow")
             return
         }
         
         stopTimer()
+        
+        // CRITICAL FIX: Update slideshow state so UI icons update
+        slideshow.play()
+        self.slideshow = slideshow
+        refreshCounter += 1
         
         let interval = settingsCoordinator.slideshow.settings.slideDuration
         
@@ -454,11 +459,25 @@ public final class UnifiedSlideshowViewModel {
     
     public func pause() {
         stopTimer()
+        
+        // CRITICAL FIX: Update slideshow state so UI icons update
+        guard var slideshow = slideshow else { return }
+        slideshow.pause()
+        self.slideshow = slideshow
+        refreshCounter += 1
+        
         ProductionLogger.info("UnifiedSlideshowViewModel: Slideshow paused")
     }
     
     public func stop() {
         stopTimer()
+        
+        // CRITICAL FIX: Update slideshow state so UI icons update
+        guard var slideshow = slideshow else { return }
+        slideshow.stop()
+        self.slideshow = slideshow
+        refreshCounter += 1
+        
         ProductionLogger.info("UnifiedSlideshowViewModel: Slideshow stopped")
     }
     
