@@ -8,7 +8,7 @@ struct EnhancedContentView: View {
     // MARK: - State Properties
     @State private var viewModel: (any SlideshowViewModelProtocol)?
     @State private var keyboardHandler: KeyboardHandler?
-    @State private var uiControlStateManager: UIControlStateManager?
+    @State private var unifiedInteractionManager: UnifiedInteractionManager?
     @State private var isInitializing = true
     @State private var initializationError: Error?
     @State private var isUsingRepositoryPattern = false
@@ -32,11 +32,11 @@ struct EnhancedContentView: View {
                 errorView(error)
             } else if let viewModel = viewModel,
                       let keyboardHandler = keyboardHandler,
-                      let uiControlStateManager = uiControlStateManager {
+                      let unifiedInteractionManager = unifiedInteractionManager {
                 slideshowContentView(
                     viewModel: viewModel,
                     keyboardHandler: keyboardHandler,
-                    uiControlStateManager: uiControlStateManager
+                    unifiedInteractionManager: unifiedInteractionManager
                 )
             } else {
                 Text("Unexpected state")
@@ -100,7 +100,7 @@ struct EnhancedContentView: View {
     private func slideshowContentView(
         viewModel: any SlideshowViewModelProtocol,
         keyboardHandler: KeyboardHandler,
-        uiControlStateManager: UIControlStateManager
+        unifiedInteractionManager: UnifiedInteractionManager
     ) -> some View {
         ZStack {
             // Background
@@ -116,7 +116,7 @@ struct EnhancedContentView: View {
                     UnifiedImageDisplayView(
                         viewModel: viewModel,
                         transitionSettings: transitionSettings,
-                        uiControlStateManager: uiControlStateManager,
+                        uiControlStateManager: unifiedInteractionManager.legacyUIControlManager,
                         enablePerformanceMetrics: true
                     )
                     .id(currentPhoto.id)
@@ -152,12 +152,12 @@ struct EnhancedContentView: View {
             
             // UI Controls Overlay - only show when no photo is displayed
             VStack {
-                if uiControlStateManager.isControlsVisible && viewModel.slideshow?.currentPhoto == nil {
+                if unifiedInteractionManager.isControlsVisible && viewModel.slideshow?.currentPhoto == nil {
                     repositoryAwareControlsOverlay(
                         viewModel: viewModel,
-                        uiControlStateManager: uiControlStateManager
+                        unifiedInteractionManager: unifiedInteractionManager
                     )
-                } else if uiControlStateManager.isControlsVisible && viewModel.slideshow?.currentPhoto != nil {
+                } else if unifiedInteractionManager.isControlsVisible && viewModel.slideshow?.currentPhoto != nil {
                     // Show minimal controls only when photo is displayed
                     MinimalControlsView(
                         viewModel: viewModel,
@@ -175,7 +175,7 @@ struct EnhancedContentView: View {
     // MARK: - Repository-Aware Controls
     private func repositoryAwareControlsOverlay(
         viewModel: any SlideshowViewModelProtocol,
-        uiControlStateManager: UIControlStateManager
+        unifiedInteractionManager: UnifiedInteractionManager
     ) -> some View {
         VStack {
             // Top controls with Repository status
@@ -327,16 +327,16 @@ struct EnhancedContentView: View {
             let createdKeyboardHandler = KeyboardHandler()
             setupKeyboardHandler(createdKeyboardHandler, with: createdViewModel)
             
-            // Create UI control state manager
-            let createdUIControlStateManager = UIControlStateManager(
-                uiControlSettings: uiControlSettings
-                // Note: EnhancedModernSlideshowViewModel integration would need method updates
+            // Create unified interaction manager
+            let createdUnifiedInteractionManager = UnifiedInteractionManager(
+                uiControlSettings: uiControlSettings,
+                enableEnhancedFeatures: readinessStatus.recommendUseRepositoryPattern
             )
             
             // Set properties
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
-            self.uiControlStateManager = createdUIControlStateManager
+            self.unifiedInteractionManager = createdUnifiedInteractionManager
             self.settingsCoordinator = settingsCoordinator
             self.isInitializing = false
             
@@ -372,13 +372,14 @@ struct EnhancedContentView: View {
             let createdKeyboardHandler = KeyboardHandler()
             setupKeyboardHandler(createdKeyboardHandler, with: legacyViewModel)
             
-            let createdUIControlStateManager = UIControlStateManager(
-                uiControlSettings: uiControlSettings
+            let createdUnifiedInteractionManager = UnifiedInteractionManager(
+                uiControlSettings: uiControlSettings,
+                enableEnhancedFeatures: false // Legacy mode - no enhanced features
             )
             
             self.viewModel = legacyViewModel
             self.keyboardHandler = createdKeyboardHandler
-            self.uiControlStateManager = createdUIControlStateManager
+            self.unifiedInteractionManager = createdUnifiedInteractionManager
             self.settingsCoordinator = settingsCoordinator
             self.isUsingRepositoryPattern = false
             self.isInitializing = false
@@ -403,6 +404,11 @@ struct EnhancedContentView: View {
         keyboardHandler.viewModel = viewModel
         keyboardHandler.performanceSettings = performanceSettings
         keyboardHandler.onOpenSettings = openSettings
+        
+        // Integrate keyboard handler with unified interaction manager
+        keyboardHandler.onKeyboardInteraction = {
+            unifiedInteractionManager?.handleKeyboardInteraction()
+        }
     }
     
     private func openSettings() {
