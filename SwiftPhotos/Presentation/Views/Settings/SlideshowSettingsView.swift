@@ -138,6 +138,7 @@ struct SlideshowSettingsView: View {
                     ShortcutRow(key: "→ ↓", description: "Next photo")
                     ShortcutRow(key: "← ↑", description: "Previous photo")
                     ShortcutRow(key: "Esc", description: "Stop slideshow")
+                    ShortcutRow(key: "F", description: "Toggle fullscreen")
                     ShortcutRow(key: "I", description: "Toggle info")
                     ShortcutRow(key: "H", description: "Toggle controls")
                 }

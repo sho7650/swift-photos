@@ -97,8 +97,15 @@ public struct SwiftPhotosMenuBar: Commands {
             }
         }
         
-        // Add Window menu items for window level control
+        // Add Window menu items for window level control and fullscreen
         CommandGroup(before: .windowArrangement) {
+            Button("Toggle Fullscreen") {
+                toggleFullscreen()
+            }
+            .keyboardShortcut("f", modifiers: [])
+            
+            Divider()
+            
             Menu("Window Level") {
                 Button("Normal") {
                     changeWindowLevel(.normal)
@@ -301,6 +308,25 @@ public struct SwiftPhotosMenuBar: Commands {
             name: .init("SwiftPhotosWindowLevelChanged"),
             object: level
         )
+    }
+    
+    private func toggleFullscreen() {
+        ProductionLogger.userAction("SwiftPhotosMenuBar: Toggling fullscreen from menu")
+        
+        DispatchQueue.main.async {
+            guard let window = NSApplication.shared.mainWindow else {
+                ProductionLogger.error("SwiftPhotosMenuBar: No main window found for fullscreen toggle")
+                return
+            }
+            
+            if window.styleMask.contains(.fullScreen) {
+                ProductionLogger.debug("SwiftPhotosMenuBar: Exiting fullscreen")
+                window.toggleFullScreen(nil)
+            } else {
+                ProductionLogger.debug("SwiftPhotosMenuBar: Entering fullscreen")
+                window.toggleFullScreen(nil)
+            }
+        }
     }
     
     private func importRecentFiles() {

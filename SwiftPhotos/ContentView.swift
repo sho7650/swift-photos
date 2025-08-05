@@ -109,11 +109,6 @@ struct ContentView: View {
                     )
                 }
                 .keyboardHandler(keyboardHandler)
-                .onKeyPress("f") {
-                    ProductionLogger.userAction("ContentView: F key pressed - toggling fullscreen")
-                    toggleFullscreen()
-                    return .handled
-                }
                 .onHover { hovering in
                     if hovering {
                         uiControlStateManager.handleMouseInteraction(at: NSEvent.mouseLocation)
@@ -401,26 +396,6 @@ struct ContentView: View {
         viewModel.loadingState = .notLoading
     }
     
-    // MARK: - Fullscreen Management
-    
-    private func toggleFullscreen() {
-        ProductionLogger.userAction("ContentView: Toggling fullscreen")
-        
-        DispatchQueue.main.async {
-            guard let window = NSApplication.shared.mainWindow else {
-                ProductionLogger.error("ContentView: No main window found for fullscreen toggle")
-                return
-            }
-            
-            if window.styleMask.contains(.fullScreen) {
-                ProductionLogger.debug("ContentView: Exiting fullscreen")
-                window.toggleFullScreen(nil)
-            } else {
-                ProductionLogger.debug("ContentView: Entering fullscreen")
-                window.toggleFullScreen(nil)
-            }
-        }
-    }
     
     private func createSlideshowForMenuSelection(from folderURL: URL) async throws {
         ProductionLogger.userAction("Creating slideshow from menu selection: \(folderURL.path)")
