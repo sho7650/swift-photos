@@ -40,6 +40,19 @@
         }
       }
     },
+    "%lld notes" : {
+
+    },
+    "%lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "%lld photos" : {
 
     },
@@ -73,6 +86,9 @@
     "💡" : {
 
     },
+    "2.4 MB • 4032×3024" : {
+
+    },
     "accessibility.description" : {
 
     },
@@ -83,6 +99,9 @@
 
     },
     "Action:" : {
+
+    },
+    "Active" : {
 
     },
     "Active Categories:" : {
@@ -98,6 +117,9 @@
 
     },
     "Advanced Options" : {
+
+    },
+    "Advanced Settings..." : {
 
     },
     "Aggressive Memory Management" : {
@@ -366,7 +388,28 @@
         }
       }
     },
+    "Apply" : {
+
+    },
+    "Audience controls visible" : {
+
+    },
+    "Audience Display" : {
+
+    },
+    "Audience Screen" : {
+
+    },
+    "Audience:" : {
+
+    },
+    "Auto" : {
+
+    },
     "Auto Start" : {
+
+    },
+    "Auto-save notes" : {
 
     },
     "Automatic Pattern Selection" : {
@@ -381,6 +424,9 @@
     "Automatically switch to Legacy mode when system memory is low" : {
 
     },
+    "Available Displays:" : {
+
+    },
     "Average Response Time:" : {
 
     },
@@ -388,6 +434,9 @@
 
     },
     "Avg:" : {
+
+    },
+    "Background dimming" : {
 
     },
     "button.advanced.clear_all_caches" : {
@@ -1143,6 +1192,9 @@
     "Clean Up Invalid Files" : {
 
     },
+    "Clear" : {
+
+    },
     "Clear All" : {
 
     },
@@ -1167,10 +1219,16 @@
     "Concurrent Loading Limit:" : {
 
     },
+    "Configuration" : {
+
+    },
     "Configure gesture recognition, sensitivity, and advanced features for photo slideshow interaction." : {
 
     },
     "Configure which areas of the interface respond to gestures." : {
+
+    },
+    "Connect a second display for full presentation features" : {
 
     },
     "Copy the JSON below to share or backup your gesture settings." : {
@@ -1179,7 +1237,19 @@
     "Copy to Clipboard" : {
 
     },
+    "Current Display" : {
+
+    },
+    "Current Photo" : {
+
+    },
+    "Current Photo:" : {
+
+    },
     "Current Status" : {
+
+    },
+    "Dark" : {
 
     },
     "Data Summary" : {
@@ -1338,6 +1408,12 @@
     "dialog.export_performance_report" : {
 
     },
+    "Display %lld" : {
+
+    },
+    "Display Options" : {
+
+    },
     "Done" : {
 
     },
@@ -1414,6 +1490,12 @@
 
     },
     "Enabled Gestures" : {
+
+    },
+    "Enter Fullscreen" : {
+
+    },
+    "Enter Presentation Mode" : {
 
     },
     "Error" : {
@@ -1670,6 +1752,15 @@
         }
       }
     },
+    "Exit Fullscreen" : {
+
+    },
+    "Exit Presentation" : {
+
+    },
+    "Exit Presentation Mode" : {
+
+    },
     "Expand" : {
 
     },
@@ -1692,6 +1783,9 @@
 
     },
     "Failed to load image" : {
+
+    },
+    "Features" : {
 
     },
     "features.advanced_memory_management" : {
@@ -1787,6 +1881,9 @@
     "file_management.statistics" : {
 
     },
+    "Fullscreen" : {
+
+    },
     "Gesture Configuration" : {
 
     },
@@ -1802,6 +1899,9 @@
     "Help improve Swift Photos by sharing anonymous usage data" : {
 
     },
+    "IMG_2024_001.jpg" : {
+
+    },
     "Import" : {
 
     },
@@ -1812,6 +1912,9 @@
 
     },
     "Import Settings" : {
+
+    },
+    "Inactive" : {
 
     },
     "Initialization Failed" : {
@@ -1857,6 +1960,9 @@
 
     },
     "interface.when_paused" : {
+
+    },
+    "Keep both displays synchronized when navigating photos" : {
 
     },
     "Keyboard shortcut: %@" : {
@@ -2162,10 +2268,16 @@
     "Large Collection Threshold:" : {
 
     },
+    "Largest Display" : {
+
+    },
     "Last Operation:" : {
 
     },
     "Legacy" : {
+
+    },
+    "Light" : {
 
     },
     "Load Image" : {
@@ -2410,6 +2522,18 @@
     "Monitor Repository pattern performance and automatically handle issues" : {
 
     },
+    "Multi-Monitor Presentation" : {
+
+    },
+    "Multi-monitor presentation: %@" : {
+
+    },
+    "Navigation" : {
+
+    },
+    "Next" : {
+
+    },
     "No Data" : {
 
     },
@@ -2429,6 +2553,9 @@
 
     },
     "Not Loaded: %@" : {
+
+    },
+    "Notes" : {
 
     },
     "Number of images to keep in memory around current photo" : {
@@ -2533,6 +2660,12 @@
 
     },
     "Paste gesture settings JSON below to import configuration." : {
+
+    },
+    "Pause" : {
+
+    },
+    "Pause on Manual Navigation" : {
 
     },
     "Performance" : {
@@ -2983,13 +3116,65 @@
     "performance.unlimited_images" : {
 
     },
+    "Photo %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Photo %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "Photo Information" : {
+
+    },
+    "Photo Preview" : {
 
     },
     "photos" : {
 
     },
     "Photos" : {
+
+    },
+    "Play" : {
+
+    },
+    "Presentation" : {
+
+    },
+    "Presentation Controls" : {
+
+    },
+    "Presentation Settings" : {
+
+    },
+    "Presentation Status:" : {
+
+    },
+    "Presenter controls visible" : {
+
+    },
+    "Presenter Display" : {
+
+    },
+    "Presenter Features" : {
+
+    },
+    "Presenter Notes" : {
+
+    },
+    "Presenter Notes:" : {
+
+    },
+    "Presenter Screen" : {
+
+    },
+    "Presenter:" : {
+
+    },
+    "Presenting" : {
 
     },
     "Preset" : {
@@ -3066,6 +3251,12 @@
         }
       }
     },
+    "Previous" : {
+
+    },
+    "Primary Display" : {
+
+    },
     "Privacy & Analytics" : {
 
     },
@@ -3073,6 +3264,9 @@
 
     },
     "Random Order" : {
+
+    },
+    "Ready" : {
 
     },
     "Recent Files" : {
@@ -3138,6 +3332,12 @@
     "Run Health Check" : {
 
     },
+    "Screen Configuration" : {
+
+    },
+    "Screens" : {
+
+    },
     "search.placeholder" : {
       "localizations" : {
         "en" : {
@@ -3159,6 +3359,9 @@
           }
         }
       }
+    },
+    "Secondary Display" : {
+
     },
     "Seed:" : {
 
@@ -4911,10 +5114,19 @@
     "Show full paths in menu" : {
 
     },
+    "Show photo information" : {
+
+    },
+    "Show presenter notes" : {
+
+    },
     "Show recent folders in File menu" : {
 
     },
     "Show Statistics" : {
+
+    },
+    "Show upcoming photos" : {
 
     },
     "Slideshow Controls" : {
@@ -5030,6 +5242,9 @@
     "Sorting files before slideshow improves image caching efficiency. Random sorting with a fixed seed ensures consistent order across sessions." : {
 
     },
+    "Start Presentation" : {
+
+    },
     "Success Count:" : {
 
     },
@@ -5039,7 +5254,22 @@
     "Swift Photos collects anonymous usage data to improve performance and user experience. No personal information or photo content is collected." : {
 
     },
+    "Sync navigation" : {
+
+    },
+    "Sync Navigation" : {
+
+    },
+    "Sync navigation between displays" : {
+
+    },
     "System is performing optimally" : {
+
+    },
+    "Theme" : {
+
+    },
+    "Theme:" : {
 
     },
     "This will reset all gesture settings to their default values. This action cannot be undone." : {
@@ -6313,6 +6543,9 @@
     "Unexpected state" : {
 
     },
+    "Upcoming" : {
+
+    },
     "Use the advanced Repository pattern for improved performance with large photo collections" : {
 
     },
@@ -6426,6 +6659,9 @@
       }
     },
     "window.system_information" : {
+
+    },
+    "Windowed" : {
 
     }
   },
