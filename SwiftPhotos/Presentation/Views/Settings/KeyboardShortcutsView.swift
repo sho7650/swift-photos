@@ -6,7 +6,7 @@ struct KeyboardShortcutsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Basic Slideshow Controls Section
-            KeyboardShortcutsSection(
+            SettingsComponentFactory.createSection(
                 title: String(localized: "keyboard.slideshow_controls"),
                 icon: "play.rectangle",
                 description: "Control slideshow playback and navigation"
@@ -20,7 +20,7 @@ struct KeyboardShortcutsView: View {
             }
             
             // Interface Controls Section
-            KeyboardShortcutsSection(
+            SettingsComponentFactory.createSection(
                 title: String(localized: "keyboard.interface_controls"),
                 icon: "rectangle.3.group",
                 description: "Show and hide interface elements"
@@ -33,7 +33,7 @@ struct KeyboardShortcutsView: View {
             }
             
             // Application Controls Section
-            KeyboardShortcutsSection(
+            SettingsComponentFactory.createSection(
                 title: String(localized: "keyboard.application_controls"),
                 icon: "gear",
                 description: "Access application features and settings"
@@ -47,10 +47,10 @@ struct KeyboardShortcutsView: View {
             }
             
             // File Navigation Section
-            KeyboardShortcutsSection(
-                title: String(localized: "keyboard.file_navigation"),
+            SettingsComponentFactory.createSection(
+                title: "File Navigation",
                 icon: "folder",
-                description: "Navigate through files and folders"
+                description: "Navigate through photos quickly"
             ) {
                 VStack(alignment: .leading, spacing: 8) {
                     ShortcutRow(key: "Home", description: "Go to first photo")
@@ -61,10 +61,10 @@ struct KeyboardShortcutsView: View {
             }
             
             // Tips and Information Section
-            KeyboardShortcutsSection(
-                title: String(localized: "keyboard.tips_and_information"),
+            SettingsComponentFactory.createSection(
+                title: "Tips and Information",
                 icon: "lightbulb",
-                description: "Additional information about keyboard usage"
+                description: "Helpful tips for using keyboard shortcuts"
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -128,36 +128,6 @@ struct KeyboardShortcutsView: View {
     }
 }
 
-/// Reusable settings section component for keyboard shortcuts
-private struct KeyboardShortcutsSection<Content: View>: View {
-    let title: String
-    let icon: String
-    let description: String
-    let content: () -> Content
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.accentColor)
-                
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-            }
-            
-            if !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            content()
-        }
-        .padding(.vertical, 8)
-    }
-}
 
 /// Helper view for keyboard shortcut display
 private struct ShortcutRow: View {

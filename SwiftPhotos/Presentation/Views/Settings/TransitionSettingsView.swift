@@ -24,7 +24,7 @@ struct TransitionSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Enable/Disable Section
-            TransitionSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: String(localized: "transitions.effects"),
                 icon: "arrow.triangle.2.circlepath",
                 description: "Configure smooth transition effects between photos during slideshow"
@@ -40,7 +40,7 @@ struct TransitionSettingsView: View {
             
             if settings.settings.isEnabled {
                 // Presets Section
-                TransitionSettingsSection(
+                SettingsComponentFactory.createSection(
                     title: String(localized: "transitions.presets"),
                     icon: "square.grid.2x2",
                     description: "Quick configurations for different transition styles"
@@ -78,7 +78,7 @@ struct TransitionSettingsView: View {
                 }
                 
                 // Effect Type Section
-                TransitionSettingsSection(
+                SettingsComponentFactory.createSection(
                     title: String(localized: "transitions.effect_type"),
                     icon: "wand.and.stars",
                     description: "Choose the type of transition effect"
@@ -101,7 +101,7 @@ struct TransitionSettingsView: View {
                 }
                 
                 // Timing Settings Section
-                TransitionSettingsSection(
+                SettingsComponentFactory.createSection(
                     title: String(localized: "transitions.timing_settings"),
                     icon: "timer",
                     description: "Control transition duration and animation curve"
@@ -150,7 +150,7 @@ struct TransitionSettingsView: View {
                 }
                 
                 // Effect Intensity Section
-                TransitionSettingsSection(
+                SettingsComponentFactory.createSection(
                     title: String(localized: "transitions.effect_intensity"),
                     icon: "dial.high",
                     description: "Adjust the strength of the transition effect"
@@ -177,7 +177,7 @@ struct TransitionSettingsView: View {
                 }
                 
                 // Current Settings Summary Section
-                TransitionSettingsSection(
+                SettingsComponentFactory.createSection(
                     title: String(localized: "transitions.current_settings"),
                     icon: "info.circle",
                     description: "Summary of your current transition configuration"
@@ -203,7 +203,7 @@ struct TransitionSettingsView: View {
                 }
                 
                 // Performance Information Section
-                TransitionSettingsSection(
+                SettingsComponentFactory.createSection(
                     title: String(localized: "transitions.performance_information"),
                     icon: "speedometer",
                     description: "How transition settings affect performance"
@@ -242,36 +242,7 @@ struct TransitionSettingsView: View {
     }
 }
 
-/// Reusable settings section component for transition settings
-private struct TransitionSettingsSection<Content: View>: View {
-    let title: String
-    let icon: String
-    let description: String
-    let content: () -> Content
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.accentColor)
-                
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-            }
-            
-            if !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            content()
-        }
-        .padding(.vertical, 8)
-    }
-}
+
 
 #Preview {
     TransitionSettingsView(settings: ModernTransitionSettingsManager())

@@ -9,7 +9,7 @@ struct SlideshowSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Slideshow Presets Section
-            SlideshowSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: String(localized: "slideshow.presets"),
                 icon: "play.circle",
                 description: "Quick presets for common slideshow configurations"
@@ -27,7 +27,7 @@ struct SlideshowSettingsView: View {
             }
             
             // Timing Settings Section
-            SlideshowSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: String(localized: "slideshow.timing_settings"),
                 icon: "timer",
                 description: "Configure slideshow timing and duration"
@@ -59,10 +59,10 @@ struct SlideshowSettingsView: View {
             }
             
             // Playback Behavior Section
-            SlideshowSettingsSection(
-                title: String(localized: "slideshow.playback_behavior"),
-                icon: "gearshape",
-                description: "Configure automatic playback options"
+            SettingsComponentFactory.createSection(
+                title: "Playback Behavior",
+                icon: "play.rectangle",
+                description: "Configure slideshow playback options"
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     Toggle("Auto Start", isOn: Binding(
@@ -128,10 +128,10 @@ struct SlideshowSettingsView: View {
             }
             
             // Keyboard Controls Section
-            SlideshowSettingsSection(
-                title: String(localized: "slideshow.keyboard_controls"),
+            SettingsComponentFactory.createSection(
+                title: "Keyboard Controls",
                 icon: "keyboard",
-                description: "Configure keyboard shortcuts"
+                description: "Available keyboard shortcuts for slideshow control"
             ) {
                 VStack(alignment: .leading, spacing: 8) {
                     ShortcutRow(key: "Space", description: "Play/Pause slideshow")
@@ -171,36 +171,7 @@ struct SlideshowSettingsView: View {
     }
 }
 
-/// Reusable settings section component for slideshow settings
-private struct SlideshowSettingsSection<Content: View>: View {
-    let title: String
-    let icon: String
-    let description: String
-    let content: () -> Content
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.accentColor)
-                
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-            }
-            
-            if !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            content()
-        }
-        .padding(.vertical, 8)
-    }
-}
+
 
 /// Helper view for keyboard shortcut display
 private struct ShortcutRow: View {

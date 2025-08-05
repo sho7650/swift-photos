@@ -8,7 +8,7 @@ struct SortSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Sort Presets Section
-            SortSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: L10n.SettingsString.sortPresets(),
                 icon: "arrow.up.arrow.down",
                 description: L10n.SettingsString.sortPresetsDescription()
@@ -50,7 +50,7 @@ struct SortSettingsView: View {
             }
             
             // Sort Order Section
-            SortSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: L10n.SettingsString.sortOrder(),
                 icon: "list.bullet",
                 description: L10n.SettingsString.sortOrderDescription()
@@ -99,7 +99,7 @@ struct SortSettingsView: View {
             
             // Sort Direction Section (not applicable for random)
             if settings.settings.order != .random {
-                SortSettingsSection(
+                SettingsComponentFactory.createSection(
                     title: L10n.SettingsString.sortDirection(),
                     icon: "arrow.up.down",
                     description: L10n.SettingsString.sortDirectionDescription()
@@ -148,7 +148,7 @@ struct SortSettingsView: View {
             }
             
             // Current Settings Summary Section
-            SortSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: L10n.SettingsString.currentSettings(),
                 icon: "info.circle",
                 description: L10n.SettingsString.currentSettingsDescription()
@@ -174,7 +174,7 @@ struct SortSettingsView: View {
             }
             
             // Performance Information Section
-            SortSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: L10n.SettingsString.performanceInformation(),
                 icon: "speedometer",
                 description: L10n.SettingsString.performanceInformationDescription()
@@ -251,36 +251,7 @@ struct SortSettingsView: View {
     }
 }
 
-/// Reusable settings section component for sort settings
-private struct SortSettingsSection<Content: View>: View {
-    let title: String
-    let icon: String
-    let description: String
-    let content: () -> Content
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.accentColor)
-                
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-            }
-            
-            if !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            content()
-        }
-        .padding(.vertical, 8)
-    }
-}
+
 
 #Preview {
     SortSettingsView(settings: ModernSortSettingsManager())
