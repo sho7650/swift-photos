@@ -15,6 +15,7 @@ public struct UnifiedImageDisplayView: View {
     var enableDebugMode: Bool = false
     var enableViewportTracking: Bool = false
     var enablePerformanceMetrics: Bool = false
+    var enableAdvancedGestures: Bool = true
     
     // MARK: - State
     
@@ -25,6 +26,9 @@ public struct UnifiedImageDisplayView: View {
     @State private var performanceMetrics: [String: Any]?
     @State private var scale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
+    @State private var gestureManager: AdvancedGestureManager?
+    @State private var photoZoomState: PhotoZoomState?
+    @State private var gestureCoordinator: GestureCoordinator?
     
     @Environment(\.localizationService) private var localizationService
     
@@ -36,7 +40,8 @@ public struct UnifiedImageDisplayView: View {
         uiControlStateManager: UIControlStateManager? = nil,
         enableDebugMode: Bool = false,
         enableViewportTracking: Bool = false,
-        enablePerformanceMetrics: Bool = false
+        enablePerformanceMetrics: Bool = false,
+        enableAdvancedGestures: Bool = true
     ) {
         self.viewModel = viewModel
         self.transitionSettings = transitionSettings
@@ -44,6 +49,7 @@ public struct UnifiedImageDisplayView: View {
         self.enableDebugMode = enableDebugMode
         self.enableViewportTracking = enableViewportTracking
         self.enablePerformanceMetrics = enablePerformanceMetrics
+        self.enableAdvancedGestures = enableAdvancedGestures
     }
     
     // MARK: - Body
@@ -82,6 +88,9 @@ public struct UnifiedImageDisplayView: View {
         }
         .onAppear {
             setupTransitionManager()
+            if enableAdvancedGestures {
+                setupAdvancedGestures()
+            }
         }
         .onChange(of: transitionSettings.settings) { _, _ in
             setupTransitionManager()
@@ -170,8 +179,15 @@ public struct UnifiedImageDisplayView: View {
                     }
                     .id(photo.id)
                     .onTapGesture(count: 2) {
-                        resetZoom()
+                        if enableAdvancedGestures {
+                            handleAdvancedDoubleTap(at: CGPoint(x: geometry.size.width/2, y: geometry.size.height/2))
+                        } else {
+                            resetZoom()
+                        }
                     }
+                    .gesture(
+                        enableAdvancedGestures ? createAdvancedGestureModifier(geometry: geometry) : AnyGesture(TapGesture().map { _ in })
+                    )
             }
         }
     }
@@ -297,9 +313,142 @@ public struct UnifiedImageDisplayView: View {
     }
     
     private func resetZoom() {
-        withAnimation(.spring()) {
-            scale = 1.0
-            offset = .zero
+        if enableAdvancedGestures {
+            photoZoomState?.resetZoom(animated: true)
+        } else {
+            withAnimation(.spring()) {
+                scale = 1.0
+                offset = .zero
+            }
+        }
+    }
+    
+    // MARK: - Advanced Gesture Methods
+    
+    private func setupAdvancedGestures() {
+        // Create PhotoZoomState if not already created
+        if photoZoomState == nil {
+            photoZoomState = PhotoZoomState()
+        }
+        
+        // Create GestureCoordinator if not already created
+        if gestureCoordinator == nil {
+            gestureCoordinator = GestureCoordinator()
+        }
+        
+        // Create AdvancedGestureManager with dependencies
+        if let photoZoomState = photoZoomState,
+           let gestureCoordinator = gestureCoordinator {
+            gestureManager = AdvancedGestureManager(
+                slideshowViewModel: viewModel,
+                gestureCoordinator: gestureCoordinator,
+                photoZoomState: photoZoomState
+            )
+            
+            if enableDebugMode {
+                ProductionLogger.debug("UnifiedImageDisplay: Advanced gesture system initialized")
+            }
+        }
+    }
+    
+    private func createAdvancedGestureModifier(geometry: GeometryProxy) -> AnyGesture<Void> {
+        guard let gestureManager = gestureManager else { 
+            return AnyGesture(TapGesture().map { _ in })
+        }
+        
+        return AnyGesture(
+            SimultaneousGesture(
+                createPinchGesture(),
+                createPanGesture()
+            ).map { _ in }
+        )
+    }
+    
+    private func createPinchGesture() -> some Gesture {
+        MagnificationGesture()
+            .onChanged { value in
+                if let gestureManager = gestureManager {
+                    let gestureData = GestureData(
+                        gestureType: .pinch,
+                        phase: .changed,
+                        scale: value
+                    )
+                    let location = CGPoint(x: 0, y: 0) // Would need actual touch location
+                    gestureManager.processPinchGesture(gestureData, at: location)
+                }
+            }
+            .onEnded { value in
+                if let gestureManager = gestureManager {
+                    let gestureData = GestureData(
+                        gestureType: .pinch,
+                        phase: .ended,
+                        scale: value
+                    )
+                    let location = CGPoint(x: 0, y: 0)
+                    gestureManager.processPinchGesture(gestureData, at: location)
+                }
+            }
+    }
+    
+    private func createPanGesture() -> some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if let gestureManager = gestureManager {
+                    let gestureData = GestureData(
+                        gestureType: .pan,
+                        phase: .changed,
+                        translation: CGVector(dx: value.translation.width, dy: value.translation.height)
+                    )
+                    gestureManager.processPanGesture(gestureData, at: value.location)
+                }
+            }
+            .onEnded { value in
+                if let gestureManager = gestureManager {
+                    let gestureData = GestureData(
+                        gestureType: .pan,
+                        phase: .ended,
+                        translation: CGVector(dx: value.translation.width, dy: value.translation.height)
+                    )
+                    gestureManager.processPanGesture(gestureData, at: value.location)
+                    
+                    // Check for swipe gesture
+                    handleSwipeDetection(value)
+                }
+            }
+    }
+    
+    private func handleAdvancedDoubleTap(at location: CGPoint) {
+        if let gestureManager = gestureManager {
+            let gestureData = GestureData(
+                gestureType: .doubleTap,
+                phase: .ended
+            )
+            gestureManager.processDoubleTapGesture(gestureData, at: location)
+        }
+    }
+    
+    private func handleSwipeDetection(_ dragValue: DragGesture.Value) {
+        let distance = sqrt(pow(dragValue.translation.width, 2) + pow(dragValue.translation.height, 2))
+        let velocity = sqrt(pow(dragValue.velocity.width, 2) + pow(dragValue.velocity.height, 2))
+        
+        // Swipe detection thresholds
+        let minSwipeDistance: CGFloat = 50
+        let minSwipeVelocity: CGFloat = 300
+        
+        if distance > minSwipeDistance && velocity > minSwipeVelocity {
+            let isHorizontal = abs(dragValue.translation.width) > abs(dragValue.translation.height)
+            
+            if isHorizontal {
+                let gestureType: GestureType = dragValue.translation.width > 0 ? .swipeRight : .swipeLeft
+                
+                if let gestureManager = gestureManager {
+                    let gestureData = GestureData(
+                        gestureType: gestureType,
+                        phase: .ended
+                    )
+                    gestureManager.processSwipeGesture(gestureData, at: dragValue.location)
+                }
+            }
         }
     }
 }

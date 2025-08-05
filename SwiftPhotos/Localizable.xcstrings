@@ -24,6 +24,9 @@
         }
       }
     },
+    "%@s" : {
+
+    },
     "%lld" : {
 
     },
@@ -38,6 +41,9 @@
       }
     },
     "%lld photos" : {
+
+    },
+    "%lluMB" : {
 
     },
     "• Alphabetical sorting provides fastest cache performance" : {
@@ -76,7 +82,19 @@
     "accessibility.title" : {
 
     },
+    "Action:" : {
+
+    },
+    "Active Categories:" : {
+
+    },
+    "Adjust how responsive each gesture type is to user input." : {
+
+    },
     "Advanced" : {
+
+    },
+    "Advanced Features" : {
 
     },
     "Advanced Options" : {
@@ -128,6 +146,9 @@
           }
         }
       }
+    },
+    "All" : {
+
     },
     "All data is stored locally and only shared if you enable analytics. You can export or delete this data at any time." : {
 
@@ -361,6 +382,12 @@
 
     },
     "Average Response Time:" : {
+
+    },
+    "Avg Response" : {
+
+    },
+    "Avg:" : {
 
     },
     "button.advanced.clear_all_caches" : {
@@ -1128,10 +1155,28 @@
     "Clear Menu" : {
 
     },
+    "Close" : {
+
+    },
+    "Collapse" : {
+
+    },
     "Collections larger than this will automatically use Repository pattern" : {
 
     },
     "Concurrent Loading Limit:" : {
+
+    },
+    "Configure gesture recognition, sensitivity, and advanced features for photo slideshow interaction." : {
+
+    },
+    "Configure which areas of the interface respond to gestures." : {
+
+    },
+    "Copy the JSON below to share or backup your gesture settings." : {
+
+    },
+    "Copy to Clipboard" : {
 
     },
     "Current Status" : {
@@ -1281,6 +1326,9 @@
     "Detailed Performance Metrics" : {
 
     },
+    "Detection Thresholds" : {
+
+    },
     "Diagnostics" : {
 
     },
@@ -1356,10 +1404,16 @@
     "Enable detailed logging for troubleshooting" : {
 
     },
+    "Enable experimental and advanced gesture processing features." : {
+
+    },
     "Enable Repository Pattern" : {
 
     },
     "Enable Transition Effects" : {
+
+    },
+    "Enabled Gestures" : {
 
     },
     "Error" : {
@@ -1616,13 +1670,22 @@
         }
       }
     },
+    "Expand" : {
+
+    },
     "Export Analytics Data" : {
 
     },
     "Export Debug Log" : {
 
     },
+    "Export Gesture Settings" : {
+
+    },
     "Export Recent Files..." : {
+
+    },
+    "Export Settings" : {
 
     },
     "Extract EXIF and other metadata from images" : {
@@ -1724,13 +1787,31 @@
     "file_management.statistics" : {
 
     },
+    "Gesture Configuration" : {
+
+    },
+    "Gesture Sensitivity" : {
+
+    },
+    "Gesture Settings" : {
+
+    },
     "Health Monitoring" : {
 
     },
     "Help improve Swift Photos by sharing anonymous usage data" : {
 
     },
+    "Import" : {
+
+    },
+    "Import Gesture Settings" : {
+
+    },
     "Import Recent Files..." : {
+
+    },
+    "Import Settings" : {
 
     },
     "Initialization Failed" : {
@@ -1740,6 +1821,9 @@
 
     },
     "Initializing Swift Photos..." : {
+
+    },
+    "Interaction Zones" : {
 
     },
     "interface.background_blur_intensity" : {
@@ -2297,6 +2381,9 @@
     "measurement.system" : {
 
     },
+    "Memory" : {
+
+    },
     "Memory Pressure Fallback" : {
 
     },
@@ -2321,6 +2408,12 @@
 
     },
     "Monitor Repository pattern performance and automatically handle issues" : {
+
+    },
+    "No Data" : {
+
+    },
+    "No metrics available for this category" : {
 
     },
     "No Photos" : {
@@ -2430,13 +2523,25 @@
     "Open Recent" : {
 
     },
+    "Operations" : {
+
+    },
+    "Ops:" : {
+
+    },
     "Order:" : {
+
+    },
+    "Paste gesture settings JSON below to import configuration." : {
 
     },
     "Performance" : {
 
     },
     "Performance Metrics" : {
+
+    },
+    "Performance Recommendations" : {
 
     },
     "performance.advanced_settings" : {
@@ -2887,6 +2992,12 @@
     "Photos" : {
 
     },
+    "Preset" : {
+
+    },
+    "Presets" : {
+
+    },
     "presets.default" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3012,7 +3123,13 @@
     "Repository Settings" : {
 
     },
+    "Reset" : {
+
+    },
     "Reset Repository State" : {
+
+    },
+    "Reset to Defaults" : {
 
     },
     "Retry with Legacy Mode" : {
@@ -3050,6 +3167,9 @@
 
     },
     "Select Folder" : {
+
+    },
+    "Set minimum values required to trigger each gesture type." : {
 
     },
     "Setting up Repository pattern..." : {
@@ -4919,6 +5039,12 @@
     "Swift Photos collects anonymous usage data to improve performance and user experience. No personal information or photo content is collected." : {
 
     },
+    "System is performing optimally" : {
+
+    },
+    "This will reset all gesture settings to their default values. This action cannot be undone." : {
+
+    },
     "time_format.12_hour" : {
       "localizations" : {
         "en" : {
@@ -4966,6 +5092,9 @@
           }
         }
       }
+    },
+    "Toggle Recommendations" : {
+
     },
     "toggle.enable_debug_logging" : {
       "localizations" : {

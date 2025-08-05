@@ -20,6 +20,7 @@ struct EnhancedContentView: View {
     @State private var transitionSettings = ModernTransitionSettingsManager()
     @State private var uiControlSettings = ModernUIControlSettingsManager()
     @State private var localizationSettings = ModernLocalizationSettingsManager()
+    @State private var gestureSettings = ModernGestureSettingsManager()
     @State private var settingsWindowManager = SettingsWindowManager()
     @State private var settingsCoordinator: AppSettingsCoordinator?
     
@@ -117,7 +118,8 @@ struct EnhancedContentView: View {
                         viewModel: viewModel,
                         transitionSettings: transitionSettings,
                         uiControlStateManager: unifiedInteractionManager.uiControlManager,
-                        enablePerformanceMetrics: true
+                        enablePerformanceMetrics: true,
+                        enableAdvancedGestures: gestureSettings.settings.isPinchZoomEnabled || gestureSettings.settings.isSwipeNavigationEnabled
                     )
                     .id(currentPhoto.id)
                     
@@ -343,6 +345,9 @@ struct EnhancedContentView: View {
                 enableEnhancedFeatures: readinessStatus.recommendUseRepositoryPattern
             )
             
+            // Set up gesture settings integration
+            setupGestureIntegration(with: createdUnifiedInteractionManager)
+            
             // Set properties
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
@@ -430,6 +435,28 @@ struct EnhancedContentView: View {
         settingsWindowManager.openSettingsWindow(
             settingsCoordinator: settingsCoordinator
         )
+    }
+    
+    private func setupGestureIntegration(with interactionManager: UnifiedInteractionManager) {
+        // Set up gesture settings change notifications
+        NotificationCenter.default.addObserver(
+            forName: .gestureSettingsChanged,
+            object: nil,
+            queue: .main
+        ) { notification in
+            if notification.object is GestureSettings {
+                ProductionLogger.debug("EnhancedContentView: Gesture settings changed")
+                
+                // Update interaction manager with new gesture settings
+                // Note: This would need to be implemented in UnifiedInteractionManager
+                // interactionManager.updateGestureSettings(gestureSettings)
+                
+                // Force UI refresh for gesture-enabled components
+                Task { @MainActor in
+                    // Trigger view updates if needed
+                }
+            }
+        }
     }
 }
 
