@@ -12,7 +12,7 @@ import Combine
 struct ContentView: View {
     @State private var viewModel: (any SlideshowViewModelProtocol)?
     @State private var keyboardHandler: KeyboardHandler?
-    @State private var uiControlStateManager: UIControlStateManager?
+    @State private var uiInteractionManager: UIInteractionManager?
     @State private var isInitialized = false
     @State private var secureFileAccess = SecureFileAccess()
     @State private var appSettingsCoordinator = AppSettingsCoordinator()
@@ -67,22 +67,22 @@ struct ContentView: View {
     private var mainContentView: some View {
         if let viewModel = viewModel, 
            let keyboardHandler = keyboardHandler,
-           let uiControlStateManager = uiControlStateManager {
-            slideshowContentView(viewModel: viewModel, keyboardHandler: keyboardHandler, uiControlStateManager: uiControlStateManager)
+           let uiInteractionManager = uiInteractionManager {
+            slideshowContentView(viewModel: viewModel, keyboardHandler: keyboardHandler, uiInteractionManager: uiInteractionManager)
         } else {
             componentLoadingView
         }
     }
     
     @ViewBuilder
-    private func slideshowContentView(viewModel: any SlideshowViewModelProtocol, keyboardHandler: KeyboardHandler, uiControlStateManager: UIControlStateManager) -> some View {
+    private func slideshowContentView(viewModel: any SlideshowViewModelProtocol, keyboardHandler: KeyboardHandler, uiInteractionManager: UIInteractionManager) -> some View {
                 ZStack {
                     // Main content with unified ViewModel approach
                     // Use UnifiedImageDisplayView for all ViewModel types
                     UnifiedImageDisplayView(
                         viewModel: viewModel,
                         transitionSettings: appSettingsCoordinator.transition,
-                        uiInteractionManager: nil // TODO: Implement UIInteractionManager creation
+                        uiInteractionManager: uiInteractionManager
                     )
                     .ignoresSafeArea()
                     
@@ -94,7 +94,7 @@ struct ContentView: View {
                     // Minimal controls overlay (always present in ZStack, visibility controlled internally)
                     MinimalControlsView(
                         viewModel: viewModel,
-                        uiControlStateManager: uiControlStateManager,
+                        uiInteractionManager: uiInteractionManager,
                         uiControlSettings: appSettingsCoordinator.uiControl,
                         localizationService: localizationService
                     )
@@ -103,7 +103,7 @@ struct ContentView: View {
                     // Detailed info overlay (shown when toggled)
                     DetailedInfoOverlay(
                         viewModel: viewModel,
-                        uiControlStateManager: uiControlStateManager,
+                        uiInteractionManager: uiInteractionManager,
                         uiControlSettings: appSettingsCoordinator.uiControl,
                         localizationService: localizationService
                     )
@@ -111,13 +111,13 @@ struct ContentView: View {
                 .keyboardHandler(keyboardHandler)
                 .onHover { hovering in
                     if hovering {
-                        uiControlStateManager.handleMouseInteraction(at: NSEvent.mouseLocation)
+                        uiInteractionManager.handleMouseInteraction(at: NSEvent.mouseLocation)
                     }
-                    uiControlStateManager.updateMouseInWindow(hovering)
+                    uiInteractionManager.isMouseInWindow = hovering
                 }
                 // Temporarily disable tap gesture to test swipe functionality
                 // .onTapGesture {
-                //     uiControlStateManager.handleGestureInteraction()
+                //     uiInteractionManager.handleUserInteraction()
                 // }
                 .alert("Error", isPresented: .constant(viewModel.error != nil)) {
                     Button("OK") {
@@ -229,8 +229,8 @@ struct ContentView: View {
             
             let createdKeyboardHandler = KeyboardHandler()
             
-            // Setup UI Control State Manager with unified ViewModel approach
-            let createdUIControlStateManager = UIControlStateManager(
+            // Setup UI Interaction Manager with unified ViewModel approach
+            let createdUIInteractionManager = UIInteractionManager(
                 uiControlSettings: appSettingsCoordinator.uiControl,
                 slideshowViewModel: createdViewModel
             )
@@ -250,19 +250,15 @@ struct ContentView: View {
                 }
             }
             
-            // Setup UI control state manager callbacks
+            // Setup UI interaction manager callbacks
             createdKeyboardHandler.onKeyboardInteraction = {
-                createdUIControlStateManager.handleKeyboardInteraction()
+                createdUIInteractionManager.handleKeyboardInteraction()
             }
             createdKeyboardHandler.onToggleDetailedInfo = {
-                createdUIControlStateManager.toggleDetailedInfo()
+                createdUIInteractionManager.toggleDetailedInfo()
             }
             createdKeyboardHandler.onToggleControlsVisibility = {
-                if createdUIControlStateManager.isControlsVisible {
-                    createdUIControlStateManager.hideControls(force: true)
-                } else {
-                    createdUIControlStateManager.showControls()
-                }
+                createdUIInteractionManager.toggleControls()
             }
             
             // Zoom callbacks removed (gesture functionality removed)
@@ -270,7 +266,7 @@ struct ContentView: View {
             // Set state
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
-            self.uiControlStateManager = createdUIControlStateManager
+            self.uiInteractionManager = createdUIInteractionManager
             self.localizationSettings = createdLocalizationSettings
             self.isInitialized = true
             

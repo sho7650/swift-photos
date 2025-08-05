@@ -10,7 +10,10 @@ public final class PerformanceMetricsManager {
     
     // MARK: - Shared Instance
     
-    public static let shared = PerformanceMetricsManager()
+    public static let shared = PerformanceMetricsManager(
+        performanceMonitor: PerformanceMonitor.shared,
+        timerManager: UnifiedTimerManager()
+    )
     
     // MARK: - Published Properties
     
@@ -20,8 +23,9 @@ public final class PerformanceMetricsManager {
     
     // MARK: - Dependencies
     
-    public let performanceMonitor = PerformanceMonitor.shared
-    private var updateTimer: Timer?
+    private let performanceMonitor: PerformanceMonitor
+    private let timerManager: TimerManagementProtocol
+    private var updateTimerId: UUID?
     private let updateInterval: TimeInterval = 2.0
     
     // MARK: - Configuration
@@ -32,8 +36,13 @@ public final class PerformanceMetricsManager {
     
     // MARK: - Initialization
     
-    private init() {
-        ProductionLogger.lifecycle("PerformanceMetricsManager initialized")
+    public init(
+        performanceMonitor: PerformanceMonitor,
+        timerManager: TimerManagementProtocol = UnifiedTimerManager()
+    ) {
+        self.performanceMonitor = performanceMonitor
+        self.timerManager = timerManager
+        ProductionLogger.lifecycle("PerformanceMetricsManager initialized with dependency injection")
     }
     
     deinit {
@@ -51,9 +60,15 @@ public final class PerformanceMetricsManager {
         isMonitoring = true
         performanceMonitor.startMonitoring()
         
-        updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                await self?.updateUnifiedStats()
+        Task { [weak self] in
+            guard let self = self else { return }
+            let timerId = await self.timerManager.scheduleRepeatingTimer(interval: updateInterval) { [weak self] in
+                Task { @MainActor in
+                    await self?.updateUnifiedStats()
+                }
+            }
+            await MainActor.run {
+                self.updateTimerId = timerId
             }
         }
         
@@ -71,8 +86,11 @@ public final class PerformanceMetricsManager {
         
         isMonitoring = false
         performanceMonitor.stopMonitoring()
-        updateTimer?.invalidate()
-        updateTimer = nil
+        
+        if let timerId = updateTimerId {
+            Task { await timerManager.cancelTimer(timerId) }
+            updateTimerId = nil
+        }
         
         ProductionLogger.info("PerformanceMetricsManager: Stopped monitoring")
     }
@@ -113,6 +131,23 @@ public final class PerformanceMetricsManager {
         lastUpdate = Date()
         
         ProductionLogger.info("PerformanceMetricsManager: Reset all data")
+    }
+    
+    // MARK: - Operation Tracking Interface
+    
+    /// Start tracking a performance operation
+    public func startOperation(_ name: String) {
+        performanceMonitor.startOperation(name)
+    }
+    
+    /// End tracking a performance operation
+    public func endOperation(_ name: String) {
+        performanceMonitor.endOperation(name)
+    }
+    
+    /// Get operation statistics
+    public func getOperationStats(_ name: String) -> OperationStats? {
+        return performanceMonitor.getOperationStats(name)
     }
     
     // MARK: - Private Methods

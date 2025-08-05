@@ -42,10 +42,10 @@ public final class UIInteractionManager: ObservableObject {
     private let uiControlSettings: ModernUIControlSettingsManager
     private weak var slideshowViewModel: (any SlideshowViewModelProtocol)?
     
-    // Timer management - using simple Timer for now
-    // TODO: Replace with proper timer implementation when available
-    private var hideTimer: Timer?
-    private var minimumVisibilityTimer: Timer?
+    // Timer management - using unified timer interface
+    private let timerManager: TimerManagementProtocol
+    private var hideTimerId: UUID?
+    private var minimumVisibilityTimerId: UUID?
     
     // Mouse tracking
     private var mouseTrackingArea: NSTrackingArea?
@@ -55,6 +55,22 @@ public final class UIInteractionManager: ObservableObject {
     // Cursor management
     private var currentCursor: NSCursor = .arrow
     private var isCustomCursorActive: Bool = false
+    
+    // Advanced cursor auto-hide functionality (from CursorManager)
+    @Published public private(set) var isCursorHidden: Bool = false
+    private var isHoveringOverImage: Bool = false
+    private var lastMouseMovementPosition: CGPoint = .zero
+    private var lastMovementTime: Date = Date()
+    private var cursorHideTimerId: UUID?
+    private var cursorStateMonitorId: UUID?
+    private var cursorHideCount: Int = 0
+    private let movementThreshold: CGFloat = 3.0
+    private let cursorHideDelay: TimeInterval = 2.0
+    private let stateMonitorInterval: TimeInterval = 0.1
+    
+    // Transition detection for cursor management
+    private var isInImageTransition: Bool = false
+    private var transitionStartTime: Date?
     
     // Zone management
     private var activeZones: Set<UUID> = []
@@ -71,10 +87,12 @@ public final class UIInteractionManager: ObservableObject {
     
     public init(
         uiControlSettings: ModernUIControlSettingsManager,
-        slideshowViewModel: (any SlideshowViewModelProtocol)? = nil
+        slideshowViewModel: (any SlideshowViewModelProtocol)? = nil,
+        timerManager: TimerManagementProtocol = UnifiedTimerManager()
     ) {
         self.uiControlSettings = uiControlSettings
         self.slideshowViewModel = slideshowViewModel
+        self.timerManager = timerManager
         
         setupMouseTracking()
         setupDefaultZones()
@@ -193,6 +211,106 @@ public final class UIInteractionManager: ObservableObject {
         }
     }
     
+    // MARK: - Advanced Cursor Auto-Hide (from CursorManager)
+    
+    /// Handle mouse entering image area - starts auto-hide management
+    public func handleMouseEnteredImage() {
+        // If we're in a transition and already hovering, this is a false re-enter
+        if isInImageTransition && isHoveringOverImage {
+            logger.debug("🖱️ Mouse re-enter during transition - maintaining hover state")
+            return
+        }
+        
+        isHoveringOverImage = true
+        lastMouseMovementPosition = NSEvent.mouseLocation
+        lastMovementTime = Date()
+        
+        // Start monitoring cursor state to prevent unwanted reappearance
+        startCursorStateMonitoring()
+        
+        // Start hide timer for initial hover
+        startCursorHideTimer()
+        logger.debug("🖱️ Mouse entered image area - starting cursor auto-hide")
+    }
+    
+    /// Handle mouse exiting image area - stops auto-hide management
+    public func handleMouseExitedImage() {
+        // Check if this is a false exit during a transition
+        if isInImageTransition {
+            logger.debug("🖱️ Mouse exit during transition - ignoring")
+            return
+        }
+        
+        isHoveringOverImage = false
+        stopCursorHideTimer()
+        stopCursorStateMonitoring()
+        showCursor()
+        logger.debug("🖱️ Mouse exited image area - stopping cursor auto-hide")
+    }
+    
+    /// Handle mouse movement over image with auto-hide detection
+    public func handleMouseMovementOverImage(at position: CGPoint) {
+        guard isHoveringOverImage else { return }
+        
+        let distance = sqrt(pow(position.x - lastMouseMovementPosition.x, 2) + pow(position.y - lastMouseMovementPosition.y, 2))
+        
+        if distance >= movementThreshold {
+            lastMouseMovementPosition = position
+            lastMovementTime = Date()
+            
+            // Show cursor on movement and restart timer
+            showCursor()
+            startCursorHideTimer()
+            logger.debug("🖱️ Mouse movement detected (\(String(format: "%.1f", distance))px) - cursor shown")
+        }
+    }
+    
+    /// Force cursor to visible state
+    public func forceCursorVisible() {
+        stopCursorHideTimer()
+        stopCursorStateMonitoring()
+        showCursor()
+        logger.debug("👁️ Cursor forced visible")
+    }
+    
+    /// Handle image redraw/transition - manages cursor state during transitions
+    public func handleImageRedraw() {
+        // Mark that we're in a transition to prevent false exit/enter cycles
+        isInImageTransition = true
+        transitionStartTime = Date()
+        
+        // Clear transition flag after a reasonable delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.clearImageTransitionFlag()
+        }
+        
+        guard isHoveringOverImage else { 
+            logger.debug("🖼️ Image redraw - skipped, not hovering")
+            return 
+        }
+        
+        let timeSinceLastMovement = Date().timeIntervalSince(lastMovementTime)
+        let shouldBeHidden = timeSinceLastMovement >= cursorHideDelay
+        
+        logger.debug("🖼️ Image redraw - time since movement: \(String(format: "%.2f", timeSinceLastMovement))s, should hide: \(shouldBeHidden)")
+        
+        if shouldBeHidden {
+            // Immediately hide cursor on image redraw
+            forceHideCursor()
+        }
+        
+        // Schedule cursor state checks after redraw completes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            self.checkCursorStateAfterRedraw()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.checkCursorStateAfterRedraw()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.checkCursorStateAfterRedraw()
+        }
+    }
+    
     // MARK: - Private Methods
     
     private func setupMouseTracking() {
@@ -237,15 +355,23 @@ public final class UIInteractionManager: ObservableObject {
         guard !isControlsVisible else { return }
         
         isControlsVisible = true
-        minimumVisibilityTimer?.invalidate()
-        minimumVisibilityTimer = nil
+        if let timerId = minimumVisibilityTimerId {
+            Task { await timerManager.cancelTimer(timerId) }
+            minimumVisibilityTimerId = nil
+        }
         
         // Ensure minimum visibility duration
         let minimumDuration = uiControlSettings.settings.minimumVisibilityDuration
         if minimumDuration > 0 {
-            minimumVisibilityTimer = Timer.scheduledTimer(withTimeInterval: minimumDuration, repeats: false) { [weak self] _ in
-                Task { @MainActor in
-                    self?.scheduleControlsHide()
+            Task { [weak self] in
+                guard let self = self else { return }
+                let timerId = await self.timerManager.scheduleTimer(duration: minimumDuration) { [weak self] in
+                    Task { @MainActor in
+                        self?.scheduleControlsHide()
+                    }
+                }
+                await MainActor.run {
+                    self.minimumVisibilityTimerId = timerId
                 }
             }
         } else {
@@ -259,26 +385,147 @@ public final class UIInteractionManager: ObservableObject {
         guard isControlsVisible else { return }
         
         isControlsVisible = false
-        hideTimer?.invalidate()
-        hideTimer = nil
+        if let timerId = hideTimerId {
+            Task { await timerManager.cancelTimer(timerId) }
+            hideTimerId = nil
+        }
         logger.debug("🙈 Controls hidden")
     }
     
     private func scheduleControlsHide() {
-        hideTimer?.invalidate()
-        hideTimer = nil
+        if let timerId = hideTimerId {
+            Task { await timerManager.cancelTimer(timerId) }
+            hideTimerId = nil
+        }
         
         let hideDelay = uiControlSettings.settings.playingAutoHideDelay // Simplified for now
         
         guard hideDelay > 0 else { return }
         
-        hideTimer = Timer.scheduledTimer(withTimeInterval: hideDelay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                self?.hideControls()
+        Task { [weak self] in
+            guard let self = self else { return }
+            let timerId = await self.timerManager.scheduleTimer(duration: hideDelay) { [weak self] in
+                Task { @MainActor in
+                    self?.hideControls()
+                }
+            }
+            await MainActor.run {
+                self.hideTimerId = timerId
             }
         }
         
         logger.debug("⏰ Hide timer scheduled for \(hideDelay)s")
+    }
+    
+    // MARK: - Private Cursor Helper Methods
+    
+    private func startCursorHideTimer() {
+        stopCursorHideTimer()
+        
+        Task { [weak self] in
+            guard let self = self else { return }
+            let timerId = await self.timerManager.scheduleTimer(duration: cursorHideDelay) { [weak self] in
+                Task { @MainActor in
+                    self?.hideCursorAfterTimeout()
+                }
+            }
+            await MainActor.run {
+                self.cursorHideTimerId = timerId
+            }
+        }
+    }
+    
+    private func stopCursorHideTimer() {
+        if let timerId = cursorHideTimerId {
+            Task { await timerManager.cancelTimer(timerId) }
+            cursorHideTimerId = nil
+        }
+    }
+    
+    private func startCursorStateMonitoring() {
+        stopCursorStateMonitoring()
+        
+        Task { [weak self] in
+            guard let self = self else { return }
+            let timerId = await self.timerManager.scheduleRepeatingTimer(interval: stateMonitorInterval) { [weak self] in
+                Task { @MainActor in
+                    self?.monitorCursorState()
+                }
+            }
+            await MainActor.run {
+                self.cursorStateMonitorId = timerId
+            }
+        }
+    }
+    
+    private func stopCursorStateMonitoring() {
+        if let timerId = cursorStateMonitorId {
+            Task { await timerManager.cancelTimer(timerId) }
+            cursorStateMonitorId = nil
+        }
+    }
+    
+    private func hideCursorAfterTimeout() {
+        guard isHoveringOverImage else { return }
+        
+        let timeSinceLastMovement = Date().timeIntervalSince(lastMovementTime)
+        if timeSinceLastMovement >= cursorHideDelay {
+            forceHideCursor()
+            logger.debug("⏰ Cursor hidden after timeout (\(String(format: "%.2f", timeSinceLastMovement))s)")
+        }
+    }
+    
+    private func forceHideCursor() {
+        NSCursor.hide()
+        cursorHideCount += 1
+        isCursorHidden = true
+        logger.debug("🙈 Cursor force hidden (count: \(self.cursorHideCount))")
+    }
+    
+    private func showCursor() {
+        // Only call NSCursor.unhide() if we've called NSCursor.hide()
+        if cursorHideCount > 0 {
+            NSCursor.unhide()
+            cursorHideCount -= 1
+        } else {
+            // Use set() to ensure cursor is visible without unbalanced hide/unhide calls
+            NSCursor.arrow.set()
+        }
+        
+        isCursorHidden = false
+        logger.debug("👁️ Cursor shown (hide count: \(self.cursorHideCount))")
+    }
+    
+    private func monitorCursorState() {
+        guard isHoveringOverImage else { return }
+        
+        let timeSinceLastMovement = Date().timeIntervalSince(lastMovementTime)
+        let shouldBeHidden = timeSinceLastMovement >= cursorHideDelay
+        
+        // If cursor should be hidden but isn't, force hide it
+        if shouldBeHidden && !isCursorHidden {
+            forceHideCursor()
+            logger.debug("🔍 Monitor detected cursor should be hidden - forcing hide")
+        }
+    }
+    
+    private func checkCursorStateAfterRedraw() {
+        guard isHoveringOverImage else { return }
+        
+        let timeSinceLastMovement = Date().timeIntervalSince(lastMovementTime)
+        let shouldBeHidden = timeSinceLastMovement >= cursorHideDelay
+        
+        if shouldBeHidden {
+            // Force hide regardless of current state to handle SwiftUI cursor resets
+            forceHideCursor()
+            logger.debug("🖼️ Post-redraw check: cursor force hidden")
+        }
+    }
+    
+    private func clearImageTransitionFlag() {
+        isInImageTransition = false
+        transitionStartTime = nil
+        logger.debug("🖼️ Image transition flag cleared")
     }
 }
 

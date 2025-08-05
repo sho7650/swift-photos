@@ -100,7 +100,7 @@ public final class UnifiedSlideshowViewModel {
     
     // MARK: - Timer Management (Unified)
     private var timerId: UUID?
-    private let timerPool = OptimizedTimerPool.shared
+    private let timerManager: TimerManagementProtocol
     
     // MARK: - Performance Components (Unified)
     private let unifiedImageLoader: UnifiedImageLoader
@@ -151,6 +151,7 @@ public final class UnifiedSlideshowViewModel {
         // Shared dependencies
         fileAccess: SecureFileAccess,
         settingsCoordinator: AppSettingsCoordinator? = nil,
+        timerManager: TimerManagementProtocol = UnifiedTimerManager(),
         
         // Configuration
         enableLegacyFallback: Bool = true,
@@ -163,6 +164,7 @@ public final class UnifiedSlideshowViewModel {
         self.imageRepositoryFactory = imageRepositoryFactory ?? (modernDomainService != nil ? ImageRepositoryFactory.createModernOnly() : nil)
         self.legacyDomainService = legacyDomainService
         self.fileAccess = fileAccess
+        self.timerManager = timerManager
         
         // Store configuration
         self.enableLegacyFallback = enableLegacyFallback
@@ -191,7 +193,8 @@ public final class UnifiedSlideshowViewModel {
     public convenience init(
         modernDomainService: ModernSlideshowDomainService,
         fileAccess: SecureFileAccess,
-        settingsCoordinator: AppSettingsCoordinator? = nil
+        settingsCoordinator: AppSettingsCoordinator? = nil,
+        timerManager: TimerManagementProtocol = UnifiedTimerManager()
     ) {
         self.init(
             modernDomainService: modernDomainService,
@@ -200,6 +203,7 @@ public final class UnifiedSlideshowViewModel {
             legacyDomainService: nil,
             fileAccess: fileAccess,
             settingsCoordinator: settingsCoordinator,
+            timerManager: timerManager,
             enableLegacyFallback: false,
             performanceMonitoring: true,
             preferRepositoryPattern: true
@@ -210,7 +214,8 @@ public final class UnifiedSlideshowViewModel {
     public convenience init(
         legacyDomainService: SlideshowDomainService,
         fileAccess: SecureFileAccess,
-        settingsCoordinator: AppSettingsCoordinator? = nil
+        settingsCoordinator: AppSettingsCoordinator? = nil,
+        timerManager: TimerManagementProtocol = UnifiedTimerManager()
     ) {
         self.init(
             modernDomainService: nil,
@@ -219,6 +224,7 @@ public final class UnifiedSlideshowViewModel {
             legacyDomainService: legacyDomainService,
             fileAccess: fileAccess,
             settingsCoordinator: settingsCoordinator,
+            timerManager: timerManager,
             enableLegacyFallback: true,
             performanceMonitoring: true,
             preferRepositoryPattern: false
@@ -369,7 +375,7 @@ public final class UnifiedSlideshowViewModel {
         }
         
         // Track slideshow creation performance
-        PerformanceMetricsManager.shared.performanceMonitor.startOperation("SlideshowCreation")
+        PerformanceMetricsManager.shared.startOperation("SlideshowCreation")
         
         do {
             loadingState = .scanningFolder(0)
@@ -407,7 +413,7 @@ public final class UnifiedSlideshowViewModel {
         }
         
         // End performance tracking
-        PerformanceMetricsManager.shared.performanceMonitor.endOperation("SlideshowCreation")
+        PerformanceMetricsManager.shared.endOperation("SlideshowCreation")
         
         // Always reset loading state after slideshow creation
         loadingState = .notLoading
@@ -461,7 +467,7 @@ public final class UnifiedSlideshowViewModel {
         }
         
         // Track slideshow creation performance
-        PerformanceMetricsManager.shared.performanceMonitor.startOperation("SlideshowCreation")
+        PerformanceMetricsManager.shared.startOperation("SlideshowCreation")
         
         do {
             loadingState = .scanningFolder(0)
@@ -499,7 +505,7 @@ public final class UnifiedSlideshowViewModel {
         }
         
         // End performance tracking
-        PerformanceMetricsManager.shared.performanceMonitor.endOperation("SlideshowCreation")
+        PerformanceMetricsManager.shared.endOperation("SlideshowCreation")
         
         // Always reset loading state after slideshow creation
         loadingState = .notLoading
@@ -522,9 +528,15 @@ public final class UnifiedSlideshowViewModel {
         
         let interval = settingsCoordinator.slideshow.settings.slideDuration
         
-        timerId = timerPool.every(interval) { [weak self] in
-            Task { @MainActor [weak self] in
-                await self?.nextPhoto()
+        Task { [weak self] in
+            guard let self = self else { return }
+            let newTimerId = await self.timerManager.scheduleRepeatingTimer(interval: interval) { [weak self] in
+                Task { @MainActor in
+                    await self?.nextPhoto()
+                }
+            }
+            await MainActor.run {
+                self.timerId = newTimerId
             }
         }
         
@@ -557,7 +569,7 @@ public final class UnifiedSlideshowViewModel {
     
     private func stopTimer() {
         if let timerId = timerId {
-            timerPool.cancelTimer(timerId)
+            Task { await timerManager.cancelTimer(timerId) }
             self.timerId = nil
         }
     }

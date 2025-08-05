@@ -12,28 +12,31 @@ import os.log
 // MARK: - Simple Image Hover Cursor Modifier
 
 /// Simple ViewModifier for hiding cursor when hovering over images
+/// Now works with UIInteractionManager's integrated cursor functionality
 public struct ImageHoverCursorModifier: ViewModifier {
-    @State private var cursorManager: CursorManager?
+    @State private var uiInteractionManager: UIInteractionManager?
     private let logger = Logger(subsystem: "SwiftPhotos", category: "CursorControlModifiers")
     
     public func body(content: Content) -> some View {
         content
             .onAppear {
-                setupCursorManager()
+                setupUIInteractionManager()
             }
             .onHover { hovering in
                 if hovering {
-                    cursorManager?.handleMouseEnteredImage()
+                    uiInteractionManager?.handleMouseEnteredImage()
                 } else {
-                    cursorManager?.handleMouseExitedImage()
+                    uiInteractionManager?.handleMouseExitedImage()
                 }
             }
     }
     
-    private func setupCursorManager() {
-        guard cursorManager == nil else { return }
-        cursorManager = CursorManager.shared()
-        cursorManager?.debugLoggingEnabled = true
+    private func setupUIInteractionManager() {
+        guard uiInteractionManager == nil else { return }
+        // Create a simple UIInteractionManager for cursor management only
+        let uiControlSettings = ModernUIControlSettingsManager()
+        uiInteractionManager = UIInteractionManager(uiControlSettings: uiControlSettings)
+        logger.info("🖱️ ImageHoverCursorModifier: Setup UIInteractionManager for cursor control")
     }
 }
 

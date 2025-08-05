@@ -5,7 +5,7 @@ import Combine
 /// Expandable detailed information overlay with photo metadata and enhanced controls
 public struct DetailedInfoOverlay: View {
     var viewModel: any SlideshowViewModelProtocol
-    @ObservedObject var uiControlStateManager: UIControlStateManager
+    @ObservedObject var uiInteractionManager: UIInteractionManager
     var uiControlSettings: ModernUIControlSettingsManager
     var localizationService: LocalizationService?
     
@@ -17,12 +17,12 @@ public struct DetailedInfoOverlay: View {
     
     public init(
         viewModel: any SlideshowViewModelProtocol,
-        uiControlStateManager: UIControlStateManager,
+        uiInteractionManager: UIInteractionManager,
         uiControlSettings: ModernUIControlSettingsManager,
         localizationService: LocalizationService?
     ) {
         self.viewModel = viewModel
-        self.uiControlStateManager = uiControlStateManager
+        self.uiInteractionManager = uiInteractionManager
         self.uiControlSettings = uiControlSettings
         self.localizationService = localizationService
     }
@@ -33,12 +33,12 @@ public struct DetailedInfoOverlay: View {
             
             if let slideshow = viewModel.slideshow,
                !slideshow.isEmpty,
-               uiControlStateManager.isDetailedInfoVisible {
+               uiInteractionManager.isDetailedInfoVisible {
                 detailedInfoPanel(slideshow: slideshow)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiControlStateManager.isDetailedInfoVisible)
+        .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiInteractionManager.isDetailedInfoVisible)
         .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
             languageUpdateTrigger += 1
             ProductionLogger.debug("DetailedInfoOverlay: Received language change notification, trigger: \(languageUpdateTrigger)")
@@ -74,7 +74,7 @@ public struct DetailedInfoOverlay: View {
         .padding(.horizontal, 20)
         .padding(.bottom, uiControlSettings.settings.bottomOffset)
         .onTapGesture {
-            uiControlStateManager.handleGestureInteraction()
+            uiInteractionManager.handleUserInteraction()
         }
         .animation(.easeInOut(duration: 0.3), value: isExpanded)
     }
@@ -102,7 +102,7 @@ public struct DetailedInfoOverlay: View {
                 
                 // Close button
                 Button(action: {
-                    uiControlStateManager.toggleDetailedInfo()
+                    uiInteractionManager.toggleDetailedInfo()
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
@@ -130,7 +130,7 @@ public struct DetailedInfoOverlay: View {
                 style: .detailed
             ) { targetIndex in
                 ProductionLogger.userAction("DetailedInfoOverlay: Progress bar clicked - jumping to photo \(targetIndex)")
-                uiControlStateManager.handleGestureInteraction()
+                uiInteractionManager.handleUserInteraction()
                 // Navigate to target photo using standard protocol methods
                 Task {
                     // Jump directly to target photo using the new direct navigation method
@@ -224,7 +224,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: "backward.fill",
                     label: "Previous",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         Task {
                             await viewModel.previousPhoto()
                         }
@@ -236,7 +236,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: slideshow.isPlaying ? "pause.fill" : "play.fill",
                     label: slideshow.isPlaying ? "Pause" : "Play",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         if slideshow.isPlaying {
                             viewModel.pause()
                         } else {
@@ -250,7 +250,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: "forward.fill",
                     label: "Next",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         Task {
                             await viewModel.nextPhoto()
                         }
@@ -273,7 +273,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: "folder",
                     label: "Folder",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         revealCurrentPhotoInFinder()
                         ProductionLogger.userAction("Reveal in Finder action")
                     }
@@ -284,7 +284,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: "gear",
                     label: "Settings",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         // TODO: Open settings window
                         ProductionLogger.userAction("Open settings action")
                     }
@@ -295,7 +295,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: showMetadata ? "info.circle.fill" : "info.circle",
                     label: "Info",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         showMetadata.toggle()
                     }
                 )
@@ -305,7 +305,7 @@ public struct DetailedInfoOverlay: View {
     }
     
     private func toggleExpanded() {
-        uiControlStateManager.handleGestureInteraction()
+        uiInteractionManager.handleUserInteraction()
         withAnimation(.easeInOut(duration: 0.3)) {
             isExpanded.toggle()
         }

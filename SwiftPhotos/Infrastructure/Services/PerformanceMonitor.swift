@@ -3,6 +3,7 @@ import AppKit
 import os.log
 
 /// Advanced performance monitoring system for large photo collections
+/// Implements Clean Architecture interface-driven design
 @MainActor
 public final class PerformanceMonitor: ObservableObject {
     
@@ -16,7 +17,8 @@ public final class PerformanceMonitor: ObservableObject {
     @Published public private(set) var isMonitoring = false
     
     private let logger = Logger(subsystem: "SwiftPhotos", category: "PerformanceMonitor")
-    private var monitoringTimer: Timer?
+    private let timerManager: TimerManagementProtocol
+    private var monitoringTimerId: UUID?
     private let monitoringInterval: TimeInterval = 5.0 // Monitor every 5 seconds
     
     // Memory tracking
@@ -31,7 +33,8 @@ public final class PerformanceMonitor: ObservableObject {
     
     // MARK: - Initialization
     
-    private init() {
+    private init(timerManager: TimerManagementProtocol = UnifiedTimerManager()) {
+        self.timerManager = timerManager
         logger.info("📊 PerformanceMonitor: Initialized")
         setupMemoryWarningNotifications()
     }
@@ -50,9 +53,15 @@ public final class PerformanceMonitor: ObservableObject {
         isMonitoring = true
         logger.info("📊 PerformanceMonitor: Starting monitoring")
         
-        monitoringTimer = Timer.scheduledTimer(withTimeInterval: monitoringInterval, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                await self?.updateMetrics()
+        Task { [weak self] in
+            guard let self = self else { return }
+            let timerId = await self.timerManager.scheduleRepeatingTimer(interval: monitoringInterval) { [weak self] in
+                Task { @MainActor in
+                    await self?.updateMetrics()
+                }
+            }
+            await MainActor.run {
+                self.monitoringTimerId = timerId
             }
         }
         
@@ -67,8 +76,11 @@ public final class PerformanceMonitor: ObservableObject {
         guard isMonitoring else { return }
         
         isMonitoring = false
-        monitoringTimer?.invalidate()
-        monitoringTimer = nil
+        
+        if let timerId = monitoringTimerId {
+            Task { await timerManager.cancelTimer(timerId) }
+            monitoringTimerId = nil
+        }
         
         logger.info("📊 PerformanceMonitor: Stopped monitoring")
     }
