@@ -9,7 +9,7 @@ public struct UnifiedImageDisplayView: View {
     
     var viewModel: any SlideshowViewModelProtocol
     var transitionSettings: ModernTransitionSettingsManager
-    var uiControlStateManager: UIControlStateManager? = nil
+    var uiInteractionManager: UIInteractionManager? = nil
     
     // Configuration options
     var enableDebugMode: Bool = false
@@ -19,16 +19,15 @@ public struct UnifiedImageDisplayView: View {
     
     // MARK: - State
     
-    @State private var transitionManager: ImageTransitionManager?
+    @State private var visualEffectsManager: VisualEffectsManager?
     @State private var currentPhotoID: UUID?
     @State private var showImage = true
     @State private var viewportSize: CGSize = .zero
     @State private var performanceMetrics: [String: Any]?
     @State private var scale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
-    @State private var gestureManager: AdvancedGestureManager?
-    @State private var photoZoomState: PhotoZoomState?
-    @State private var gestureCoordinator: GestureCoordinator?
+    @State private var gestureManager: GestureNavigationManager?
+
     
     @Environment(\.localizationService) private var localizationService
     
@@ -37,7 +36,7 @@ public struct UnifiedImageDisplayView: View {
     public init(
         viewModel: any SlideshowViewModelProtocol,
         transitionSettings: ModernTransitionSettingsManager,
-        uiControlStateManager: UIControlStateManager? = nil,
+        uiInteractionManager: UIInteractionManager? = nil,
         enableDebugMode: Bool = false,
         enableViewportTracking: Bool = false,
         enablePerformanceMetrics: Bool = false,
@@ -45,7 +44,7 @@ public struct UnifiedImageDisplayView: View {
     ) {
         self.viewModel = viewModel
         self.transitionSettings = transitionSettings
-        self.uiControlStateManager = uiControlStateManager
+        self.uiInteractionManager = uiInteractionManager
         self.enableDebugMode = enableDebugMode
         self.enableViewportTracking = enableViewportTracking
         self.enablePerformanceMetrics = enablePerformanceMetrics
@@ -87,13 +86,13 @@ public struct UnifiedImageDisplayView: View {
             }
         }
         .onAppear {
-            setupTransitionManager()
+            setupVisualEffectsManager()
             if enableAdvancedGestures {
                 setupAdvancedGestures()
             }
         }
         .onChange(of: transitionSettings.settings) { _, _ in
-            setupTransitionManager()
+            setupVisualEffectsManager()
         }
         .onChange(of: viewModel.currentPhoto?.id) { oldValue, newValue in
             handlePhotoChange(from: oldValue, to: newValue)
@@ -172,9 +171,9 @@ public struct UnifiedImageDisplayView: View {
                     .transition(getTransitionEffect())
                     .onHover { hovering in
                         if hovering {
-                            uiControlStateManager?.handleMouseEnteredImage()
+                            uiInteractionManager?.handleMouseInteraction(at: CGPoint.zero)
                         } else {
-                            uiControlStateManager?.handleMouseExitedImage()
+                            // Mouse exited - no specific action needed for UIInteractionManager
                         }
                     }
                     .id(photo.id)
@@ -285,8 +284,11 @@ public struct UnifiedImageDisplayView: View {
     
     // MARK: - Helper Methods
     
-    private func setupTransitionManager() {
-        transitionManager = ImageTransitionManager(transitionSettings: transitionSettings)
+    private func setupVisualEffectsManager() {
+        visualEffectsManager = VisualEffectsManager(
+            transitionSettings: transitionSettings,
+            uiControlSettings: ModernUIControlSettingsManager()
+        )
     }
     
     private func getTransitionEffect() -> AnyTransition {
@@ -294,13 +296,13 @@ public struct UnifiedImageDisplayView: View {
             return .identity
         }
         
-        return transitionManager?.getTransitionModifier(for: transitionSettings.settings.effectType) ?? .identity
+        return visualEffectsManager?.imageTransition() ?? .identity
     }
     
     private func handlePhotoChange(from oldID: UUID?, to newID: UUID?) {
         guard oldID != nil, newID != nil, oldID != newID else { return }
         
-        if transitionManager != nil {
+        if visualEffectsManager != nil {
             showImage = false
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
@@ -314,7 +316,7 @@ public struct UnifiedImageDisplayView: View {
     
     private func resetZoom() {
         if enableAdvancedGestures {
-            photoZoomState?.resetZoom(animated: true)
+            gestureManager?.resetZoom()
         } else {
             withAnimation(.spring()) {
                 scale = 1.0
@@ -326,28 +328,14 @@ public struct UnifiedImageDisplayView: View {
     // MARK: - Advanced Gesture Methods
     
     private func setupAdvancedGestures() {
-        // Create PhotoZoomState if not already created
-        if photoZoomState == nil {
-            photoZoomState = PhotoZoomState()
-        }
+        // Create GestureNavigationManager with dependencies
+        gestureManager = GestureNavigationManager(
+            slideshowViewModel: viewModel,
+            gestureSettings: ModernGestureSettingsManager()
+        )
         
-        // Create GestureCoordinator if not already created
-        if gestureCoordinator == nil {
-            gestureCoordinator = GestureCoordinator()
-        }
-        
-        // Create AdvancedGestureManager with dependencies
-        if let photoZoomState = photoZoomState,
-           let gestureCoordinator = gestureCoordinator {
-            gestureManager = AdvancedGestureManager(
-                slideshowViewModel: viewModel,
-                gestureCoordinator: gestureCoordinator,
-                photoZoomState: photoZoomState
-            )
-            
-            if enableDebugMode {
-                ProductionLogger.debug("UnifiedImageDisplay: Advanced gesture system initialized")
-            }
+        if enableDebugMode {
+            ProductionLogger.debug("UnifiedImageDisplay: Gesture navigation system initialized")
         }
     }
     
@@ -358,99 +346,23 @@ public struct UnifiedImageDisplayView: View {
         
         return AnyGesture(
             SimultaneousGesture(
-                createPinchGesture(),
-                createPanGesture()
+                gestureManager.createPinchGesture(),
+                gestureManager.createPanGesture()
             ).map { _ in }
         )
     }
     
-    private func createPinchGesture() -> some Gesture {
-        MagnificationGesture()
-            .onChanged { value in
-                if let gestureManager = gestureManager {
-                    let gestureData = GestureData(
-                        gestureType: .pinch,
-                        phase: .changed,
-                        scale: value
-                    )
-                    let location = CGPoint(x: 0, y: 0) // Would need actual touch location
-                    gestureManager.processPinchGesture(gestureData, at: location)
-                }
-            }
-            .onEnded { value in
-                if let gestureManager = gestureManager {
-                    let gestureData = GestureData(
-                        gestureType: .pinch,
-                        phase: .ended,
-                        scale: value
-                    )
-                    let location = CGPoint(x: 0, y: 0)
-                    gestureManager.processPinchGesture(gestureData, at: location)
-                }
-            }
-    }
+
     
-    private func createPanGesture() -> some Gesture {
-        DragGesture()
-            .onChanged { value in
-                if let gestureManager = gestureManager {
-                    let gestureData = GestureData(
-                        gestureType: .pan,
-                        phase: .changed,
-                        translation: CGVector(dx: value.translation.width, dy: value.translation.height)
-                    )
-                    gestureManager.processPanGesture(gestureData, at: value.location)
-                }
-            }
-            .onEnded { value in
-                if let gestureManager = gestureManager {
-                    let gestureData = GestureData(
-                        gestureType: .pan,
-                        phase: .ended,
-                        translation: CGVector(dx: value.translation.width, dy: value.translation.height)
-                    )
-                    gestureManager.processPanGesture(gestureData, at: value.location)
-                    
-                    // Check for swipe gesture
-                    handleSwipeDetection(value)
-                }
-            }
-    }
+
     
     private func handleAdvancedDoubleTap(at location: CGPoint) {
-        if let gestureManager = gestureManager {
-            let gestureData = GestureData(
-                gestureType: .doubleTap,
-                phase: .ended
-            )
-            gestureManager.processDoubleTapGesture(gestureData, at: location)
-        }
+        // GestureNavigationManager handles double tap internally via gesture creation
+        // For manual double tap handling, we can call resetZoom or toggle zoom
+        gestureManager?.resetZoom()
     }
     
-    private func handleSwipeDetection(_ dragValue: DragGesture.Value) {
-        let distance = sqrt(pow(dragValue.translation.width, 2) + pow(dragValue.translation.height, 2))
-        let velocity = sqrt(pow(dragValue.velocity.width, 2) + pow(dragValue.velocity.height, 2))
-        
-        // Swipe detection thresholds
-        let minSwipeDistance: CGFloat = 50
-        let minSwipeVelocity: CGFloat = 300
-        
-        if distance > minSwipeDistance && velocity > minSwipeVelocity {
-            let isHorizontal = abs(dragValue.translation.width) > abs(dragValue.translation.height)
-            
-            if isHorizontal {
-                let gestureType: GestureType = dragValue.translation.width > 0 ? .swipeRight : .swipeLeft
-                
-                if let gestureManager = gestureManager {
-                    let gestureData = GestureData(
-                        gestureType: gestureType,
-                        phase: .ended
-                    )
-                    gestureManager.processSwipeGesture(gestureData, at: dragValue.location)
-                }
-            }
-        }
-    }
+
 }
 
 // MARK: - Preview Provider

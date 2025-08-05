@@ -8,7 +8,7 @@ struct EnhancedContentView: View {
     // MARK: - State Properties
     @State private var viewModel: (any SlideshowViewModelProtocol)?
     @State private var keyboardHandler: KeyboardHandler?
-    @State private var unifiedInteractionManager: UnifiedInteractionManager?
+    @State private var uiInteractionManager: UIInteractionManager?
     @State private var isInitializing = true
     @State private var initializationError: Error?
     @State private var isUsingRepositoryPattern = false
@@ -36,11 +36,11 @@ struct EnhancedContentView: View {
                 errorView(error)
             } else if let viewModel = viewModel,
                       let keyboardHandler = keyboardHandler,
-                      let unifiedInteractionManager = unifiedInteractionManager {
+                      let uiInteractionManager = uiInteractionManager {
                 slideshowContentView(
                     viewModel: viewModel,
                     keyboardHandler: keyboardHandler,
-                    unifiedInteractionManager: unifiedInteractionManager
+                    uiInteractionManager: uiInteractionManager
                 )
             } else {
                 Text("Unexpected state")
@@ -104,7 +104,7 @@ struct EnhancedContentView: View {
     private func slideshowContentView(
         viewModel: any SlideshowViewModelProtocol,
         keyboardHandler: KeyboardHandler,
-        unifiedInteractionManager: UnifiedInteractionManager
+        uiInteractionManager: UIInteractionManager
     ) -> some View {
         ZStack {
             // Background
@@ -120,7 +120,7 @@ struct EnhancedContentView: View {
                     UnifiedImageDisplayView(
                         viewModel: viewModel,
                         transitionSettings: transitionSettings,
-                        uiControlStateManager: unifiedInteractionManager.uiControlManager,
+                        uiInteractionManager: uiInteractionManager,
                         enablePerformanceMetrics: true,
                         enableAdvancedGestures: gestureSettings.settings.isPinchZoomEnabled || gestureSettings.settings.isSwipeNavigationEnabled
                     )
@@ -157,12 +157,12 @@ struct EnhancedContentView: View {
             
             // UI Controls Overlay - only show when no photo is displayed
             VStack {
-                if unifiedInteractionManager.isControlsVisible && viewModel.slideshow?.currentPhoto == nil {
+                if uiInteractionManager.isControlsVisible && viewModel.slideshow?.currentPhoto == nil {
                     repositoryAwareControlsOverlay(
                         viewModel: viewModel,
-                        unifiedInteractionManager: unifiedInteractionManager
+                        uiInteractionManager: uiInteractionManager
                     )
-                } else if unifiedInteractionManager.isControlsVisible && viewModel.slideshow?.currentPhoto != nil {
+                } else if uiInteractionManager.isControlsVisible && viewModel.slideshow?.currentPhoto != nil {
                     // Show minimal controls only when photo is displayed
                     MinimalControlsView(
                         viewModel: viewModel,
@@ -190,7 +190,7 @@ struct EnhancedContentView: View {
     // MARK: - Repository-Aware Controls
     private func repositoryAwareControlsOverlay(
         viewModel: any SlideshowViewModelProtocol,
-        unifiedInteractionManager: UnifiedInteractionManager
+        uiInteractionManager: UIInteractionManager
     ) -> some View {
         VStack {
             // Top controls with Repository status and presentation controls
@@ -373,24 +373,22 @@ struct EnhancedContentView: View {
             setupKeyboardHandler(createdKeyboardHandler, with: createdViewModel)
             
             // Create unified interaction manager
-            let createdUnifiedInteractionManager = UnifiedInteractionManager(
-                uiControlSettings: uiControlSettings,
-                enableEnhancedFeatures: readinessStatus.recommendUseRepositoryPattern
+            let createdUIInteractionManager = UIInteractionManager(
+                uiControlSettings: uiControlSettings
             )
             
             // Set up gesture settings integration
-            setupGestureIntegration(with: createdUnifiedInteractionManager)
+            setupGestureIntegration(with: createdUIInteractionManager)
             
             // Initialize presentation manager
             let createdPresentationManager = MultiMonitorPresentationManager(
-                enableEnhancedFeatures: readinessStatus.recommendUseRepositoryPattern,
                 eventBus: UnifiedEventBus.shared
             )
             
             // Set properties
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
-            self.unifiedInteractionManager = createdUnifiedInteractionManager
+            self.uiInteractionManager = createdUIInteractionManager
             self.settingsCoordinator = settingsCoordinator
             self.presentationManager = createdPresentationManager
             self.isInitializing = false
@@ -427,9 +425,8 @@ struct EnhancedContentView: View {
             let createdKeyboardHandler = KeyboardHandler()
             setupKeyboardHandler(createdKeyboardHandler, with: legacyViewModel)
             
-            let createdUnifiedInteractionManager = UnifiedInteractionManager(
-                uiControlSettings: uiControlSettings,
-                enableEnhancedFeatures: false // Legacy mode - no enhanced features
+            let createdUIInteractionManager = UIInteractionManager(
+                uiControlSettings: uiControlSettings
             )
             
             // Initialize presentation manager (with reduced features for legacy mode)
@@ -440,7 +437,7 @@ struct EnhancedContentView: View {
             
             self.viewModel = legacyViewModel
             self.keyboardHandler = createdKeyboardHandler
-            self.unifiedInteractionManager = createdUnifiedInteractionManager
+            self.uiInteractionManager = createdUIInteractionManager
             self.settingsCoordinator = settingsCoordinator
             self.presentationManager = createdPresentationManager
             self.isUsingRepositoryPattern = false
@@ -469,7 +466,7 @@ struct EnhancedContentView: View {
         
         // Integrate keyboard handler with unified interaction manager
         keyboardHandler.onKeyboardInteraction = {
-            unifiedInteractionManager?.handleKeyboardInteraction()
+            uiInteractionManager?.handleKeyboardInteraction()
         }
     }
     
@@ -484,7 +481,7 @@ struct EnhancedContentView: View {
         )
     }
     
-    private func setupGestureIntegration(with interactionManager: UnifiedInteractionManager) {
+    private func setupGestureIntegration(with interactionManager: UIInteractionManager) {
         // Set up gesture settings change notifications
         NotificationCenter.default.addObserver(
             forName: .gestureSettingsChanged,
@@ -495,7 +492,7 @@ struct EnhancedContentView: View {
                 ProductionLogger.debug("EnhancedContentView: Gesture settings changed")
                 
                 // Update interaction manager with new gesture settings
-                // Note: This would need to be implemented in UnifiedInteractionManager
+                // Note: This would need to be implemented in UIInteractionManager
                 // interactionManager.updateGestureSettings(gestureSettings)
                 
                 // Force UI refresh for gesture-enabled components

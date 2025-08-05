@@ -82,7 +82,7 @@ struct ContentView: View {
                     UnifiedImageDisplayView(
                         viewModel: viewModel,
                         transitionSettings: appSettingsCoordinator.transition,
-                        uiControlStateManager: uiControlStateManager
+                        uiInteractionManager: nil // TODO: Implement UIInteractionManager creation
                     )
                     .ignoresSafeArea()
                     

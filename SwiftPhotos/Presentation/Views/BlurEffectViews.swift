@@ -5,17 +5,17 @@ import Combine
 
 /// View modifier for applying managed blur effects to any view
 public struct ManagedBlurEffect: ViewModifier {
-    @ObservedObject private var blurManager: BlurEffectManager
+    @ObservedObject private var blurManager: VisualEffectsManager
     
-    private let overlayType: OverlayType
-    private let style: BlurStyle?
+    private let overlayType: VisualOverlayType
+    private let style: VisualBlurStyle?
     private let customIntensity: Double?
     private let isEnabled: Bool
     
     public init(
-        blurManager: BlurEffectManager,
-        overlayType: OverlayType,
-        style: BlurStyle? = nil,
+        blurManager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
+        style: VisualBlurStyle? = nil,
         intensity: Double? = nil,
         isEnabled: Bool = true
     ) {
@@ -30,11 +30,7 @@ public struct ManagedBlurEffect: ViewModifier {
         content
             .background {
                 if isEnabled {
-                    blurManager.createBlurView(
-                        for: overlayType,
-                        style: style,
-                        customIntensity: customIntensity
-                    )
+                    blurManager.blurEffect(for: overlayType)
                 }
             }
     }
@@ -42,17 +38,17 @@ public struct ManagedBlurEffect: ViewModifier {
 
 /// View modifier for animated blur transitions
 public struct AnimatedBlurTransition: ViewModifier {
-    @ObservedObject private var blurManager: BlurEffectManager
+    @ObservedObject private var blurManager: VisualEffectsManager
     
-    private let overlayType: OverlayType
+    private let overlayType: VisualOverlayType
     private let isVisible: Bool
     private let animationDuration: TimeInterval
     
     @State private var currentIntensity: Double = 0.0
     
     public init(
-        blurManager: BlurEffectManager,
-        overlayType: OverlayType,
+        blurManager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
         isVisible: Bool,
         animationDuration: TimeInterval = 0.3
     ) {
@@ -65,10 +61,7 @@ public struct AnimatedBlurTransition: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .background {
-                blurManager.createBlurView(
-                    for: overlayType,
-                    customIntensity: currentIntensity
-                )
+                blurManager.blurEffect(for: overlayType)
             }
             .onAppear {
                 if isVisible {
@@ -87,16 +80,16 @@ public struct AnimatedBlurTransition: ViewModifier {
 
 /// View modifier for context-aware blur adaptation
 public struct ContextAwareBlur: ViewModifier {
-    @ObservedObject private var blurManager: BlurEffectManager
+    @ObservedObject private var blurManager: VisualEffectsManager
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     
-    private let overlayType: OverlayType
+    private let overlayType: VisualOverlayType
     private let adaptToContext: Bool
     
     public init(
-        blurManager: BlurEffectManager,
-        overlayType: OverlayType,
+        blurManager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
         adaptToContext: Bool = true
     ) {
         self.blurManager = blurManager
@@ -107,24 +100,20 @@ public struct ContextAwareBlur: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .background {
-                blurManager.createBlurView(
-                    for: overlayType,
-                    style: adaptiveBlurStyle,
-                    customIntensity: adaptiveIntensity
-                )
+                blurManager.blurEffect(for: overlayType)
             }
     }
     
-    private var adaptiveBlurStyle: BlurStyle {
-        guard adaptToContext else { return blurManager.currentStyle }
+    private var adaptiveBlurStyle: VisualBlurStyle {
+        guard adaptToContext else { return blurManager.currentBlurStyle }
         
         if reduceTransparency {
-            return .thick
+            return .regular
         }
         
         switch colorScheme {
         case .dark:
-            return .prominent
+            return .dark
         case .light:
             return .regular
         @unknown default:
@@ -147,18 +136,18 @@ public struct ContextAwareBlur: ViewModifier {
 
 /// Enhanced blur view with performance monitoring
 public struct PerformanceOptimizedBlurView: View {
-    @ObservedObject private var blurManager: BlurEffectManager
+    @ObservedObject private var blurManager: VisualEffectsManager
     @State private var renderCount: Int = 0
     @State private var isOptimized: Bool = false
     
-    private let overlayType: OverlayType
-    private let style: BlurStyle?
+    private let overlayType: VisualOverlayType
+    private let style: VisualBlurStyle?
     private let performanceThreshold: Int
     
     public init(
-        blurManager: BlurEffectManager,
-        overlayType: OverlayType,
-        style: BlurStyle? = nil,
+        blurManager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
+        style: VisualBlurStyle? = nil,
         performanceThreshold: Int = 60
     ) {
         self.blurManager = blurManager
@@ -168,22 +157,18 @@ public struct PerformanceOptimizedBlurView: View {
     }
     
     public var body: some View {
-        blurManager.createBlurView(
-            for: overlayType,
-            style: effectiveStyle,
-            customIntensity: isOptimized ? 0.6 : nil
-        )
+        blurManager.blurEffect(for: overlayType)
         .onReceive(Timer.publish(every: 0.016, on: .main, in: .common).autoconnect()) { _ in
             renderCount += 1
             
             if renderCount > performanceThreshold {
                 if !isOptimized {
                     isOptimized = true
-                    blurManager.setPerformanceMode(true)
+                    blurManager.enablePerformanceMode()
                 }
             } else if renderCount < performanceThreshold / 2 && isOptimized {
                 isOptimized = false
-                blurManager.setPerformanceMode(false)
+                blurManager.disablePerformanceMode()
             }
             
             // Reset counter every second
@@ -193,31 +178,30 @@ public struct PerformanceOptimizedBlurView: View {
         }
     }
     
-    private var effectiveStyle: BlurStyle {
+    private var effectiveStyle: VisualBlurStyle {
         if isOptimized {
-            switch style ?? blurManager.currentStyle {
-            case .ultraThick, .thick: return .regular
-            case .prominent: return .regular
-            default: return style ?? blurManager.currentStyle
+            switch style ?? blurManager.currentBlurStyle {
+            case .light, .dark: return .regular
+            default: return style ?? blurManager.currentBlurStyle
             }
         }
-        return style ?? blurManager.currentStyle
+        return style ?? blurManager.currentBlurStyle
     }
 }
 
 /// Interactive blur view that responds to hover and focus
 public struct InteractiveBlurView: View {
-    @ObservedObject private var blurManager: BlurEffectManager
+    @ObservedObject private var blurManager: VisualEffectsManager
     @State private var isHovered: Bool = false
     @State private var isFocused: Bool = false
     
-    private let overlayType: OverlayType
+    private let overlayType: VisualOverlayType
     private let hoverIntensityMultiplier: Double
     private let focusIntensityMultiplier: Double
     
     public init(
-        blurManager: BlurEffectManager,
-        overlayType: OverlayType,
+        blurManager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
         hoverIntensityMultiplier: Double = 1.2,
         focusIntensityMultiplier: Double = 1.5
     ) {
@@ -228,10 +212,7 @@ public struct InteractiveBlurView: View {
     }
     
     public var body: some View {
-        blurManager.createBlurView(
-            for: overlayType,
-            customIntensity: currentIntensity
-        )
+        blurManager.blurEffect(for: overlayType)
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.15)) {
                 isHovered = hovering
@@ -266,15 +247,15 @@ public struct InteractiveBlurView: View {
 
 /// Gradient blur view that transitions between different blur intensities
 public struct GradientBlurView: View {
-    @ObservedObject private var blurManager: BlurEffectManager
+    @ObservedObject private var blurManager: VisualEffectsManager
     
-    private let overlayType: OverlayType
+    private let overlayType: VisualOverlayType
     private let gradientDirection: GradientDirection
     private let intensityRange: ClosedRange<Double>
     
     public init(
-        blurManager: BlurEffectManager,
-        overlayType: OverlayType,
+        blurManager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
         gradientDirection: GradientDirection = .vertical,
         intensityRange: ClosedRange<Double> = 0.3...1.0
     ) {
@@ -292,10 +273,7 @@ public struct GradientBlurView: View {
                     let intensity = calculateIntensity(for: index, total: 5)
                     let frame = calculateFrame(for: index, total: 5, in: geometry)
                     
-                    blurManager.createBlurView(
-                        for: overlayType,
-                        customIntensity: intensity
-                    )
+                    blurManager.blurEffect(for: overlayType)
                     .frame(width: frame.width, height: frame.height)
                     .position(x: frame.midX, y: frame.midY)
                 }
@@ -348,9 +326,9 @@ public enum GradientDirection {
 public extension View {
     /// Apply managed blur effect to this view
     func managedBlur(
-        manager: BlurEffectManager,
-        overlayType: OverlayType,
-        style: BlurStyle? = nil,
+        manager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
+        style: VisualBlurStyle? = nil,
         intensity: Double? = nil,
         isEnabled: Bool = true
     ) -> some View {
@@ -365,8 +343,8 @@ public extension View {
     
     /// Apply animated blur transition to this view
     func animatedBlur(
-        manager: BlurEffectManager,
-        overlayType: OverlayType,
+        manager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
         isVisible: Bool,
         animationDuration: TimeInterval = 0.3
     ) -> some View {
@@ -380,8 +358,8 @@ public extension View {
     
     /// Apply context-aware blur that adapts to environment
     func contextAwareBlur(
-        manager: BlurEffectManager,
-        overlayType: OverlayType,
+        manager: VisualEffectsManager,
+        overlayType: VisualOverlayType,
         adaptToContext: Bool = true
     ) -> some View {
         modifier(ContextAwareBlur(
@@ -418,14 +396,14 @@ public struct LegacyBlurredBackground: View {
 
 /// Enhanced replacement for existing blur views
 public struct EnhancedBlurredBackground: View {
-    @EnvironmentObject private var blurManager: BlurEffectManager
+    @EnvironmentObject private var blurManager: VisualEffectsManager
     
-    private let overlayType: OverlayType
+    private let overlayType: VisualOverlayType
     private let fallbackIntensity: Double
     private let fallbackOpacity: Double
     
     public init(
-        overlayType: OverlayType = .controls,
+        overlayType: VisualOverlayType = .controls,
         fallbackIntensity: Double = 0.8,
         fallbackOpacity: Double = 0.3
     ) {
@@ -436,25 +414,25 @@ public struct EnhancedBlurredBackground: View {
     
     public var body: some View {
         // Use managed blur effect since blurManager is available as @EnvironmentObject
-        blurManager.createBlurView(for: overlayType)
+        blurManager.blurEffect(for: overlayType)
     }
 }
 
 // MARK: - Environment Support
 
 private struct BlurManagerEnvironmentKey: EnvironmentKey {
-    static let defaultValue: BlurEffectManager? = nil
+    static let defaultValue: VisualEffectsManager? = nil
 }
 
 public extension EnvironmentValues {
-    var blurManager: BlurEffectManager? {
+    var blurManager: VisualEffectsManager? {
         get { self[BlurManagerEnvironmentKey.self] }
         set { self[BlurManagerEnvironmentKey.self] = newValue }
     }
 }
 
 public extension View {
-    func blurManager(_ manager: BlurEffectManager) -> some View {
+    func blurManager(_ manager: VisualEffectsManager) -> some View {
         environment(\.blurManager, manager)
     }
 }
