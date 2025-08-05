@@ -48,7 +48,8 @@ struct SlideshowSettingsView: View {
                                     slideDuration: newValue,
                                     autoStart: settings.settings.autoStart,
                                     randomOrder: settings.settings.randomOrder,
-                                    loopSlideshow: settings.settings.loopSlideshow
+                                    loopSlideshow: settings.settings.loopSlideshow,
+                                    pauseOnManualNavigation: settings.settings.pauseOnManualNavigation
                                 )
                                 settings.updateSettings(newSettings)
                             }
@@ -71,7 +72,8 @@ struct SlideshowSettingsView: View {
                                 slideDuration: settings.settings.slideDuration,
                                 autoStart: newValue,
                                 randomOrder: settings.settings.randomOrder,
-                                loopSlideshow: settings.settings.loopSlideshow
+                                loopSlideshow: settings.settings.loopSlideshow,
+                                pauseOnManualNavigation: settings.settings.pauseOnManualNavigation
                             )
                             settings.updateSettings(newSettings)
                         }
@@ -85,7 +87,8 @@ struct SlideshowSettingsView: View {
                                 slideDuration: settings.settings.slideDuration,
                                 autoStart: settings.settings.autoStart,
                                 randomOrder: newValue,
-                                loopSlideshow: settings.settings.loopSlideshow
+                                loopSlideshow: settings.settings.loopSlideshow,
+                                pauseOnManualNavigation: settings.settings.pauseOnManualNavigation
                             )
                             settings.updateSettings(newSettings)
                         }
@@ -99,7 +102,23 @@ struct SlideshowSettingsView: View {
                                 slideDuration: settings.settings.slideDuration,
                                 autoStart: settings.settings.autoStart,
                                 randomOrder: settings.settings.randomOrder,
-                                loopSlideshow: newValue
+                                loopSlideshow: newValue,
+                                pauseOnManualNavigation: settings.settings.pauseOnManualNavigation
+                            )
+                            settings.updateSettings(newSettings)
+                        }
+                    ))
+                    .toggleStyle(.switch)
+                    
+                    Toggle("Pause on Manual Navigation", isOn: Binding(
+                        get: { settings.settings.pauseOnManualNavigation },
+                        set: { newValue in
+                            let newSettings = SlideshowSettings(
+                                slideDuration: settings.settings.slideDuration,
+                                autoStart: settings.settings.autoStart,
+                                randomOrder: settings.settings.randomOrder,
+                                loopSlideshow: settings.settings.loopSlideshow,
+                                pauseOnManualNavigation: newValue
                             )
                             settings.updateSettings(newSettings)
                         }

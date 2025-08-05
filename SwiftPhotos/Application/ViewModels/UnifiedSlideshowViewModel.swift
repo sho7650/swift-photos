@@ -583,6 +583,15 @@ public final class UnifiedSlideshowViewModel {
     public func nextPhoto() async {
         guard var slideshow = slideshow else { return }
         
+        // Check if we should pause auto-play on manual navigation
+        let shouldPauseOnManualNavigation = settingsCoordinator.slideshow.settings.pauseOnManualNavigation
+        let wasPlaying = slideshow.isPlaying
+        
+        if wasPlaying && shouldPauseOnManualNavigation {
+            pause()
+            ProductionLogger.userAction("UnifiedSlideshowViewModel: Paused auto-play for manual navigation to next photo (setting enabled)")
+        }
+        
         slideshow.nextPhoto()
         self.slideshow = slideshow
         currentPhoto = slideshow.currentPhoto
@@ -595,6 +604,15 @@ public final class UnifiedSlideshowViewModel {
     
     public func previousPhoto() async {
         guard var slideshow = slideshow else { return }
+        
+        // Check if we should pause auto-play on manual navigation
+        let shouldPauseOnManualNavigation = settingsCoordinator.slideshow.settings.pauseOnManualNavigation
+        let wasPlaying = slideshow.isPlaying
+        
+        if wasPlaying && shouldPauseOnManualNavigation {
+            pause()
+            ProductionLogger.userAction("UnifiedSlideshowViewModel: Paused auto-play for manual navigation to previous photo (setting enabled)")
+        }
         
         slideshow.previousPhoto()
         self.slideshow = slideshow
