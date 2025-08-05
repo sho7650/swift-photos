@@ -315,7 +315,7 @@ public struct PresenterDisplayStrategy: PositioningStrategy {
 // MARK: - Screen Preference Types
 
 /// Screen selection preferences for multi-display positioning
-public enum ScreenPreference: Codable, Sendable {
+public enum ScreenPreference: Codable, Sendable, Equatable, Hashable {
     case current
     case primary
     case secondary

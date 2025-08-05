@@ -24,6 +24,9 @@ struct EnhancedContentView: View {
     @State private var settingsWindowManager = SettingsWindowManager()
     @State private var settingsCoordinator: AppSettingsCoordinator?
     
+    // MARK: - Presentation Manager
+    @State private var presentationManager: MultiMonitorPresentationManager?
+    
     // MARK: - Body
     var body: some View {
         Group {
@@ -190,7 +193,7 @@ struct EnhancedContentView: View {
         unifiedInteractionManager: UnifiedInteractionManager
     ) -> some View {
         VStack {
-            // Top controls with Repository status
+            // Top controls with Repository status and presentation controls
             HStack {
                 if isUsingRepositoryPattern {
                     Label("Repository Mode", systemImage: "externaldrive.connected")
@@ -204,6 +207,27 @@ struct EnhancedContentView: View {
                 
                 Spacer()
                 
+                // Presentation controls
+                if let presentationManager = presentationManager {
+                    HStack(spacing: 12) {
+                        // Presentation status
+                        PresentationStatusView(presentationManager: presentationManager)
+                        
+                        // Presentation toggle button
+                        Button(action: {
+                            Task {
+                                await presentationManager.togglePresentationMode()
+                            }
+                        }) {
+                            Image(systemName: presentationManager.isPresentationMode ? "display.trianglebadge.exclamationmark" : "display.2")
+                                .font(.title2)
+                                .foregroundColor(presentationManager.isPresentationMode ? .blue : .white)
+                        }
+                        .buttonStyle(.plain)
+                        .help(presentationManager.isPresentationMode ? "Exit Presentation Mode" : "Enter Presentation Mode")
+                    }
+                }
+                
                 // Settings button
                 Button(action: openSettings) {
                     Image(systemName: "gearshape")
@@ -212,6 +236,15 @@ struct EnhancedContentView: View {
                 }
                 .buttonStyle(.plain)
                 .padding()
+            }
+            
+            Spacer()
+            
+            // Middle - Presentation controls panel (when not in presentation mode)
+            if let presentationManager = presentationManager, !presentationManager.isPresentationMode {
+                PresentationControlsView(presentationManager: presentationManager)
+                    .padding(.horizontal, 20)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
             
             Spacer()
@@ -348,11 +381,18 @@ struct EnhancedContentView: View {
             // Set up gesture settings integration
             setupGestureIntegration(with: createdUnifiedInteractionManager)
             
+            // Initialize presentation manager
+            let createdPresentationManager = MultiMonitorPresentationManager(
+                enableEnhancedFeatures: readinessStatus.recommendUseRepositoryPattern,
+                eventBus: UnifiedEventBus.shared
+            )
+            
             // Set properties
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
             self.unifiedInteractionManager = createdUnifiedInteractionManager
             self.settingsCoordinator = settingsCoordinator
+            self.presentationManager = createdPresentationManager
             self.isInitializing = false
             
             ProductionLogger.lifecycle("EnhancedContentView: Application initialized successfully with \(isUsingRepositoryPattern ? "Repository" : "Legacy") pattern")
@@ -392,10 +432,17 @@ struct EnhancedContentView: View {
                 enableEnhancedFeatures: false // Legacy mode - no enhanced features
             )
             
+            // Initialize presentation manager (with reduced features for legacy mode)
+            let createdPresentationManager = MultiMonitorPresentationManager(
+                enableEnhancedFeatures: false,
+                eventBus: UnifiedEventBus.shared
+            )
+            
             self.viewModel = legacyViewModel
             self.keyboardHandler = createdKeyboardHandler
             self.unifiedInteractionManager = createdUnifiedInteractionManager
             self.settingsCoordinator = settingsCoordinator
+            self.presentationManager = createdPresentationManager
             self.isUsingRepositoryPattern = false
             self.isInitializing = false
             self.initializationError = nil
