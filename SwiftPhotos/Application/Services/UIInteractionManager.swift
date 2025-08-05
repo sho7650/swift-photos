@@ -47,9 +47,11 @@ public final class UIInteractionManager: ObservableObject {
     private var hideTimerId: UUID?
     private var minimumVisibilityTimerId: UUID?
     
-    // Mouse tracking
-    private var mouseTrackingArea: NSTrackingArea?
-    private var globalMouseMonitor: Any?
+    // Interaction event provider - using unified interaction interface
+    private let interactionEventProvider: InteractionEventProviderProtocol
+    private var mouseMovementSubscriptionId: UUID?
+    private var mouseClickSubscriptionId: UUID?
+    private var keyboardSubscriptionId: UUID?
     private var lastInteractionTime: Date = Date()
     
     // Cursor management
@@ -88,20 +90,24 @@ public final class UIInteractionManager: ObservableObject {
     public init(
         uiControlSettings: ModernUIControlSettingsManager,
         slideshowViewModel: (any SlideshowViewModelProtocol)? = nil,
-        timerManager: TimerManagementProtocol = UnifiedTimerManager()
+        timerManager: TimerManagementProtocol = UnifiedTimerManager(),
+        interactionEventProvider: InteractionEventProviderProtocol = UnifiedInteractionEventProvider()
     ) {
         self.uiControlSettings = uiControlSettings
         self.slideshowViewModel = slideshowViewModel
         self.timerManager = timerManager
+        self.interactionEventProvider = interactionEventProvider
         
-        setupMouseTracking()
+        Task {
+            await setupInteractionSubscriptions()
+        }
         setupDefaultZones()
         
         logger.info("🎮 UIInteractionManager: Initialized with consolidated interaction handling")
     }
     
-    // Note: Deinit removed to avoid Swift 6 Sendable issues
-    // NSEvent monitors and Timer objects are automatically cleaned up
+    // Note: Deinit removed to avoid Swift 6 Sendable issues with async cleanup
+    // Subscriptions are automatically cleaned up when the object is deallocated
     
     // MARK: - Public Interface
     
@@ -133,6 +139,11 @@ public final class UIInteractionManager: ObservableObject {
         mousePosition = location
         handleUserInteraction()
         onMouseInteraction?()
+        
+        // Update mouse in window status
+        Task {
+            isMouseInWindow = await interactionEventProvider.isMouseInApplicationWindow()
+        }
         
         // Check zone interactions
         if isZoneInteractionEnabled {
@@ -313,22 +324,52 @@ public final class UIInteractionManager: ObservableObject {
     
     // MARK: - Private Methods
     
-    private func setupMouseTracking() {
-        // Global mouse monitor for position tracking
-        globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged]) { [weak self] event in
+    private func setupInteractionSubscriptions() async {
+        // Subscribe to mouse movement for position tracking
+        mouseMovementSubscriptionId = await interactionEventProvider.subscribeToMouseMovement { [weak self] position in
             Task { @MainActor in
-                self?.mousePosition = NSEvent.mouseLocation
+                self?.mousePosition = position
+                self?.handleMouseInteraction(at: position)
             }
         }
         
-        logger.debug("🖱️ Mouse tracking setup complete")
+        // Subscribe to mouse clicks
+        mouseClickSubscriptionId = await interactionEventProvider.subscribeToMouseClicks { [weak self] clickEvent in
+            Task { @MainActor in
+                self?.handleMouseInteraction(at: clickEvent.position)
+            }
+        }
+        
+        // Subscribe to keyboard events
+        keyboardSubscriptionId = await interactionEventProvider.subscribeToKeyboardEvents { [weak self] keyboardEvent in
+            Task { @MainActor in
+                self?.handleKeyboardInteraction()
+            }
+        }
+        
+        // Enable interaction detection
+        await interactionEventProvider.setDetectionEnabled(true)
+        
+        logger.debug("🖱️ Interaction subscriptions setup complete")
     }
     
-    private func stopMouseTracking() {
-        if let monitor = globalMouseMonitor {
-            NSEvent.removeMonitor(monitor)
-            globalMouseMonitor = nil
+    private func cancelInteractionSubscriptions() async {
+        if let id = mouseMovementSubscriptionId {
+            await interactionEventProvider.cancelSubscription(id)
+            mouseMovementSubscriptionId = nil
         }
+        
+        if let id = mouseClickSubscriptionId {
+            await interactionEventProvider.cancelSubscription(id)
+            mouseClickSubscriptionId = nil
+        }
+        
+        if let id = keyboardSubscriptionId {
+            await interactionEventProvider.cancelSubscription(id)
+            keyboardSubscriptionId = nil
+        }
+        
+        logger.debug("🖱️ Interaction subscriptions cancelled")
     }
     
     private func setupDefaultZones() {
