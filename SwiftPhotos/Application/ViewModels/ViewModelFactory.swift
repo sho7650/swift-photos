@@ -50,7 +50,7 @@ public struct ViewModelFactory {
         } else {
             // Use Legacy pattern
             let imageLoader = ImageLoader()
-            let imageCache = ImageCache()
+            let imageCache = UnifiedImageCacheBridgeFactory.createForSlideshow()
             let repository = FileSystemPhotoRepository(
                 fileAccess: fileAccess,
                 imageLoader: imageLoader,

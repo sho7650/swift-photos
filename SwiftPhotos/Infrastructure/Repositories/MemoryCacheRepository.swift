@@ -8,7 +8,7 @@ public actor MemoryCacheRepository: ImageCacheRepositoryProtocol {
     public typealias Value = SendableImage
     
     // MARK: - Properties
-    private let imageCache: ImageCache
+    private let imageCache: PhotoCache
     private var priorityMap: [ImageCacheKey: CachePriority] = [:]
     private var thumbnailCache: [String: SendableImage] = [:]
     private var qualityCache: [String: SendableImage] = [:]
@@ -18,10 +18,10 @@ public actor MemoryCacheRepository: ImageCacheRepositoryProtocol {
     private var lastAccessTime: [ImageCacheKey: Date] = [:]
     
     // MARK: - Initialization
-    public init(imageCache: ImageCache? = nil, 
+    public init(imageCache: PhotoCache? = nil, 
                 countLimit: Int = 200,
                 totalCostLimit: Int = 500_000_000) {
-        self.imageCache = imageCache ?? ImageCache(countLimit: countLimit, totalCostLimit: totalCostLimit)
+        self.imageCache = imageCache ?? UnifiedImageCacheBridge(countLimit: countLimit, totalCostLimit: totalCostLimit)
     }
     
     // MARK: - Basic Cache Operations

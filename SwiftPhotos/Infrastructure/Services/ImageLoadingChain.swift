@@ -321,13 +321,13 @@ actor BaseImageLoadingHandler: ImageLoadingHandlerProtocol {
 /// Cache-first handler for immediate responses
 actor CacheImageHandler: ImageLoadingHandlerProtocol {
     
-    private let imageCache: ImageCache
+    private let imageCache: PhotoCache
     private var nextHandler: (any ImageLoadingHandlerProtocol)?
     var settings: PerformanceSettings
     var handlerStatistics: HandlerStatistics
     
     init(settings: PerformanceSettings) {
-        self.imageCache = ImageCache()
+        self.imageCache = UnifiedImageCacheBridgeFactory.createForSlideshow()
         self.settings = settings
         self.handlerStatistics = HandlerStatistics()
         ProductionLogger.lifecycle("CacheImageHandler: Initialized")
@@ -371,11 +371,11 @@ actor CacheImageHandler: ImageLoadingHandlerProtocol {
     }
     
     func canHandle(photo: Photo, context: ImageLoadingContext) async -> Bool {
-        return await imageCache.image(for: photo.imageURL) != nil
+        return await imageCache.getCachedImage(for: photo.imageURL) != nil
     }
     
     func processImage(photo: Photo, context: ImageLoadingContext) async throws -> SendableImage {
-        guard let cachedImage = await imageCache.image(for: photo.imageURL) else {
+        guard let cachedImage = await imageCache.getCachedImage(for: photo.imageURL) else {
             throw ImageLoadingError.notInCache
         }
         

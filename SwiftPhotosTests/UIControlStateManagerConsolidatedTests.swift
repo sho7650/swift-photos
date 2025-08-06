@@ -47,7 +47,7 @@ struct UIControlStateManagerConsolidatedTests {
         let sortSettings = ModernSortSettingsManager()
         
         let imageLoader = await ImageLoader()
-        let imageCache = await ImageCache()
+        let imageCache = UnifiedImageCacheBridgeFactory.createForSlideshow()
         let fileAccess = await SecureFileAccess()
         let localizationService = LocalizationService()
         let repository = FileSystemPhotoRepository(

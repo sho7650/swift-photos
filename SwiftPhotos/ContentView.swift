@@ -210,7 +210,7 @@ struct ContentView: View {
             
             // Create dependencies safely using persistent SecureFileAccess
             let imageLoader = ImageLoader()
-            let imageCache = ImageCache()
+            let imageCache = UnifiedImageCacheBridgeFactory.createForSlideshow()
             let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: appSettingsCoordinator.sort, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
@@ -413,7 +413,7 @@ struct ContentView: View {
             }
             
             let imageLoader = ImageLoader()
-            let imageCache = ImageCache()
+            let imageCache = UnifiedImageCacheBridgeFactory.createForSlideshow()
             let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: appSettingsCoordinator.sort, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
