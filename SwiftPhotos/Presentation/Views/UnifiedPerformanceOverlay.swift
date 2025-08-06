@@ -605,10 +605,10 @@ private struct MetricRow: View {
     }
 }
 
-private struct TabButtonStyle: ButtonStyle {
+private struct TabButtonStyle: SwiftUI.ButtonStyle {
     let isSelected: Bool
     
-    func makeBody(configuration: Configuration) -> some View {
+    func makeBody(configuration: SwiftUI.ButtonStyle.Configuration) -> some View {
         configuration.label
             .font(.caption)
             .fontWeight(.medium)
@@ -618,7 +618,7 @@ private struct TabButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: 6)
                     .fill(isSelected ? Color.white.opacity(0.2) : Color.clear)
             )
-            .foregroundColor(isSelected ? .white : .white.opacity(0.7))
+            .foregroundColor(isSelected ? Color.white : Color.white.opacity(0.7))
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }
 }
