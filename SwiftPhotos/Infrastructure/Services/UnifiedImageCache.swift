@@ -1,7 +1,7 @@
 import Foundation
 import AppKit
 
-/// Unified image cache that consolidates functionality from ImageCache, LRUImageCache, and MemoryCacheRepository
+/// Unified image cache that consolidates functionality from legacy ImageCache, LRUImageCache, and MemoryCacheRepository
 /// Provides intelligent caching with multiple strategies, quality management, and advanced features
 public actor UnifiedImageCache: UnifiedImageCacheProtocol {
     

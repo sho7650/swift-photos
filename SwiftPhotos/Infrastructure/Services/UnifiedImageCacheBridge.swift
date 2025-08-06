@@ -10,7 +10,7 @@ import Foundation
 import AppKit
 
 /// Bridge adapter that makes UnifiedImageCacheRepository compatible with PhotoCache protocol
-/// This allows gradual migration from old ImageCache to UnifiedImageCacheRepository
+/// This allows gradual migration from legacy ImageCache to UnifiedImageCacheRepository
 public final class UnifiedImageCacheBridge: PhotoCache, @unchecked Sendable {
     
     // MARK: - Dependencies
@@ -136,20 +136,3 @@ public enum UnifiedImageCacheBridgeFactory {
     }
 }
 
-// MARK: - Migration Utilities
-
-public extension UnifiedImageCacheBridge {
-    
-    /// Create bridge from existing ImageCache settings
-    static func migrate(from imageCache: ImageCache) async -> UnifiedImageCacheBridge {
-        let stats = await imageCache.getCacheStatistics()
-        
-        let bridge = UnifiedImageCacheBridge(
-            countLimit: stats.currentCount,
-            totalCostLimit: stats.totalCost
-        )
-        
-        ProductionLogger.info("UnifiedImageCacheBridge: Migrated from legacy ImageCache")
-        return bridge
-    }
-}

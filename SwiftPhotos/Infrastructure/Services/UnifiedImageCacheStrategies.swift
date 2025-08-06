@@ -3,7 +3,7 @@ import AppKit
 
 // MARK: - NSCache Strategy
 
-/// Simple NSCache-based strategy (consolidates functionality from ImageCache.swift)
+/// Simple NSCache-based strategy (consolidates functionality from legacy ImageCache implementation)
 public actor NSCacheStrategy: CacheStrategy {
     private let cache = NSCache<NSString, NSImage>()
     private var hitCount = 0
@@ -89,7 +89,7 @@ public actor NSCacheStrategy: CacheStrategy {
 
 // MARK: - LRU Strategy
 
-/// LRU eviction strategy (consolidates functionality from LRUImageCache.swift)
+/// LRU eviction strategy (consolidates functionality from legacy LRUImageCache implementation)
 public actor LRUCacheStrategy: CacheStrategy {
     private var cache: [String: CacheNode] = [:]
     private var head: CacheNode?

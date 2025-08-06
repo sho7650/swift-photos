@@ -765,11 +765,3 @@ public enum ImageLoadingError: LocalizedError {
     }
 }
 
-// MARK: - ImageCache Extension
-
-extension ImageCache {
-    /// Get image from cache
-    func image(for url: ImageURL) async -> SendableImage? {
-        return getCachedImage(for: url)
-    }
-}

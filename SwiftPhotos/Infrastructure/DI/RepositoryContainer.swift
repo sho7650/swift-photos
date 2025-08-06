@@ -95,7 +95,6 @@ public actor RepositoryContainer {
         switch configuration.cacheRepositoryType {
         case .memory:
             return MemoryCacheRepository(
-                imageCache: configuration.imageCache,
                 countLimit: configuration.cacheCountLimit,
                 totalCostLimit: configuration.cacheTotalCostLimit
             )
@@ -277,7 +276,6 @@ public struct ContainerConfiguration: @unchecked Sendable {
     // Dependencies
     public let secureFileAccess: SecureFileAccess?
     public let imageLoader: ImageLoader?
-    public let imageCache: ImageCache?
     public let userDefaults: UserDefaults
     public let jsonEncoder: JSONEncoder?
     public let jsonDecoder: JSONDecoder?
@@ -303,7 +301,6 @@ public struct ContainerConfiguration: @unchecked Sendable {
         settingsRepositoryType: SettingsRepositoryType = .userDefaults,
         secureFileAccess: SecureFileAccess? = nil,
         imageLoader: ImageLoader? = nil,
-        imageCache: ImageCache? = nil,
         userDefaults: UserDefaults = .standard,
         jsonEncoder: JSONEncoder? = nil,
         jsonDecoder: JSONDecoder? = nil,
@@ -322,7 +319,6 @@ public struct ContainerConfiguration: @unchecked Sendable {
         self.settingsRepositoryType = settingsRepositoryType
         self.secureFileAccess = secureFileAccess
         self.imageLoader = imageLoader
-        self.imageCache = imageCache
         self.userDefaults = userDefaults
         self.jsonEncoder = jsonEncoder
         self.jsonDecoder = jsonDecoder
