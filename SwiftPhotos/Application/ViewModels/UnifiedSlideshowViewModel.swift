@@ -519,6 +519,8 @@ public final class UnifiedSlideshowViewModel {
             return
         }
         
+        ProductionLogger.debug("🎬 UnifiedSlideshowViewModel: play() called - current state: \(slideshow.state.description)")
+        
         stopTimer()
         
         // CRITICAL FIX: Update slideshow state so UI icons update
@@ -526,17 +528,31 @@ public final class UnifiedSlideshowViewModel {
         self.slideshow = slideshow
         refreshCounter += 1
         
+        ProductionLogger.debug("🎬 UnifiedSlideshowViewModel: Slideshow state set to playing, isPlaying: \(slideshow.isPlaying)")
+        
         let interval = settingsCoordinator.slideshow.settings.slideDuration
+        
+        ProductionLogger.debug("🎬 UnifiedSlideshowViewModel: Starting timer with interval: \(interval)s")
         
         Task { [weak self] in
             guard let self = self else { return }
             let newTimerId = await self.timerManager.scheduleRepeatingTimer(interval: interval) { [weak self] in
                 Task { @MainActor in
-                    await self?.nextPhoto()
+                    ProductionLogger.debug("⏰ Timer fired - calling nextPhoto() - timerID: \(newTimerId)")
+                    guard let self = self else { 
+                        ProductionLogger.debug("⏰ Timer fired but self is nil")
+                        return 
+                    }
+                    guard let slideshow = self.slideshow, slideshow.isPlaying else {
+                        ProductionLogger.debug("⏰ Timer fired but slideshow not playing - state: \(self.slideshow?.state.description ?? "nil")")
+                        return
+                    }
+                    await self.nextPhotoAutomatic()
                 }
             }
             await MainActor.run {
                 self.timerId = newTimerId
+                ProductionLogger.debug("🎬 UnifiedSlideshowViewModel: Timer created with ID: \(newTimerId)")
             }
         }
         
@@ -592,7 +608,24 @@ public final class UnifiedSlideshowViewModel {
         }
     }
     
+    /// Automatic photo navigation for timer-triggered advances (bypasses pauseOnManualNavigation)
+    public func nextPhotoAutomatic() async {
+        ProductionLogger.debug("🎬 UnifiedSlideshowViewModel: nextPhotoAutomatic() called")
+        guard var slideshow = slideshow else { return }
+        
+        // Don't check pauseOnManualNavigation - this is automatic advancement
+        slideshow.nextPhoto()
+        self.slideshow = slideshow
+        currentPhoto = slideshow.currentPhoto
+        refreshCounter += 1
+        
+        await handleLargeCollectionNavigation()
+        
+        ProductionLogger.debug("UnifiedSlideshowViewModel: Auto-advanced to photo \(slideshow.currentIndex + 1)/\(slideshow.photos.count)")
+    }
+    
     public func nextPhoto() async {
+        ProductionLogger.debug("🎬 UnifiedSlideshowViewModel: nextPhoto() called")
         guard var slideshow = slideshow else { return }
         
         // Check if we should pause auto-play on manual navigation

@@ -156,38 +156,37 @@ public struct UnifiedImageDisplayView: View {
             }
             
             // Main image with transitions
-            if showImage {
-                Image(nsImage: image.nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(
-                        width: geometry.size.width,
-                        height: geometry.size.height,
-                        alignment: .center
-                    )
-                    .clipped()
-                    .scaleEffect(scale)
-                    .offset(offset)
-                    .transition(getTransitionEffect())
-                    .onHover { hovering in
-                        if hovering {
-                            uiInteractionManager?.handleMouseInteraction(at: CGPoint.zero)
-                        } else {
-                            // Mouse exited - no specific action needed for UIInteractionManager
-                        }
+            Image(nsImage: image.nsImage)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(
+                    width: geometry.size.width,
+                    height: geometry.size.height,
+                    alignment: .center
+                )
+                .clipped()
+                .scaleEffect(scale)
+                .offset(offset)
+                .transition(getTransitionEffect())
+                .onHover { hovering in
+                    if hovering {
+                        uiInteractionManager?.handleMouseInteraction(at: CGPoint.zero)
+                    } else {
+                        // Mouse exited - no specific action needed for UIInteractionManager
                     }
-                    .id(photo.id)
-                    .onTapGesture(count: 2) {
-                        if enableAdvancedGestures {
-                            handleAdvancedDoubleTap(at: CGPoint(x: geometry.size.width/2, y: geometry.size.height/2))
-                        } else {
-                            resetZoom()
-                        }
+                }
+                .id(currentPhotoID ?? photo.id)
+                .animation(getTransitionAnimation(), value: currentPhotoID)
+                .onTapGesture(count: 2) {
+                    if enableAdvancedGestures {
+                        handleAdvancedDoubleTap(at: CGPoint(x: geometry.size.width/2, y: geometry.size.height/2))
+                    } else {
+                        resetZoom()
                     }
-                    .gesture(
-                        enableAdvancedGestures ? createAdvancedGestureModifier(geometry: geometry) : AnyGesture(TapGesture().map { _ in })
-                    )
-            }
+                }
+                .gesture(
+                    enableAdvancedGestures ? createAdvancedGestureModifier(geometry: geometry) : AnyGesture(TapGesture().map { _ in })
+                )
         }
     }
     
@@ -218,7 +217,7 @@ public struct UnifiedImageDisplayView: View {
                 // Note: Direct loading not available through protocol
                 // This would need to be handled by the ViewModel
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.bordered)
         }
     }
     
@@ -302,14 +301,11 @@ public struct UnifiedImageDisplayView: View {
     private func handlePhotoChange(from oldID: UUID?, to newID: UUID?) {
         guard oldID != nil, newID != nil, oldID != newID else { return }
         
-        if visualEffectsManager != nil {
-            showImage = false
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                currentPhotoID = newID
-                showImage = true
-            }
-        } else {
+        ProductionLogger.debug("🎨 UnifiedImageDisplayView: Photo change detected - applying transition")
+        ProductionLogger.debug("🎨 Transition enabled: \(self.transitionSettings.settings.isEnabled), type: \(self.transitionSettings.settings.effectType), duration: \(self.transitionSettings.settings.duration)")
+        
+        // Simply update the photo ID - let SwiftUI handle the transition
+        withAnimation(getTransitionAnimation()) {
             currentPhotoID = newID
         }
     }
@@ -322,6 +318,27 @@ public struct UnifiedImageDisplayView: View {
                 scale = 1.0
                 offset = .zero
             }
+        }
+    }
+    
+    private func getTransitionAnimation() -> Animation {
+        guard transitionSettings.settings.isEnabled else {
+            return .linear(duration: 0)
+        }
+        
+        let duration = transitionSettings.settings.duration
+        
+        switch transitionSettings.settings.easing {
+        case .linear:
+            return .linear(duration: duration)
+        case .easeIn:
+            return .easeIn(duration: duration)
+        case .easeOut:
+            return .easeOut(duration: duration)
+        case .easeInOut:
+            return .easeInOut(duration: duration)
+        case .spring:
+            return .spring(response: duration, dampingFraction: 0.8)
         }
     }
     
@@ -352,17 +369,11 @@ public struct UnifiedImageDisplayView: View {
         )
     }
     
-
-    
-
-    
     private func handleAdvancedDoubleTap(at location: CGPoint) {
         // GestureNavigationManager handles double tap internally via gesture creation
         // For manual double tap handling, we can call resetZoom or toggle zoom
         gestureManager?.resetZoom()
     }
-    
-
 }
 
 // MARK: - Preview Provider
