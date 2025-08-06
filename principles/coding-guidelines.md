@@ -398,12 +398,12 @@ protocol PhotoServiceProtocol: Sendable {
 
 // MARK: - Photo Service Implementation
 actor PhotoService: PhotoServiceProtocol {
-    private let imageCache = NSCache<NSURL, NSImage>()
+    // Use unified cache bridge instead of direct NSCache
+    private let imageCache = UnifiedImageCacheBridgeFactory.createForSlideshow()
     private let supportedExtensions = ["jpg", "jpeg", "png", "heic", "tiff", "gif"]
     
     init() {
-        imageCache.countLimit = 50
-        imageCache.totalCostLimit = 500 * 1024 * 1024 // 500MB
+        // Cache configuration handled by factory
     }
     
     func loadPhotos(from urls: [URL], progress: @Sendable (Double) -> Void) async throws -> [Photo] {
@@ -424,8 +424,9 @@ actor PhotoService: PhotoServiceProtocol {
             throw PhotoError.invalidImage
         }
         
-        // Cache the image
-        imageCache.setObject(image, forKey: url as NSURL)
+        // Cache the image using unified cache
+        let imageURL = try ImageURL(url)
+        await imageCache.setCachedImage(SendableImage(image), for: imageURL)
         
         let metadata = try await extractMetadata(from: url)
         
@@ -803,7 +804,40 @@ struct SlideshowApp: App {
 
 ## Best Practices
 
-### 1. Memory Management
+### 1. Unified Architecture Patterns
+
+```swift
+// ✅ DO: Use factory methods for component creation
+let cache = UnifiedImageCacheBridgeFactory.createForSlideshow()
+let loader = UnifiedImageLoader(settings: performanceSettings)
+
+// ❌ DON'T: Instantiate legacy components directly
+let cache = ImageCache() // This class has been removed
+
+// ✅ DO: Provide context for intelligent optimization
+let context = LoadingContext(
+    collectionSize: photos.count,
+    currentIndex: index,
+    priority: .normal
+)
+let image = try await loader.loadImage(from: photo, context: context)
+
+// ❌ DON'T: Load images without context
+let image = try await loader.loadImage(from: imageURL) // Missing optimization opportunity
+
+// ✅ DO: Use unified repository interfaces
+let repository: UnifiedImageRepository = UnifiedFileSystemImageRepository(...)
+let photos = try await repository.loadPhotos(from: .folder(url), options: options)
+
+// ❌ DON'T: Mix legacy and unified patterns in the same component
+class MyService {
+    let oldRepo: SlideshowRepository // Legacy
+    let newCache: UnifiedImageCacheBridge // Unified
+    // This creates confusion and maintenance issues
+}
+```
+
+### 2. Memory Management
 
 ```swift
 // Use weak references in closures to avoid retain cycles

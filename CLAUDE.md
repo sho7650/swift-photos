@@ -83,6 +83,31 @@ Swift Photos is a macOS application built using **Clean Architecture** principle
 └─────────────────────────────────────────┘
 ```
 
+### Unified Architecture Components (Phases 3-5)
+
+The application has undergone architectural consolidation to reduce code duplication and improve maintainability:
+
+#### Domain Layer Unification
+- **UnifiedImageRepository**: Consolidated interface combining image loading, caching, and metadata operations
+- **UnifiedEventProtocol**: Standardized event handling across the application
+- **UnifiedInteractionProtocol**: Consistent interaction patterns for UI components
+
+#### Infrastructure Layer Unification
+- **UnifiedFileSystemImageRepository**: Consolidated file system operations
+- **UnifiedImageCacheRepository**: Multi-strategy caching with NSCache, LRU, and Hybrid approaches
+- **UnifiedImageLoader**: Adaptive loading system that selects optimal strategies
+- **UnifiedTimerManager**: Consolidated timer management wrapping OptimizedTimerPool
+
+#### Application Layer Unification
+- **UnifiedImageCacheBridge**: Adapter enabling gradual migration from legacy PhotoCache
+- **UnifiedSlideshowViewModel**: Consolidated view model supporting both patterns
+- **UnifiedEventBus**: Centralized event distribution system
+
+#### Migration Support
+- Bridge/Adapter patterns enable gradual migration
+- Legacy components remain functional during transition
+- Factory methods provide easy instantiation of unified components
+
 ## Core Domain
 
 ### Key Entities
@@ -155,14 +180,18 @@ extension Notification.Name {
 }
 ```
 
-## Image Loading & Caching Architecture
+## Image Loading & Caching Architecture (Unified)
 
-### Multi-Tier Caching System
+### Unified Multi-Tier Caching System
 
-1. **ImageCache**: NSCache-based primary cache with cost-based eviction
-2. **LRUImageCache**: Least-recently-used cache for predictable memory management
-3. **VirtualImageLoader**: Actor-based sliding window loader for massive collections
-4. **BackgroundPreloader**: Priority queue system for adjacent image preloading
+1. **UnifiedImageCacheRepository**: Consolidated cache repository with multiple strategies
+   - NSCache strategy for simple caching with cost-based eviction
+   - LRU strategy for predictable memory management
+   - Hybrid strategy combining both approaches
+2. **UnifiedImageCacheBridge**: Adapter for legacy PhotoCache protocol compatibility
+3. **UnifiedImageLoader**: Adaptive loader that selects optimal loading strategy
+4. **VirtualImageLoader**: Actor-based sliding window loader for massive collections
+5. **BackgroundPreloader**: Priority queue system for adjacent image preloading
 
 ### Performance Scaling
 
@@ -221,28 +250,42 @@ NotificationCenter.default.addObserver(forName: .transitionSettingsChanged) { _ 
 
 ## Key Design Patterns
 
-### Repository Pattern
+### Repository Pattern (Unified)
 
-- Abstract `SlideshowRepository` interface in Domain layer
-- Concrete `FileSystemPhotoRepository` in Infrastructure layer
-- Dependency injection through initializers
+- Abstract `UnifiedImageRepository` interface consolidating image, cache, and metadata operations
+- Concrete implementations:
+  - `UnifiedFileSystemImageRepository` for file system operations
+  - `UnifiedImageCacheRepository` for caching with multiple strategies
+- Legacy support through adapters:
+  - `FileSystemPhotoRepositoryAdapter` bridges old `SlideshowRepository` to new patterns
+- Dependency injection through initializers and factory patterns
 
 ### Observer Pattern
 
 - Settings managers use `@Published` properties for SwiftUI reactivity
 - NotificationCenter for cross-component communication
 - Virtual loader callbacks for UI integration
+- Unified event system for consistent event propagation
 
 ### Actor Pattern
 
-- `VirtualImageLoader` and `ImageCache` use Swift actors for thread-safe access
+- `VirtualImageLoader` and unified cache implementations use Swift actors for thread-safe access
+- `UnifiedImageLoader` coordinates multiple loading strategies concurrently
 - Concurrent image loading with Task groups and cancellation support
 
 ### Strategy Pattern
 
+- Cache strategies (NSCache, LRU, Hybrid) selected at runtime
+- Image loading strategies adaptively chosen based on context
 - Sorting algorithms implemented as enum cases with associated behavior
 - Performance presets as static configurations
 - Transition effects as pluggable implementations
+
+### Bridge/Adapter Pattern
+
+- `UnifiedImageCacheBridge` adapts new cache system to legacy `PhotoCache` protocol
+- `FileSystemPhotoRepositoryAdapter` bridges legacy repository to new interfaces
+- Enables gradual migration without breaking existing code
 
 ## Performance Considerations
 
@@ -340,6 +383,39 @@ keyboardHandler.onKeyboardInteraction = {
 ```
 
 ## Development Notes
+
+### Using Unified Components
+
+When working with the codebase, prefer unified components over legacy implementations:
+
+```swift
+// ❌ Avoid: Direct instantiation of legacy components
+let cache = ImageCache() // Removed in Phase 5.1
+
+// ✅ Prefer: Use factory methods for unified components
+let cache = UnifiedImageCacheBridgeFactory.createForSlideshow()
+```
+
+### Component Usage Examples
+
+```swift
+// Image Loading
+let loader = UnifiedImageLoader(settings: performanceSettings)
+let image = try await loader.loadImage(from: photo, context: loadingContext)
+
+// Caching
+let cache = UnifiedImageCacheBridge(configuration: .highPerformance)
+await cache.setCachedImage(image, for: imageURL)
+
+// Repository Access
+let repository = UnifiedFileSystemImageRepository(
+    fileAccess: secureFileAccess,
+    imageLoader: unifiedLoader,
+    cache: unifiedCache
+)
+```
+
+### General Notes
 
 - **Security**: App uses sandboxing with secure file access bookmarks
 - **Logging**: Comprehensive logging with both NSLog and os.log for debugging
