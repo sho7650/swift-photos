@@ -181,7 +181,7 @@ public struct RepositoryOptions: Sendable {
 }
 
 /// キャッシュポリシー
-public enum CachePolicy: Sendable {
+public enum CachePolicy: Sendable, Equatable {
     case never              // キャッシュを使用しない
     case always             // 常にキャッシュを使用
     case ifAvailable        // 利用可能ならキャッシュを使用
