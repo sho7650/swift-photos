@@ -11,7 +11,7 @@ import SwiftUI
 // MARK: - Tooltip Model
 
 /// Data model for tooltip content and configuration
-public struct TooltipModel {
+public struct TooltipModel: Sendable {
     public let text: String
     public let shortcut: String?
     public let style: TooltipStyle
@@ -47,7 +47,7 @@ public struct TooltipModel {
 
 // MARK: - Tooltip Styles
 
-public enum TooltipStyle {
+public enum TooltipStyle: Sendable {
     case standard
     case compact
     case prominent
@@ -127,7 +127,7 @@ public enum TooltipStyle {
 
 // MARK: - Tooltip Placement
 
-public enum TooltipPlacement {
+public enum TooltipPlacement: Sendable {
     case top, bottom, leading, trailing
     case topLeading, topTrailing
     case bottomLeading, bottomTrailing
