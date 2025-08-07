@@ -24,14 +24,15 @@ struct ModernSlideshowViewModelTests {
     }
     
     private func createTestPhotos(count: Int) -> [Photo] {
-        return (0..<count).map { index in
-            Photo(
-                id: UUID(),
-                imageURL: ImageURL(url: URL(fileURLWithPath: "/test/photo\(index).jpg")),
-                fileName: "photo\(index).jpg",
-                loadState: .notLoaded,
-                metadata: nil
-            )
+        return (0..<count).compactMap { index in
+            do {
+                return Photo(
+                    id: UUID(),
+                    imageURL: try ImageURL(URL(fileURLWithPath: "/test/photo\(index).jpg"))
+                )
+            } catch {
+                return nil
+            }
         }
     }
     
@@ -125,7 +126,7 @@ struct ModernSlideshowViewModelTests {
     
     @Test func testSelectFolderError() async {
         let (viewModel, _, fileAccess) = createTestViewModel()
-        let testError = SlideshowError.folderNotAccessible(URL(fileURLWithPath: "/test"))
+        let testError = SlideshowError.folderAccessDenied("Test folder not accessible")
         fileAccess.mockError = testError
         
         await viewModel.selectFolder()
@@ -330,7 +331,7 @@ struct ModernSlideshowViewModelTests {
     
     @Test func testClearError() async {
         let (viewModel, _, fileAccess) = createTestViewModel()
-        let testError = SlideshowError.folderNotAccessible(URL(fileURLWithPath: "/test"))
+        let testError = SlideshowError.folderAccessDenied("Test folder not accessible")
         fileAccess.mockError = testError
         
         await viewModel.selectFolder()
@@ -342,7 +343,7 @@ struct ModernSlideshowViewModelTests {
     
     @Test func testErrorPersistence() async {
         let (viewModel, _, fileAccess) = createTestViewModel()
-        let testError = SlideshowError.folderNotAccessible(URL(fileURLWithPath: "/test"))
+        let testError = SlideshowError.folderAccessDenied("Test folder not accessible")
         fileAccess.mockError = testError
         
         await viewModel.selectFolder()
@@ -603,25 +604,23 @@ class MockSlideshowRepository: SlideshowRepository {
         if let error = mockError {
             throw error
         }
-        return PhotoMetadata(
-            width: 1920,
-            height: 1080,
+        return Photo.PhotoMetadata(
             fileSize: 2_048_000,
+            dimensions: CGSize(width: 1920, height: 1080),
             creationDate: Date(),
-            modificationDate: Date(),
             colorSpace: "sRGB"
         )
     }
 }
 
 class MockPhotoCache: PhotoCache {
-    private var cache: [ImageURL: NSImage] = [:]
+    private var cache: [ImageURL: SendableImage] = [:]
     
-    func getCachedImage(for imageURL: ImageURL) async -> NSImage? {
+    func getCachedImage(for imageURL: ImageURL) async -> SendableImage? {
         return cache[imageURL]
     }
     
-    func setCachedImage(_ image: NSImage, for imageURL: ImageURL) async {
+    func setCachedImage(_ image: SendableImage, for imageURL: ImageURL) async {
         cache[imageURL] = image
     }
     
@@ -644,7 +643,7 @@ class MockSecureFileAccess: SecureFileAccess {
     var mockError: Error?
     var mockDelay: TimeInterval = 0
     
-    init() {
+    override init() {
         // Initialize with empty implementation
     }
     

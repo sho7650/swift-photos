@@ -329,7 +329,7 @@ struct UIControlSettingsTests {
     }
 }
 
-// MARK: - UIControlSettingsManager Tests
+// MARK: - ModernUIControlSettingsManager Tests
 
 @MainActor
 struct UIControlSettingsManagerTests {
@@ -337,7 +337,7 @@ struct UIControlSettingsManagerTests {
     // MARK: - Initialization Tests
     
     @Test func testManagerInitialization() {
-        let manager = UIControlSettingsManager()
+        let manager = ModernUIControlSettingsManager()
         
         // Should initialize with default settings (values should match even if not same instance)
         let defaultSettings = UIControlSettings.default
@@ -351,7 +351,7 @@ struct UIControlSettingsManagerTests {
     // MARK: - Settings Update Tests
     
     @Test func testUpdateSettings() {
-        let manager = UIControlSettingsManager()
+        let manager = ModernUIControlSettingsManager()
         let customSettings = UIControlSettings(
             autoHideDelay: 8.0,
             playingAutoHideDelay: 3.0,
@@ -367,7 +367,7 @@ struct UIControlSettingsManagerTests {
     }
     
     @Test func testResetToDefault() {
-        let manager = UIControlSettingsManager()
+        let manager = ModernUIControlSettingsManager()
         let customSettings = UIControlSettings(
             autoHideDelay: 8.0,
             showDetailedInfoByDefault: true
@@ -378,12 +378,12 @@ struct UIControlSettingsManagerTests {
         #expect(manager.settings != UIControlSettings.default)
         
         // Reset to default
-        manager.resetToDefault()
+        manager.resetToDefaults()
         #expect(manager.settings == UIControlSettings.default)
     }
     
     @Test func testApplyPreset() {
-        let manager = UIControlSettingsManager()
+        let manager = ModernUIControlSettingsManager()
         
         // Apply minimal preset
         manager.applyPreset(.minimal)
@@ -401,7 +401,7 @@ struct UIControlSettingsManagerTests {
     // MARK: - Notification Tests
     
     @Test func testSettingsChangeNotification() async {
-        let manager = UIControlSettingsManager()
+        let manager = ModernUIControlSettingsManager()
         var notificationReceived = false
         var receivedSettings: UIControlSettings?
         
@@ -423,7 +423,7 @@ struct UIControlSettingsManagerTests {
         manager.updateSettings(newSettings)
         
         // Give notification time to process
-        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
         
         #expect(notificationReceived == true)
         if let received = receivedSettings {

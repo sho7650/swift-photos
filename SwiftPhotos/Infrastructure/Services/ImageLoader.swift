@@ -12,7 +12,7 @@ public actor ImageLoader {
         self.maxImageSize = maxImageSize
     }
     
-    public func loadImage(from imageURL: ImageURL) async throws -> NSImage {
+    public func loadImage(from imageURL: ImageURL) async throws -> SendableImage {
         let key = imageURL.url.absoluteString
         
         guard !activeOperations.contains(key) else {
@@ -34,7 +34,7 @@ public actor ImageLoader {
         
         do {
             let image = try await loadAndOptimizeImage(from: imageURL.url)
-            return image
+            return SendableImage(image)
         } catch {
             throw SlideshowError.loadingFailed(underlying: error)
         }

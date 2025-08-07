@@ -9,11 +9,11 @@ import Observation
 public final class AppSettingsCoordinator {
     
     // MARK: - Settings Managers
-    public let performance: PerformanceSettingsManager
-    public let slideshow: SlideshowSettingsManager
-    public let sort: SortSettingsManager
-    public let transition: TransitionSettingsManager
-    public let uiControl: UIControlSettingsManager
+    public let performance: ModernPerformanceSettingsManager
+    public let slideshow: ModernSlideshowSettingsManager
+    public let sort: ModernSortSettingsManager
+    public let transition: ModernTransitionSettingsManager
+    public let uiControl: ModernUIControlSettingsManager
     
     // MARK: - Coordination Properties
     public var isResettingAll = false
@@ -23,11 +23,11 @@ public final class AppSettingsCoordinator {
     // MARK: - Initialization
     
     public init() {
-        self.performance = PerformanceSettingsManager()
-        self.slideshow = SlideshowSettingsManager()
-        self.sort = SortSettingsManager()
-        self.transition = TransitionSettingsManager()
-        self.uiControl = UIControlSettingsManager()
+        self.performance = ModernPerformanceSettingsManager()
+        self.slideshow = ModernSlideshowSettingsManager()
+        self.sort = ModernSortSettingsManager()
+        self.transition = ModernTransitionSettingsManager()
+        self.uiControl = ModernUIControlSettingsManager()
         
         ProductionLogger.lifecycle("AppSettingsCoordinator initialized with all settings managers")
         
@@ -42,11 +42,11 @@ public final class AppSettingsCoordinator {
         ProductionLogger.userAction("Resetting all settings to defaults")
         isResettingAll = true
         
-        performance.resetToDefault()
-        slideshow.resetToDefault()
-        sort.resetToDefault()
-        transition.resetToDefault()
-        uiControl.resetToDefault()
+        performance.resetToDefaults()
+        slideshow.resetToDefaults()
+        sort.resetToDefaults()
+        transition.resetToDefaults()
+        uiControl.resetToDefaults()
         
         isResettingAll = false
         ProductionLogger.lifecycle("All settings reset to defaults completed")

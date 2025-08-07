@@ -28,14 +28,15 @@ struct ModernSlideshowViewModelPerformanceTests {
         let fileAccess = MockPerformanceFileAccess()
         
         // Create test photos
-        let photos = (0..<photoCount).map { index in
-            Photo(
-                id: UUID(),
-                imageURL: ImageURL(url: URL(fileURLWithPath: "/test/perf_photo\(index).jpg")),
-                fileName: "perf_photo\(index).jpg",
-                loadState: .notLoaded,
-                metadata: createMockPhotoMetadata()
-            )
+        let photos = (0..<photoCount).compactMap { index in
+            do {
+                return Photo(
+                    id: UUID(),
+                    imageURL: try ImageURL(URL(fileURLWithPath: "/test/perf_photo\(index).jpg"))
+                )
+            } catch {
+                return nil
+            }
         }
         
         let testSlideshow = Slideshow(photos: photos, interval: .default, mode: .sequential)
@@ -53,13 +54,11 @@ struct ModernSlideshowViewModelPerformanceTests {
         return (viewModel, domainService)
     }
     
-    private func createMockPhotoMetadata() -> PhotoMetadata {
-        return PhotoMetadata(
-            width: 1920,
-            height: 1080,
+    private func createMockPhotoMetadata() -> Photo.PhotoMetadata {
+        return Photo.PhotoMetadata(
             fileSize: 2_048_000, // 2MB
+            dimensions: CGSize(width: 1920, height: 1080),
             creationDate: Date(),
-            modificationDate: Date(),
             colorSpace: "sRGB"
         )
     }
@@ -402,28 +401,26 @@ class MockPerformanceRepository: SlideshowRepository {
     }
     
     func loadMetadata(for photo: Photo) async throws -> Photo.PhotoMetadata? {
-        return PhotoMetadata(
-            width: 1920,
-            height: 1080,
+        return Photo.PhotoMetadata(
             fileSize: 2_048_000,
+            dimensions: CGSize(width: 1920, height: 1080),
             creationDate: Date(),
-            modificationDate: Date(),
             colorSpace: "sRGB"
         )
     }
 }
 
 class MockPerformanceCache: PhotoCache {
-    private var cache: [ImageURL: NSImage] = [:]
+    private var cache: [ImageURL: SendableImage] = [:]
     private let maxSize = 1000 // Simulate cache size limit
     
-    func getCachedImage(for imageURL: ImageURL) async -> NSImage? {
+    func getCachedImage(for imageURL: ImageURL) async -> SendableImage? {
         // Simulate cache lookup time
         try? await Task.sleep(nanoseconds: 1_000_000) // 0.001 seconds
         return cache[imageURL]
     }
     
-    func setCachedImage(_ image: NSImage, for imageURL: ImageURL) async {
+    func setCachedImage(_ image: SendableImage, for imageURL: ImageURL) async {
         // Simulate cache size management
         if cache.count >= maxSize {
             let keyToRemove = cache.keys.first!
@@ -449,7 +446,7 @@ class MockPerformanceCache: PhotoCache {
 class MockPerformanceFileAccess: SecureFileAccess {
     var mockFolderURL: URL?
     
-    init() {
+    override init() {
         // Initialize with empty implementation
     }
     

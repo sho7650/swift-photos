@@ -18,6 +18,14 @@ public class SecureFileAccess {
         openPanel.title = "Select Image Folder"
         openPanel.message = "Choose a folder containing images for the slideshow"
         
+        // Ensure we're on the main thread for proper dialog presentation
+        guard Thread.isMainThread else {
+            ProductionLogger.warning("selectFolder() called off main thread, dispatching to main")
+            return try DispatchQueue.main.sync {
+                return try selectFolder()
+            }
+        }
+        
         ProductionLogger.debug("Running modal dialog...")
         let result = openPanel.runModal()
         ProductionLogger.debug("Dialog result: \(result.rawValue)")

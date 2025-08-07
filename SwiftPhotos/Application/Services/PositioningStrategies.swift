@@ -442,6 +442,138 @@ public class AdaptivePositioningStrategy: PositioningStrategy {
     }
 }
 
+/// Smart positioning strategy with automatic collision avoidance and intelligent placement
+public class SmartPositioningStrategy: PositioningStrategy {
+    
+    public init() {}
+    
+    public func position(for overlay: OverlayType, in bounds: CGRect, avoiding obstacles: [CGRect]) -> CGPoint {
+        // Get the default position for this overlay type
+        let defaultPosition = getDefaultPosition(for: overlay, in: bounds)
+        
+        // If there are no obstacles, use the default position
+        if obstacles.isEmpty {
+            return defaultPosition
+        }
+        
+        // Check if default position conflicts with obstacles
+        let overlaySize = overlay.defaultSize
+        let proposedFrame = CGRect(
+            x: defaultPosition.x - overlaySize.width / 2,
+            y: defaultPosition.y - overlaySize.height / 2,
+            width: overlaySize.width,
+            height: overlaySize.height
+        )
+        
+        // If no conflicts, use default position
+        if !obstacles.contains(where: { $0.intersects(proposedFrame) }) {
+            return defaultPosition
+        }
+        
+        // Find alternative position
+        return findAlternativePosition(for: overlay, in: bounds, avoiding: obstacles)
+    }
+    
+    public func validatePosition(_ position: CGPoint, for overlay: OverlayType, constraints: PositionConstraints) -> Bool {
+        let size = overlay.defaultSize
+        let overlayFrame = CGRect(
+            x: position.x - size.width / 2,
+            y: position.y - size.height / 2,
+            width: size.width,
+            height: size.height
+        )
+        
+        return constraints.bounds.contains(overlayFrame)
+    }
+    
+    public func getPreferredZones(for overlay: OverlayType, in bounds: CGRect) -> [CGRect] {
+        let positions = getPotentialPositions(for: overlay, in: bounds)
+        let size = overlay.defaultSize
+        
+        return positions.map { position in
+            CGRect(
+                x: position.x - size.width / 2,
+                y: position.y - size.height / 2,
+                width: size.width,
+                height: size.height
+            )
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    private func getDefaultPosition(for overlay: OverlayType, in bounds: CGRect) -> CGPoint {
+        switch overlay {
+        case .controls:
+            return CGPoint(x: bounds.midX, y: bounds.maxY - 100)
+        case .information:
+            return CGPoint(x: bounds.midX, y: bounds.maxY - 200)
+        case .progress:
+            return CGPoint(x: bounds.midX, y: bounds.minY + 50)
+        case .menu:
+            return CGPoint(x: bounds.maxX - 100, y: bounds.minY + 100)
+        case .tooltip:
+            return CGPoint(x: bounds.midX, y: bounds.midY)
+        case .notification:
+            return CGPoint(x: bounds.maxX - 200, y: bounds.minY + 100)
+        }
+    }
+    
+    private func findAlternativePosition(for overlay: OverlayType, in bounds: CGRect, avoiding obstacles: [CGRect]) -> CGPoint {
+        let potentialPositions = getPotentialPositions(for: overlay, in: bounds)
+        let overlaySize = overlay.defaultSize
+        
+        // Find the first position that doesn't conflict
+        for position in potentialPositions {
+            let testFrame = CGRect(
+                x: position.x - overlaySize.width / 2,
+                y: position.y - overlaySize.height / 2,
+                width: overlaySize.width,
+                height: overlaySize.height
+            )
+            
+            if !obstacles.contains(where: { $0.intersects(testFrame) }) {
+                return position
+            }
+        }
+        
+        // If no conflict-free position found, return default
+        return getDefaultPosition(for: overlay, in: bounds)
+    }
+    
+    private func getPotentialPositions(for overlay: OverlayType, in bounds: CGRect) -> [CGPoint] {
+        let margin: CGFloat = 50
+        let step: CGFloat = 100
+        
+        var positions: [CGPoint] = []
+        
+        // Generate a grid of potential positions
+        var x = bounds.minX + margin
+        while x <= bounds.maxX - margin {
+            var y = bounds.minY + margin
+            while y <= bounds.maxY - margin {
+                positions.append(CGPoint(x: x, y: y))
+                y += step
+            }
+            x += step
+        }
+        
+        // Sort by distance from default position
+        let defaultPosition = getDefaultPosition(for: overlay, in: bounds)
+        return positions.sorted { pos1, pos2 in
+            let dist1 = distance(from: pos1, to: defaultPosition)
+            let dist2 = distance(from: pos2, to: defaultPosition)
+            return dist1 < dist2
+        }
+    }
+    
+    private func distance(from point1: CGPoint, to point2: CGPoint) -> CGFloat {
+        let dx = point1.x - point2.x
+        let dy = point1.y - point2.y
+        return sqrt(dx * dx + dy * dy)
+    }
+}
+
 // MARK: - Strategy Factory
 
 /// Factory for creating positioning strategies with common configurations

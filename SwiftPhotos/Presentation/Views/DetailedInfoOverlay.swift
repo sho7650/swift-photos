@@ -1,23 +1,30 @@
 import SwiftUI
 import AppKit
+import Combine
 
 /// Expandable detailed information overlay with photo metadata and enhanced controls
 public struct DetailedInfoOverlay: View {
-    var viewModel: ModernSlideshowViewModel
-    @ObservedObject var uiControlStateManager: UIControlStateManager
+    var viewModel: any SlideshowViewModelProtocol
+    @ObservedObject var uiInteractionManager: UIInteractionManager
     var uiControlSettings: ModernUIControlSettingsManager
+    var localizationService: LocalizationService?
+    
+    // Add state to force UI updates when language changes
+    @State private var languageUpdateTrigger = 0
     
     @State private var isExpanded = false
     @State private var showMetadata = false
     
     public init(
-        viewModel: ModernSlideshowViewModel,
-        uiControlStateManager: UIControlStateManager,
-        uiControlSettings: ModernUIControlSettingsManager
+        viewModel: any SlideshowViewModelProtocol,
+        uiInteractionManager: UIInteractionManager,
+        uiControlSettings: ModernUIControlSettingsManager,
+        localizationService: LocalizationService?
     ) {
         self.viewModel = viewModel
-        self.uiControlStateManager = uiControlStateManager
+        self.uiInteractionManager = uiInteractionManager
         self.uiControlSettings = uiControlSettings
+        self.localizationService = localizationService
     }
     
     public var body: some View {
@@ -26,12 +33,21 @@ public struct DetailedInfoOverlay: View {
             
             if let slideshow = viewModel.slideshow,
                !slideshow.isEmpty,
-               uiControlStateManager.isDetailedInfoVisible {
+               uiInteractionManager.isDetailedInfoVisible {
                 detailedInfoPanel(slideshow: slideshow)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiControlStateManager.isDetailedInfoVisible)
+        .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiInteractionManager.isDetailedInfoVisible)
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("DetailedInfoOverlay: Received language change notification, trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLanguage) { oldValue, newValue in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("DetailedInfoOverlay: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        // .id(languageUpdateTrigger) // Temporarily disabled to debug photo counter issue
     }
     
     private func detailedInfoPanel(slideshow: Slideshow) -> some View {
@@ -58,7 +74,7 @@ public struct DetailedInfoOverlay: View {
         .padding(.horizontal, 20)
         .padding(.bottom, uiControlSettings.settings.bottomOffset)
         .onTapGesture {
-            uiControlStateManager.handleGestureInteraction()
+            uiInteractionManager.handleUserInteraction()
         }
         .animation(.easeInOut(duration: 0.3), value: isExpanded)
     }
@@ -77,8 +93,8 @@ public struct DetailedInfoOverlay: View {
                 
                 Spacer()
                 
-                // Photo counter
-                Text("\(slideshow.currentIndex + 1) of \(slideshow.count)")
+                // Photo counter  
+                Text(String(format: "%lld of %lld", slideshow.currentIndex + 1, slideshow.count))
                     .font(.headline)
                     .foregroundColor(.primary)
                 
@@ -86,7 +102,7 @@ public struct DetailedInfoOverlay: View {
                 
                 // Close button
                 Button(action: {
-                    uiControlStateManager.toggleDetailedInfo()
+                    uiInteractionManager.toggleDetailedInfo()
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
@@ -107,14 +123,19 @@ public struct DetailedInfoOverlay: View {
             }
             
             // Full-width progress bar
-            DetailedProgressBar(
+            UnifiedProgressBar(
                 progress: slideshow.progress,
                 currentIndex: slideshow.currentIndex,
-                totalCount: slideshow.count
+                totalCount: slideshow.count,
+                style: .detailed
             ) { targetIndex in
                 ProductionLogger.userAction("DetailedInfoOverlay: Progress bar clicked - jumping to photo \(targetIndex)")
-                uiControlStateManager.handleGestureInteraction()
-                viewModel.goToPhoto(at: targetIndex)
+                uiInteractionManager.handleUserInteraction()
+                // Navigate to target photo using standard protocol methods
+                Task {
+                    // Jump directly to target photo using the new direct navigation method
+                    await viewModel.jumpToPhoto(at: targetIndex)
+                }
             }
             .frame(height: 8)
         }
@@ -169,7 +190,8 @@ public struct DetailedInfoOverlay: View {
                     }
                     
                     if let creationDate = metadata.creationDate {
-                        metadataRow("Created", DateFormatter.shortDateTime.string(from: creationDate))
+                        let formattedDate = formatDate(creationDate)
+                        metadataRow("Created", formattedDate)
                     }
                 }
                 .font(.caption)
@@ -202,8 +224,10 @@ public struct DetailedInfoOverlay: View {
                     systemName: "backward.fill",
                     label: "Previous",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
-                        viewModel.previousPhoto()
+                        uiInteractionManager.handleUserInteraction()
+                        Task {
+                            await viewModel.previousPhoto()
+                        }
                     }
                 )
                 
@@ -212,7 +236,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: slideshow.isPlaying ? "pause.fill" : "play.fill",
                     label: slideshow.isPlaying ? "Pause" : "Play",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         if slideshow.isPlaying {
                             viewModel.pause()
                         } else {
@@ -226,8 +250,10 @@ public struct DetailedInfoOverlay: View {
                     systemName: "forward.fill",
                     label: "Next",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
-                        viewModel.nextPhoto()
+                        uiInteractionManager.handleUserInteraction()
+                        Task {
+                            await viewModel.nextPhoto()
+                        }
                     }
                 )
             }
@@ -247,8 +273,8 @@ public struct DetailedInfoOverlay: View {
                     systemName: "folder",
                     label: "Folder",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
-                        // TODO: Implement reveal in finder
+                        uiInteractionManager.handleUserInteraction()
+                        revealCurrentPhotoInFinder()
                         ProductionLogger.userAction("Reveal in Finder action")
                     }
                 )
@@ -258,7 +284,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: "gear",
                     label: "Settings",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         // TODO: Open settings window
                         ProductionLogger.userAction("Open settings action")
                     }
@@ -269,7 +295,7 @@ public struct DetailedInfoOverlay: View {
                     systemName: showMetadata ? "info.circle.fill" : "info.circle",
                     label: "Info",
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         showMetadata.toggle()
                     }
                 )
@@ -279,10 +305,32 @@ public struct DetailedInfoOverlay: View {
     }
     
     private func toggleExpanded() {
-        uiControlStateManager.handleGestureInteraction()
+        uiInteractionManager.handleUserInteraction()
         withAnimation(.easeInOut(duration: 0.3)) {
             isExpanded.toggle()
         }
+    }
+    
+    /// Reveal the current photo in Finder
+    private func revealCurrentPhotoInFinder() {
+        guard let slideshow = viewModel.slideshow,
+              !slideshow.isEmpty,
+              let currentPhoto = slideshow.currentPhoto else {
+            ProductionLogger.warning("DetailedInfoOverlay: No current photo to reveal in Finder")
+            return
+        }
+        
+        let fileURL = currentPhoto.imageURL.url
+        
+        // Verify the file exists before trying to reveal it
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            ProductionLogger.error("DetailedInfoOverlay: Photo file does not exist at path: \(fileURL.path)")
+            return
+        }
+        
+        // Use NSWorkspace to reveal the file in Finder
+        NSWorkspace.shared.activateFileViewerSelecting([fileURL])
+        ProductionLogger.info("DetailedInfoOverlay: Revealed photo '\(currentPhoto.fileName)' in Finder")
     }
 }
 
@@ -317,78 +365,7 @@ private struct DetailedControlButton: View {
     }
 }
 
-/// Enhanced progress bar for detailed view
-private struct DetailedProgressBar: View {
-    let progress: Double
-    let currentIndex: Int
-    let totalCount: Int
-    let onJumpToIndex: (Int) -> Void
-    
-    @State private var isHovering = false
-    @State private var hoveredIndex: Int?
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                // Background track
-                Rectangle()
-                    .fill(Color.secondary.opacity(0.3))
-                    .frame(height: 8)
-                    .cornerRadius(4)
-                
-                // Progress fill
-                Rectangle()
-                    .fill(Color.accentColor)
-                    .frame(width: geometry.size.width * progress, height: 8)
-                    .cornerRadius(4)
-                    .animation(.easeInOut(duration: 0.2), value: progress)
-                
-                // Hover preview
-                if isHovering, let hoveredIndex = hoveredIndex {
-                    let hoveredProgress = Double(hoveredIndex) / Double(max(1, totalCount - 1))
-                    Rectangle()
-                        .fill(Color.white.opacity(0.4))
-                        .frame(width: 2, height: 12)
-                        .position(x: geometry.size.width * hoveredProgress, y: 6)
-                        .transition(.opacity)
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture { location in
-                handleTap(at: location, in: geometry)
-            }
-            .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isHovering = hovering
-                }
-            }
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        updateHoveredIndex(at: value.location, in: geometry)
-                    }
-            )
-        }
-    }
-    
-    private func handleTap(at location: CGPoint, in geometry: GeometryProxy) {
-        let relativeX = location.x / geometry.size.width
-        let clampedProgress = max(0, min(1, relativeX))
-        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
-        let validIndex = max(0, min(totalCount - 1, targetIndex))
-        
-        if validIndex != currentIndex {
-            onJumpToIndex(validIndex)
-        }
-    }
-    
-    private func updateHoveredIndex(at location: CGPoint, in geometry: GeometryProxy) {
-        let relativeX = location.x / geometry.size.width
-        let clampedProgress = max(0, min(1, relativeX))
-        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
-        hoveredIndex = max(0, min(totalCount - 1, targetIndex))
-    }
-}
+// Note: DetailedProgressBar has been replaced by UnifiedProgressBar with .detailed style
 
 /// Enhanced blurred background for detailed info
 private struct BlurredDetailedBackground: View {
@@ -409,13 +386,68 @@ private struct BlurredDetailedBackground: View {
     }
 }
 
-// MARK: - Extensions
+// MARK: - Helper Methods
 
-private extension DateFormatter {
-    static let shortDateTime: DateFormatter = {
+extension DetailedInfoOverlay {
+    /// Format date using current localization settings
+    private func formatDate(_ date: Date) -> String {
+        // First try to get formatted date from localization service
+        if let service = localizationService {
+            let formatter = DateFormatter()
+            formatter.locale = service.currentLocale
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            return formatter.string(from: date)
+        }
+        
+        // Fallback to system locale
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        return formatter
-    }()
+        return formatter.string(from: date)
+    }
+    
+    /// Format file size with locale-aware number formatting
+    private func formatFileSize(_ bytes: Int64) -> String {
+        let units = ["B", "KB", "MB", "GB", "TB"]
+        var size = Double(bytes)
+        var unitIndex = 0
+        
+        while size >= 1024 && unitIndex < units.count - 1 {
+            size /= 1024
+            unitIndex += 1
+        }
+        
+        // Use localization service for number formatting if available
+        if let service = localizationService {
+            let formatter = NumberFormatter()
+            formatter.locale = service.currentLocale
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = unitIndex == 0 ? 0 : 1
+            
+            if let formattedSize = formatter.string(from: NSNumber(value: size)) {
+                return "\(formattedSize) \(units[unitIndex])"
+            }
+        }
+        
+        // Fallback formatting
+        return String(format: "%.1f %@", size, units[unitIndex])
+    }
+    
+    /// Format dimensions with locale-aware number formatting
+    private func formatDimensions(width: Int, height: Int) -> String {
+        if let service = localizationService {
+            let formatter = NumberFormatter()
+            formatter.locale = service.currentLocale
+            formatter.numberStyle = .decimal
+            
+            if let widthStr = formatter.string(from: NSNumber(value: width)),
+               let heightStr = formatter.string(from: NSNumber(value: height)) {
+                return "\(widthStr) × \(heightStr)"
+            }
+        }
+        
+        // Fallback formatting
+        return "\(width) × \(height)"
+    }
 }

@@ -1,22 +1,27 @@
 import SwiftUI
 import AppKit
+import Combine
 
 /// Minimal, compact controls overlay positioned at bottom-center with blur background
 public struct MinimalControlsView: View {
-    var viewModel: ModernSlideshowViewModel
-    @ObservedObject var uiControlStateManager: UIControlStateManager
+    var viewModel: any SlideshowViewModelProtocol
+    @ObservedObject var uiInteractionManager: UIInteractionManager
     var uiControlSettings: ModernUIControlSettingsManager
+    var localizationService: LocalizationService?
     
     @State private var isHovering = false
+    @State private var languageUpdateTrigger = 0
     
     public init(
-        viewModel: ModernSlideshowViewModel,
-        uiControlStateManager: UIControlStateManager,
-        uiControlSettings: ModernUIControlSettingsManager
+        viewModel: any SlideshowViewModelProtocol,
+        uiInteractionManager: UIInteractionManager,
+        uiControlSettings: ModernUIControlSettingsManager,
+        localizationService: LocalizationService?
     ) {
         self.viewModel = viewModel
-        self.uiControlStateManager = uiControlStateManager
+        self.uiInteractionManager = uiInteractionManager
         self.uiControlSettings = uiControlSettings
+        self.localizationService = localizationService
     }
     
     public var body: some View {
@@ -24,26 +29,41 @@ public struct MinimalControlsView: View {
             Spacer()
             
             if let slideshow = viewModel.slideshow, !slideshow.isEmpty {
-                if uiControlStateManager.isControlsVisible {
+                if uiInteractionManager.isControlsVisible {
                     controlsOverlay(slideshow: slideshow)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             } else {
                 // Welcome state - folder selection
-                if uiControlStateManager.isControlsVisible {
+                if uiInteractionManager.isControlsVisible {
                     welcomeControls
                         .transition(.opacity)
                 }
             }
         }
-        .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiControlStateManager.isControlsVisible)
+        .animation(.easeInOut(duration: uiControlSettings.settings.fadeAnimationDuration), value: uiInteractionManager.isControlsVisible)
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("MinimalControlsView: Received language change notification, trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLanguage) { oldValue, newValue in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("MinimalControlsView: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: viewModel.slideshow) { oldValue, newValue in
+            ProductionLogger.debug("MinimalControlsView: Slideshow changed - old: \(oldValue?.count ?? -1) photos, new: \(newValue?.count ?? -1) photos")
+            if let newSlideshow = newValue {
+                ProductionLogger.debug("MinimalControlsView: New slideshow - currentIndex: \(newSlideshow.currentIndex), count: \(newSlideshow.count), isEmpty: \(newSlideshow.isEmpty)")
+            }
+        }
+        .id(languageUpdateTrigger) // Force view refresh when language changes
     }
     
     private var welcomeControls: some View {
         VStack(spacing: 16) {
             Button("Select Folder") {
                 ProductionLogger.userAction("MinimalControlsView: Select Folder button pressed")
-                uiControlStateManager.handleGestureInteraction()
+                uiInteractionManager.handleUserInteraction()
                 Task {
                     await viewModel.selectFolder()
                 }
@@ -80,14 +100,14 @@ public struct MinimalControlsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.bottom, uiControlSettings.settings.bottomOffset)
         .onTapGesture {
-            uiControlStateManager.handleGestureInteraction()
+            uiInteractionManager.handleUserInteraction()
         }
     }
     
     private func controlsOverlay(slideshow: Slideshow) -> some View {
         VStack(spacing: 8) {
             // Compact progress indicator
-            if isHovering || uiControlStateManager.isDetailedInfoVisible {
+            if isHovering || uiInteractionManager.isDetailedInfoVisible {
                 compactProgressBar(slideshow: slideshow)
                     .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
@@ -99,8 +119,10 @@ public struct MinimalControlsView: View {
                     systemName: "chevron.left.circle.fill",
                     size: .medium,
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
-                        viewModel.previousPhoto()
+                        uiInteractionManager.handleUserInteraction()
+                        Task {
+                            await viewModel.previousPhoto()
+                        }
                     }
                 )
                 .shortcutTooltip("Previous", shortcut: "←")
@@ -110,7 +132,7 @@ public struct MinimalControlsView: View {
                     systemName: slideshow.isPlaying ? "pause.circle.fill" : "play.circle.fill",
                     size: .large,
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
+                        uiInteractionManager.handleUserInteraction()
                         if slideshow.isPlaying {
                             viewModel.pause()
                         } else {
@@ -125,15 +147,17 @@ public struct MinimalControlsView: View {
                     systemName: "chevron.right.circle.fill",
                     size: .medium,
                     action: {
-                        uiControlStateManager.handleGestureInteraction()
-                        viewModel.nextPhoto()
+                        uiInteractionManager.handleUserInteraction()
+                        Task {
+                            await viewModel.nextPhoto()
+                        }
                     }
                 )
                 .shortcutTooltip("Next", shortcut: "→")
             }
             
             // Photo counter (minimal)
-            if isHovering || uiControlStateManager.isDetailedInfoVisible {
+            if isHovering || uiInteractionManager.isDetailedInfoVisible {
                 Text("\(slideshow.currentIndex + 1) / \(slideshow.count)")
                     .font(.caption2)
                     .foregroundColor(.secondary)
@@ -155,28 +179,33 @@ public struct MinimalControlsView: View {
                 isHovering = hovering
             }
             if hovering {
-                uiControlStateManager.handleMouseInteraction(at: .zero)
+                uiInteractionManager.handleMouseInteraction(at: .zero)
             }
         }
         .onTapGesture {
-            uiControlStateManager.toggleDetailedInfo()
+            uiInteractionManager.toggleDetailedInfo()
         }
-        .shortcutTooltip("Tap for more info", shortcut: "I")
+        .shortcutTooltip("Tap for info", shortcut: "I")
         .animation(.easeInOut(duration: 0.2), value: isHovering)
-        .animation(.easeInOut(duration: 0.2), value: uiControlStateManager.isDetailedInfoVisible)
+        .animation(.easeInOut(duration: 0.2), value: uiInteractionManager.isDetailedInfoVisible)
     }
     
     private func compactProgressBar(slideshow: Slideshow) -> some View {
         VStack(spacing: 4) {
             // Compact interactive progress bar
-            CompactProgressBar(
+            UnifiedProgressBar(
                 progress: slideshow.progress,
                 currentIndex: slideshow.currentIndex,
-                totalCount: slideshow.count
+                totalCount: slideshow.count,
+                style: .compact
             ) { targetIndex in
-                ProductionLogger.userAction("MinimalControlsView: Progress bar clicked - fast jumping to photo \(targetIndex)")
-                uiControlStateManager.handleGestureInteraction()
-                viewModel.fastGoToPhoto(at: targetIndex)
+                ProductionLogger.userAction("MinimalControlsView: Progress bar clicked - jumping to photo \(targetIndex)")
+                uiInteractionManager.handleUserInteraction()
+                // Use standard navigation method available in protocol
+                Task {
+                    // Jump directly to target photo using the new direct navigation method
+                    await viewModel.jumpToPhoto(at: targetIndex)
+                }
             }
             .frame(height: 4)
         }
@@ -221,63 +250,7 @@ private struct ControlButton: View {
     }
 }
 
-/// Compact progress bar for minimal controls
-private struct CompactProgressBar: View {
-    let progress: Double
-    let currentIndex: Int
-    let totalCount: Int
-    let onJumpToIndex: (Int) -> Void
-    
-    @State private var isHovering = false
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                // Background track
-                Rectangle()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(height: 4)
-                    .cornerRadius(2)
-                
-                // Progress fill
-                Rectangle()
-                    .fill(Color.white.opacity(0.8))
-                    .frame(width: geometry.size.width * progress, height: 4)
-                    .cornerRadius(2)
-                    .animation(.easeInOut(duration: 0.2), value: progress)
-                
-                // Hover indicator
-                if isHovering {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.2))
-                        .frame(height: 4)
-                        .cornerRadius(2)
-                        .transition(.opacity)
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture { location in
-                handleTap(at: location, in: geometry)
-            }
-            .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isHovering = hovering
-                }
-            }
-        }
-    }
-    
-    private func handleTap(at location: CGPoint, in geometry: GeometryProxy) {
-        let relativeX = location.x / geometry.size.width
-        let clampedProgress = max(0, min(1, relativeX))
-        let targetIndex = Int(clampedProgress * Double(totalCount - 1))
-        let validIndex = max(0, min(totalCount - 1, targetIndex))
-        
-        if validIndex != currentIndex {
-            onJumpToIndex(validIndex)
-        }
-    }
-}
+// Note: CompactProgressBar has been replaced by UnifiedProgressBar with .compact style
 
 /// Blurred background component with configurable intensity and opacity
 private struct BlurredBackground: View {

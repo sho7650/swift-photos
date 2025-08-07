@@ -9,6 +9,7 @@ public struct SidebarSettingsWindow: View {
     var sortSettings: ModernSortSettingsManager
     var transitionSettings: ModernTransitionSettingsManager
     var uiControlSettings: ModernUIControlSettingsManager
+    var localizationSettings: ModernLocalizationSettingsManager
     @EnvironmentObject var recentFilesManager: RecentFilesManager
     
     @StateObject private var settingsCategoryService = SettingsCategoryService()
@@ -16,6 +17,7 @@ public struct SidebarSettingsWindow: View {
     @State private var searchText = ""
     @State private var showingResetConfirmation = false
     @State private var selectedCategory: SettingsCategory?
+    @State private var languageUpdateTrigger = 0
     
     private let sidebarWidth: CGFloat = 240
     private let minimumWindowWidth: CGFloat = 720
@@ -26,13 +28,15 @@ public struct SidebarSettingsWindow: View {
         slideshowSettings: ModernSlideshowSettingsManager,
         sortSettings: ModernSortSettingsManager,
         transitionSettings: ModernTransitionSettingsManager,
-        uiControlSettings: ModernUIControlSettingsManager
+        uiControlSettings: ModernUIControlSettingsManager,
+        localizationSettings: ModernLocalizationSettingsManager
     ) {
         self.performanceSettings = performanceSettings
         self.slideshowSettings = slideshowSettings
         self.sortSettings = sortSettings
         self.transitionSettings = transitionSettings
         self.uiControlSettings = uiControlSettings
+        self.localizationSettings = localizationSettings
     }
     
     public var body: some View {
@@ -50,13 +54,28 @@ public struct SidebarSettingsWindow: View {
         .onAppear {
             setupInitialSelection()
         }
-        .alert("Reset All Settings", isPresented: $showingResetConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Reset", role: .destructive) {
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("SidebarSettingsWindow: Received language change notification, trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationSettings.localizationService.currentLanguage) { oldValue, newValue in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("SidebarSettingsWindow: Language changed from \(oldValue.rawValue) to \(newValue.rawValue), trigger: \(languageUpdateTrigger)")
+        }
+        .environment(\.locale, localizationSettings.environmentLocale) // Swift 6 native pattern
+        .alert(Text(L10n.Alert.resetAllSettingsTitle), isPresented: $showingResetConfirmation) {
+            Button(role: .cancel) {
+                // Cancel action
+            } label: {
+                Text(L10n.Action.cancel)
+            }
+            Button(role: .destructive) {
                 resetAllSettings()
+            } label: {
+                Text(L10n.Action.reset)
             }
         } message: {
-            Text("This will reset all settings to their default values. This action cannot be undone.")
+            Text(L10n.Alert.resetAllSettingsMessage)
         }
     }
     
@@ -101,13 +120,15 @@ public struct SidebarSettingsWindow: View {
                 .foregroundColor(.secondary)
                 .font(.system(size: 14))
             
-            TextField("Search settings...", text: $searchText)
+            TextField(text: $searchText) {
+                Text(L10n.UI.searchPlaceholder)
+            }
                 .textFieldStyle(.plain)
                 .font(.system(size: 13))
                 .onSubmit {
                     updateNavigationForSearch()
                 }
-                .onChange(of: searchText) {
+                .onChange(of: searchText) { _, _ in
                     updateNavigationForSearch()
                 }
             
@@ -135,9 +156,9 @@ public struct SidebarSettingsWindow: View {
                 Image(systemName: "photo.stack")
                     .foregroundColor(.secondary)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Swift Photos")
+                    Text(L10n.App.name)
                         .font(.system(size: 12, weight: .medium))
-                    Text("Version 1.0")
+                    Text("Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown")")
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
                 }
@@ -145,8 +166,10 @@ public struct SidebarSettingsWindow: View {
             }
             
             // Reset button
-            Button("Reset All Settings") {
+            Button {
                 showingResetConfirmation = true
+            } label: {
+                Text(L10n.Button.resetAllSettings)
             }
             .buttonStyle(.borderless)
             .font(.system(size: 12))
@@ -168,6 +191,7 @@ public struct SidebarSettingsWindow: View {
                     sortSettings: sortSettings,
                     transitionSettings: transitionSettings,
                     uiControlSettings: uiControlSettings,
+                    localizationSettings: localizationSettings,
                     recentFilesManager: recentFilesManager,
                     searchQuery: searchText
                 )
@@ -186,41 +210,41 @@ public struct SidebarSettingsWindow: View {
                 .foregroundColor(.secondary)
             
             VStack(spacing: 8) {
-                Text("Swift Photos Settings")
+                Text(L10n.Window.settingsTitle)
                     .font(.title)
                     .fontWeight(.semibold)
                 
-                Text("Select a category from the sidebar to configure your slideshow experience")
+                Text(L10n.Window.settingsDescription)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
             
             VStack(spacing: 12) {
-                Text("Quick Actions")
+                Text(L10n.Window.quickActions)
                     .font(.headline)
                 
                 HStack(spacing: 16) {
                     QuickActionButton(
-                        title: "Performance",
+                        title: L10n.Category.performanceString(),
                         icon: "speedometer",
-                        description: "Optimize for your collection size"
+                        description: L10n.Category.performanceDescriptionString()
                     ) {
                         selectCategoryByName("Performance")
                     }
                     
                     QuickActionButton(
-                        title: "Slideshow",
+                        title: L10n.Category.slideshowString(),
                         icon: "play.circle",
-                        description: "Configure timing and behavior"
+                        description: L10n.Category.slideshowDescriptionString()
                     ) {
                         selectCategoryByName("Slideshow")
                     }
                     
                     QuickActionButton(
-                        title: "Transitions",
+                        title: L10n.Category.transitionsString(),
                         icon: "rectangle.stack.person.crop",
-                        description: "Set up beautiful animations"
+                        description: L10n.Category.transitionsDescriptionString()
                     ) {
                         selectCategoryByName("Transitions")
                     }
@@ -369,6 +393,7 @@ private struct CategoryDetailView: View {
     let sortSettings: ModernSortSettingsManager
     let transitionSettings: ModernTransitionSettingsManager
     let uiControlSettings: ModernUIControlSettingsManager
+    let localizationSettings: ModernLocalizationSettingsManager
     let recentFilesManager: RecentFilesManager
     let searchQuery: String
     
@@ -413,10 +438,12 @@ private struct CategoryDetailView: View {
                         FileManagementSettingsView(recentFilesManager: recentFilesManager)
                     case "Keyboard":
                         KeyboardShortcutsView()
+                    case "Language":
+                        LanguageSettingsView(localizationSettings: localizationSettings)
                     case "Advanced":
                         AdvancedSettingsView()
                     default:
-                        Text("Settings for \(category.name) will be implemented here.")
+                        Text(L10n.Window.settingsNotImplemented(for: category.name))
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 32)
                     }
@@ -433,7 +460,8 @@ private struct CategoryDetailView: View {
         slideshowSettings: ModernSlideshowSettingsManager(),
         sortSettings: ModernSortSettingsManager(),
         transitionSettings: ModernTransitionSettingsManager(),
-        uiControlSettings: ModernUIControlSettingsManager()
+        uiControlSettings: ModernUIControlSettingsManager(),
+        localizationSettings: ModernLocalizationSettingsManager()
     )
     .environmentObject(RecentFilesManager())
 }

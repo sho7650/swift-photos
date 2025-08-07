@@ -19,7 +19,7 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
     // MARK: - Private Properties
     
     private var activeGestures: Set<UUID> = []
-    private var gestureStates: [UUID: GestureState] = [:]
+    private var gestureStates: [UUID: ZoneGestureState] = [:]
     private let logger = Logger(subsystem: "SwiftPhotos", category: "InteractionZoneManager")
     
     // Performance optimization
@@ -39,9 +39,6 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
     }
     
     deinit {
-        Task { @MainActor in
-            cleanupActiveGestures()
-        }
         logger.debug("🎯 InteractionZoneManager: Deinitialized")
     }
     
@@ -133,7 +130,9 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
         }
         
         debounceGestureUpdate {
-            self.performGestureProcessing(gestureData, at: location)
+            Task { @MainActor in
+                self.performGestureProcessing(gestureData, at: location)
+            }
         }
     }
     
@@ -223,7 +222,7 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
     
     private func startTrackingGesture(_ gestureData: GestureData, at location: CGPoint, in zone: InteractionZone?) {
         let gestureId = UUID()
-        let gestureState = GestureState(
+        let gestureState = ZoneGestureState(
             id: gestureId,
             type: gestureData.gestureType,
             zoneId: zone?.id,
@@ -246,7 +245,7 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
         }
     }
     
-    private func debounceGestureUpdate(_ action: @escaping () -> Void) {
+    private func debounceGestureUpdate(_ action: @escaping @Sendable () -> Void) {
         gestureDebounceTimer?.invalidate()
         gestureDebounceTimer = Timer.scheduledTimer(withTimeInterval: gestureDebounceInterval, repeats: false) { _ in
             Task { @MainActor in
@@ -274,8 +273,8 @@ public class InteractionZoneManager: ObservableObject, InteractionZoneProviding 
 
 // MARK: - Supporting Types
 
-/// State tracking for individual gestures
-private struct GestureState {
+/// State tracking for individual gestures in zones
+private struct ZoneGestureState {
     let id: UUID
     let type: GestureType
     let zoneId: UUID?

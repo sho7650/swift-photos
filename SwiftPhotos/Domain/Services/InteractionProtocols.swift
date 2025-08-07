@@ -3,7 +3,7 @@ import CoreGraphics
 import SwiftUI
 
 /// Custom EdgeInsets type for cross-platform compatibility
-public struct EdgeInsets: Codable, Equatable {
+public struct EdgeInsets: Codable, Equatable, Sendable {
     public let top: Double
     public let leading: Double
     public let bottom: Double
@@ -16,7 +16,7 @@ public struct EdgeInsets: Codable, Equatable {
         self.trailing = trailing
     }
     
-    public static let zero = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+    public static let zero: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
 }
 
 // MARK: - Core Interaction Detection Protocol
@@ -126,7 +126,7 @@ public protocol MouseTracking: AnyObject {
 }
 
 /// Configuration for mouse tracking behavior
-public struct MouseTrackingConfiguration: Codable, Equatable {
+public struct MouseTrackingConfiguration: Codable, Equatable, Sendable {
     public let sensitivity: Double
     public let velocitySmoothing: Double
     public let accelerationThreshold: Double
@@ -154,7 +154,7 @@ public struct MouseTrackingConfiguration: Codable, Equatable {
     }
     
     /// High-performance configuration for gaming-like responsiveness
-    public static let highPerformance = MouseTrackingConfiguration(
+    public static let highPerformance: MouseTrackingConfiguration = MouseTrackingConfiguration(
         sensitivity: 1.5,
         velocitySmoothing: 0.6,
         samplingRate: 120.0,
@@ -162,7 +162,7 @@ public struct MouseTrackingConfiguration: Codable, Equatable {
     )
     
     /// Battery-optimized configuration for longer usage
-    public static let batteryOptimized = MouseTrackingConfiguration(
+    public static let batteryOptimized: MouseTrackingConfiguration = MouseTrackingConfiguration(
         sensitivity: 0.8,
         velocitySmoothing: 0.9,
         samplingRate: 30.0,
@@ -286,7 +286,7 @@ public protocol AdaptiveTimerDelegate: AnyObject {
 }
 
 /// Configuration for adaptive timer behavior
-public struct TimerConfiguration: Codable, Equatable {
+public struct TimerConfiguration: Codable, Equatable, Sendable {
     public let baseDuration: TimeInterval
     public let minimumDuration: TimeInterval
     public let maximumDuration: TimeInterval
@@ -685,7 +685,7 @@ public enum OverlayType: String, CaseIterable, Codable {
 
 /// Observer protocol for position changes
 @MainActor
-public protocol PositionObserver: AnyObject {
+public protocol PositionObserver: AnyObject, Sendable {
     func positionDidChange(overlay: OverlayType, from oldPosition: CGPoint, to newPosition: CGPoint)
     func positionValidationFailed(overlay: OverlayType, invalidPosition: CGPoint, reason: String)
 }
@@ -693,7 +693,7 @@ public protocol PositionObserver: AnyObject {
 // MARK: - Supporting Types
 
 /// Configuration for position calculations
-public struct PositionConfiguration: Codable, Equatable {
+public struct PositionConfiguration: Codable, Equatable, Sendable {
     public let margins: EdgeInsets
     public let minimumSpacing: Double
     public let preferredAlignment: PositionAlignment
@@ -719,7 +719,7 @@ public struct PositionConfiguration: Codable, Equatable {
 }
 
 /// Position alignment preferences
-public enum PositionAlignment: String, CaseIterable, Codable {
+public enum PositionAlignment: String, CaseIterable, Codable, Sendable {
     case topLeading = "topLeading"
     case top = "top"
     case topTrailing = "topTrailing"
@@ -773,7 +773,7 @@ public struct PositionConstraints: Codable, Equatable {
 }
 
 /// Result of position validation
-public struct ValidationResult: Equatable {
+public struct ValidationResult: Equatable, Sendable {
     public let isValid: Bool
     public let adjustedPosition: CGPoint?
     public let violations: [String]
@@ -784,7 +784,7 @@ public struct ValidationResult: Equatable {
         self.violations = violations
     }
     
-    public static let valid = ValidationResult(isValid: true)
+    public static let valid: ValidationResult = ValidationResult(isValid: true)
     
     public static func invalid(violations: [String]) -> ValidationResult {
         return ValidationResult(isValid: false, violations: violations)

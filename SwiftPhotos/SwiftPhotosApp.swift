@@ -12,6 +12,7 @@ import os.log
 struct SwiftPhotosApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var recentFilesManager = RecentFilesManager()
+    @State private var localizationService = LocalizationService()
     
     init() {
         ProductionLogger.lifecycle("SwiftPhotosApp: Application started")
@@ -21,6 +22,7 @@ struct SwiftPhotosApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(recentFilesManager)
+                .localizationService(localizationService)
                 .onAppear {
                     ProductionLogger.lifecycle("SwiftPhotosApp: WindowGroup appeared")
                 }

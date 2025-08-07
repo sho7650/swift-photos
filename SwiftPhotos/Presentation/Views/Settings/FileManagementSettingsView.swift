@@ -12,7 +12,7 @@ struct FileManagementSettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             // Recent Files Configuration Section
             FileSettingsSection(
-                title: "Recent Folders",
+                title: String(localized: "file_management.recent_folders"),
                 icon: "clock",
                 description: "Configure how recent folders are managed and displayed"
             ) {
@@ -43,7 +43,7 @@ struct FileManagementSettingsView: View {
                         // Maximum recent files
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
-                                Text("Maximum Recent Folders")
+                                Text(L10n.FileManagement.maximumRecentFolders)
                                 Spacer()
                                 Text("\(recentFilesManager.configuration.maxRecentFiles)")
                                     .foregroundColor(.secondary)
@@ -122,7 +122,7 @@ struct FileManagementSettingsView: View {
             // Recent Files Statistics Section
             if let statistics = recentFilesManager.statistics {
                 FileSettingsSection(
-                    title: "Statistics",
+                    title: String(localized: "file_management.statistics"),
                     icon: "chart.bar",
                     description: "Current status of your recent folders"
                 ) {
@@ -140,7 +140,7 @@ struct FileManagementSettingsView: View {
             
             // Recent Files Management Section
             FileSettingsSection(
-                title: "Management",
+                title: String(localized: "file_management.management"),
                 icon: "gear",
                 description: "Manage your recent folders data"
             ) {
@@ -148,7 +148,7 @@ struct FileManagementSettingsView: View {
                     // Action buttons
                     VStack(spacing: 8) {
                         HStack(spacing: 12) {
-                            Button("Clean Up Invalid Folders") {
+                            Button(L10n.FileManagement.cleanUpInvalidFolders) {
                                 Task {
                                     let cleaned = await recentFilesManager.performCleanup()
                                     print("Cleaned up \(cleaned) invalid folders")
@@ -156,7 +156,7 @@ struct FileManagementSettingsView: View {
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Refresh Statistics") {
+                            Button(L10n.FileManagement.refreshStatistics) {
                                 Task {
                                     await recentFilesManager.refreshStatistics()
                                 }
@@ -165,18 +165,18 @@ struct FileManagementSettingsView: View {
                         }
                         
                         HStack(spacing: 12) {
-                            Button("Export Recent Folders...") {
+                            Button(L10n.FileManagement.exportRecentFolders) {
                                 exportRecentFiles()
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Import Recent Folders...") {
+                            Button(L10n.FileManagement.importRecentFolders) {
                                 importRecentFiles()
                             }
                             .buttonStyle(.bordered)
                         }
                         
-                        Button("Clear All Recent Folders") {
+                        Button(L10n.FileManagement.clearAllRecentFolders) {
                             showingClearConfirmation = true
                         }
                         .buttonStyle(.bordered)
@@ -186,7 +186,7 @@ struct FileManagementSettingsView: View {
                     // Current folders list (first few)
                     if !recentFilesManager.recentFiles.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Recent Folders")
+                            Text(L10n.FileManagement.recentFolders)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             
@@ -220,7 +220,7 @@ struct FileManagementSettingsView: View {
                             }
                             
                             if recentFilesManager.recentFiles.count > 5 {
-                                Text("... and \(recentFilesManager.recentFiles.count - 5) more")
+                                Text(String(localized: "file_management.and_more_count").replacingOccurrences(of: "%d", with: "\(recentFilesManager.recentFiles.count - 5)"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -231,7 +231,7 @@ struct FileManagementSettingsView: View {
             
             // File Access Security Section
             FileSettingsSection(
-                title: "Security & Access",
+                title: String(localized: "file_management.security_access"),
                 icon: "lock.shield",
                 description: "File system access and security settings"
             ) {
@@ -239,15 +239,15 @@ struct FileManagementSettingsView: View {
                     HStack {
                         Image(systemName: "checkmark.shield")
                             .foregroundColor(.green)
-                        Text("App Sandbox Protection Enabled")
+                        Text(L10n.FileManagement.appSandboxProtectionEnabled)
                             .font(.subheadline)
                     }
                     
-                    Text("PhotoSlideshow uses security-scoped bookmarks to maintain safe access to your photos while respecting macOS security requirements.")
+                    Text(L10n.FileManagement.sandboxDescription)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    Text("External volumes and network drives are supported with automatic permission management.")
+                    Text(L10n.FileManagement.externalVolumesSupported)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -255,26 +255,26 @@ struct FileManagementSettingsView: View {
             
             // Configuration Presets Section
             FileSettingsSection(
-                title: "Presets",
+                title: String(localized: "file_management.presets"),
                 icon: "square.grid.2x2",
                 description: "Quick configuration presets for common scenarios"
             ) {
                 HStack(spacing: 12) {
-                    Button("Conservative") {
+                    Button(L10n.FileManagement.conservative) {
                         Task {
                             await recentFilesManager.applyConfigurationPreset(.conservative)
                         }
                     }
                     .buttonStyle(.bordered)
                     
-                    Button("Balanced") {
+                    Button(L10n.FileManagement.balanced) {
                         Task {
                             await recentFilesManager.applyConfigurationPreset(.default)
                         }
                     }
                     .buttonStyle(.bordered)
                     
-                    Button("Extensive") {
+                    Button(L10n.FileManagement.extensive) {
                         Task {
                             await recentFilesManager.applyConfigurationPreset(.extensive)
                         }
@@ -293,7 +293,7 @@ struct FileManagementSettingsView: View {
                 }
             }
         } message: {
-            Text("This will remove all recent folders from the File menu. This action cannot be undone.")
+            Text(L10n.FileManagement.clearAllConfirmation)
         }
     }
     
@@ -305,7 +305,7 @@ struct FileManagementSettingsView: View {
                 let data = try await recentFilesManager.exportRecentFiles()
                 
                 let savePanel = NSSavePanel()
-                savePanel.title = "Export Recent Folders"
+                savePanel.title = String(localized: "file_management.export_recent")
                 savePanel.allowedContentTypes = [.json]
                 savePanel.nameFieldStringValue = "PhotoSlideshow-RecentFolders.json"
                 
@@ -320,7 +320,7 @@ struct FileManagementSettingsView: View {
     
     private func importRecentFiles() {
         let openPanel = NSOpenPanel()
-        openPanel.title = "Import Recent Folders"
+        openPanel.title = String(localized: "file_management.import_recent")
         openPanel.allowedContentTypes = [.json]
         openPanel.canChooseFiles = true
         openPanel.canChooseDirectories = false

@@ -10,47 +10,48 @@ struct AdvancedSettingsView: View {
     @State private var showingSystemInfo = false
     @State private var systemInfo: SystemInformation?
     
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Debug Settings Section
             AdvancedSettingsSection(
-                title: "Debug Settings",
+                title: L10n.SettingsString.debugSettings(),
                 icon: "ant",
-                description: "Configure debugging and diagnostic options"
+                description: L10n.SettingsString.debugSettingsDescription()
             ) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Toggle("Enable debug logging", isOn: $isDebugLoggingEnabled)
+                    Toggle(L10n.ToggleString.enableDebugLogging(), isOn: $isDebugLoggingEnabled)
                         .toggleStyle(.switch)
-                        .onChange(of: isDebugLoggingEnabled) { enabled in
+                        .onChange(of: isDebugLoggingEnabled) { _, enabled in
                             configureDebugLogging(enabled)
                         }
                     
                     if isDebugLoggingEnabled {
-                        Toggle("Verbose logging (detailed output)", isOn: $isVerboseLoggingEnabled)
+                        Toggle(String(localized: "toggle.verbose_logging"), isOn: $isVerboseLoggingEnabled)
                             .toggleStyle(.switch)
-                            .onChange(of: isVerboseLoggingEnabled) { enabled in
+                            .onChange(of: isVerboseLoggingEnabled) { _, enabled in
                                 configureVerboseLogging(enabled)
                             }
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Debug Information")
+                        Text(L10n.UI.debugInformation)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
                         HStack(spacing: 12) {
-                            Button("Show System Info") {
+                            Button(String(localized: "button.advanced.show_system_info")) {
                                 loadSystemInfo()
                                 showingSystemInfo = true
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Export Logs") {
+                            Button(String(localized: "button.advanced.export_logs")) {
                                 exportLogs()
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Clear Cache") {
+                            Button(String(localized: "button.advanced.clear_cache")) {
                                 clearAllCaches()
                             }
                             .buttonStyle(.bordered)
@@ -61,12 +62,12 @@ struct AdvancedSettingsView: View {
             
             // Experimental Features Section
             AdvancedSettingsSection(
-                title: "Experimental Features",
+                title: String(localized: "settings.advanced.experimental"),
                 icon: "flask",
-                description: "Beta and experimental functionality (use with caution)"
+                description: String(localized: "settings.advanced.experimental.description")
             ) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("⚠️ Experimental features may be unstable or incomplete")
+                    Text(String(localized: "warning.experimental_features"))
                         .font(.caption)
                         .foregroundColor(.orange)
                         .padding(.horizontal, 8)
@@ -75,25 +76,25 @@ struct AdvancedSettingsView: View {
                         .cornerRadius(4)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Performance Optimizations")
+                        Text(L10n.UI.performanceEnhancements)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
-                        Text("• Enhanced memory management algorithms")
-                        Text("• Experimental image loading pipelines")
-                        Text("• Advanced caching strategies")
+                        Text(L10n.Features.advancedMemoryManagementDesc)
+                        Text(L10n.Features.optimizedImageLoading)
+                        Text(L10n.Features.smartCachingSystem)
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Interface Enhancements")
+                        Text(L10n.UI.interfaceImprovements)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
-                        Text("• Touch Bar support (MacBook Pro)")
-                        Text("• Advanced gesture recognition")
-                        Text("• Custom transition effects")
+                        Text(L10n.Features.touchBarSupport)
+                        Text(L10n.Features.enhancedGestures)
+                        Text(L10n.Features.advancedTransitions)
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -102,30 +103,39 @@ struct AdvancedSettingsView: View {
             
             // Performance Monitoring Section
             AdvancedSettingsSection(
-                title: "Performance Monitoring",
+                title: String(localized: "settings.advanced.performance_monitoring"),
                 icon: "speedometer",
-                description: "Monitor application performance and resource usage"
+                description: String(localized: "settings.advanced.performance_monitoring.description")
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     if let systemInfo = systemInfo {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Current Performance")
+                            Text(L10n.UI.currentPerformanceMetrics)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             
-                            PerformanceMetricRow(label: "Memory Usage", value: systemInfo.memoryUsage)
-                            PerformanceMetricRow(label: "CPU Usage", value: systemInfo.cpuUsage)
-                            PerformanceMetricRow(label: "Disk Usage", value: systemInfo.diskUsage)
+                            PerformanceMetricRow(
+                                label: String(localized: "ui.memory_usage"), 
+                                value: systemInfo.memoryUsage
+                            )
+                            PerformanceMetricRow(
+                                label: String(localized: "ui.cpu_usage"), 
+                                value: systemInfo.cpuUsage
+                            )
+                            PerformanceMetricRow(
+                                label: String(localized: "ui.disk_usage"), 
+                                value: systemInfo.diskUsage
+                            )
                         }
                     }
                     
                     HStack(spacing: 12) {
-                        Button("Refresh Metrics") {
+                        Button(String(localized: "button.advanced.refresh_metrics")) {
                             loadSystemInfo()
                         }
                         .buttonStyle(.bordered)
                         
-                        Button("Performance Report") {
+                        Button(String(localized: "button.advanced.performance_report")) {
                             generatePerformanceReport()
                         }
                         .buttonStyle(.bordered)
@@ -135,31 +145,40 @@ struct AdvancedSettingsView: View {
             
             // System Information Section
             AdvancedSettingsSection(
-                title: "System Information",
+                title: String(localized: "settings.advanced.system_information"),
                 icon: "info.circle",
-                description: "Application and system details"
+                description: String(localized: "settings.advanced.system_information.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     if let systemInfo = systemInfo {
-                        SystemInfoSection(title: "Application", items: [
-                            ("Version", systemInfo.appVersion),
-                            ("Build", systemInfo.buildNumber),
-                            ("Bundle ID", systemInfo.bundleIdentifier)
-                        ])
+                        SystemInfoSection(
+                            title: String(localized: "ui.application"), 
+                            items: [
+                                (String(localized: "ui.version"), systemInfo.appVersion),
+                                (String(localized: "ui.build"), systemInfo.buildNumber),
+                                (String(localized: "ui.bundle_id"), systemInfo.bundleIdentifier)
+                            ]
+                        )
                         
-                        SystemInfoSection(title: "System", items: [
-                            ("macOS", systemInfo.osVersion),
-                            ("Architecture", systemInfo.architecture),
-                            ("Model", systemInfo.modelIdentifier)
-                        ])
+                        SystemInfoSection(
+                            title: String(localized: "ui.system"), 
+                            items: [
+                                (String(localized: "ui.macos"), systemInfo.osVersion),
+                                (String(localized: "ui.architecture"), systemInfo.architecture),
+                                (String(localized: "ui.model"), systemInfo.modelIdentifier)
+                            ]
+                        )
                         
-                        SystemInfoSection(title: "Hardware", items: [
-                            ("Total Memory", systemInfo.totalMemory),
-                            ("Available Memory", systemInfo.availableMemory),
-                            ("Processor", systemInfo.processorInfo)
-                        ])
+                        SystemInfoSection(
+                            title: String(localized: "ui.hardware"), 
+                            items: [
+                                (String(localized: "ui.total_memory"), systemInfo.totalMemory),
+                                (String(localized: "ui.available_memory"), systemInfo.availableMemory),
+                                (String(localized: "ui.processor"), systemInfo.processorInfo)
+                            ]
+                        )
                     } else {
-                        Button("Load System Information") {
+                        Button(String(localized: "button.advanced.load_system_info")) {
                             loadSystemInfo()
                         }
                         .buttonStyle(.bordered)
@@ -169,36 +188,36 @@ struct AdvancedSettingsView: View {
             
             // Reset and Maintenance Section
             AdvancedSettingsSection(
-                title: "Reset & Maintenance",
+                title: String(localized: "settings.advanced.maintenance"),
                 icon: "arrow.clockwise",
-                description: "Reset application state and perform maintenance"
+                description: String(localized: "settings.advanced.maintenance.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("⚠️ These actions cannot be undone")
+                    Text(String(localized: "warning.actions_cannot_be_undone"))
                         .font(.caption)
                         .foregroundColor(.orange)
                     
                     VStack(spacing: 8) {
                         HStack(spacing: 12) {
-                            Button("Reset All Settings") {
+                            Button(String(localized: "button.advanced.reset_all_settings")) {
                                 resetAllSettings()
                             }
                             .buttonStyle(.bordered)
                             .foregroundColor(.red)
                             
-                            Button("Clear All Caches") {
+                            Button(String(localized: "button.advanced.clear_all_caches")) {
                                 clearAllCaches()
                             }
                             .buttonStyle(.bordered)
                         }
                         
                         HStack(spacing: 12) {
-                            Button("Reset Window Positions") {
+                            Button(String(localized: "button.advanced.reset_window_positions")) {
                                 resetWindowPositions()
                             }
                             .buttonStyle(.bordered)
                             
-                            Button("Clear Recent Files") {
+                            Button(String(localized: "button.advanced.clear_recent_files")) {
                                 clearRecentFiles()
                             }
                             .buttonStyle(.bordered)
@@ -209,9 +228,9 @@ struct AdvancedSettingsView: View {
             
             // About Section
             AdvancedSettingsSection(
-                title: "About PhotoSlideshow",
+                title: String(localized: "settings.advanced.about"),
                 icon: "photo.stack",
-                description: "Application information and credits"
+                description: String(localized: "settings.advanced.about.description")
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
@@ -220,26 +239,26 @@ struct AdvancedSettingsView: View {
                             .foregroundColor(.accentColor)
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Swift Photos")
+                            Text(L10n.App.name)
                                 .font(.title2)
                                 .fontWeight(.bold)
                             
-                            Text("Professional photo slideshow application for macOS")
+                            Text(String(localized: "app.description"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Features:")
+                        Text(L10n.UI.keyFeatures)
                             .font(.subheadline)
                             .fontWeight(.medium)
                         
-                        Text("• Supports unlimited photo collections (100k+ photos)")
-                        Text("• Advanced memory management and caching")
-                        Text("• Smooth transition effects and animations")
-                        Text("• Professional-grade performance optimization")
-                        Text("• Native macOS design and integration")
+                        Text(L10n.Features.unlimitedPhotoCollections)
+                        Text(L10n.Features.advancedMemoryManagement)
+                        Text(L10n.Features.smoothTransitionsAndEffects)
+                        Text(L10n.Features.performanceOptimization)
+                        Text(L10n.Features.nativeMacOSExperience)
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -250,6 +269,7 @@ struct AdvancedSettingsView: View {
         .padding(.bottom, 32)
         .onAppear {
             loadSystemInfo()
+            loadDebugSettings()
         }
         .sheet(isPresented: $showingSystemInfo) {
             SystemInfoDetailView(systemInfo: systemInfo)
@@ -259,40 +279,74 @@ struct AdvancedSettingsView: View {
     // MARK: - Helper Methods
     
     private func configureDebugLogging(_ enabled: Bool) {
-        UserDefaults.standard.set(enabled, forKey: "DebugLoggingEnabled")
-        ProductionLogger.debug("Debug logging \(enabled ? "enabled" : "disabled")")
+        ProductionLogger.setDebugLogging(enabled: enabled)
     }
     
     private func configureVerboseLogging(_ enabled: Bool) {
-        UserDefaults.standard.set(enabled, forKey: "VerboseLoggingEnabled")
-        ProductionLogger.debug("Verbose logging \(enabled ? "enabled" : "disabled")")
+        ProductionLogger.setVerboseLogging(enabled: enabled)
     }
     
     private func loadSystemInfo() {
         systemInfo = SystemInformation.current()
     }
     
+    private func loadDebugSettings() {
+        isDebugLoggingEnabled = ProductionLogger.isDebugEnabled()
+        isVerboseLoggingEnabled = ProductionLogger.isVerboseEnabled()
+    }
+    
     private func exportLogs() {
+        // Ensure we're on the main thread for proper dialog presentation
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                self.exportLogs()
+            }
+            return
+        }
+        
         let savePanel = NSSavePanel()
-        savePanel.title = "Export Debug Logs"
+        savePanel.title = String(localized: "dialog.export_debug_logs")
         savePanel.allowedContentTypes = [.plainText]
-        savePanel.nameFieldStringValue = "PhotoSlideshow-Logs-\(Date().timeIntervalSince1970).txt"
+        savePanel.nameFieldStringValue = "Swift-Photos-Logs-\(Int(Date().timeIntervalSince1970)).txt"
         
         if savePanel.runModal() == .OK, let url = savePanel.url {
-            // Export logs to file
-            let logs = "PhotoSlideshow Debug Logs\nGenerated: \(Date())\n\n[Logs would be exported here]"
-            try? logs.write(to: url, atomically: true, encoding: .utf8)
+            let logs = ProductionLogger.exportLogsAsString()
+            do {
+                try logs.write(to: url, atomically: true, encoding: .utf8)
+                ProductionLogger.userAction("Debug logs exported to \(url.lastPathComponent)")
+            } catch {
+                ProductionLogger.error("Failed to export logs: \(error.localizedDescription)")
+            }
         }
     }
     
     private func clearAllCaches() {
         // Clear image caches and other temporary data
         ProductionLogger.userAction("Clearing all caches...")
+        
+        // Clear UserDefaults temporary data (keep settings)
+        let keys = ["ImageCache", "ThumbnailCache", "MetadataCache"]
+        for key in keys {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+        
+        // Clear NSURLCache
+        URLCache.shared.removeAllCachedResponses()
+        
+        ProductionLogger.info("All caches cleared successfully")
     }
     
     private func generatePerformanceReport() {
+        // Ensure we're on the main thread for proper dialog presentation
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                self.generatePerformanceReport()
+            }
+            return
+        }
+        
         let savePanel = NSSavePanel()
-        savePanel.title = "Export Performance Report"
+        savePanel.title = String(localized: "dialog.export_performance_report")
         savePanel.allowedContentTypes = [.plainText]
         savePanel.nameFieldStringValue = "PhotoSlideshow-Performance-\(Date().timeIntervalSince1970).txt"
         
@@ -332,18 +386,58 @@ struct AdvancedSettingsView: View {
     }
     
     private func resetAllSettings() {
-        // This would reset all settings to defaults
         ProductionLogger.userAction("Resetting all settings to defaults...")
+        
+        // Reset all settings-related UserDefaults keys
+        let settingsKeys = [
+            "SwiftPhotosPerformanceSettings",
+            "SwiftPhotosSlideshowSettings", 
+            "SwiftPhotosSortSettings",
+            "SwiftPhotosTransitionSettings",
+            "SwiftPhotosUIControlSettings",
+            "DebugLoggingEnabled",
+            "VerboseLoggingEnabled"
+        ]
+        
+        for key in settingsKeys {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+        
+        // Reset debug logging states
+        isDebugLoggingEnabled = false
+        isVerboseLoggingEnabled = false
+        
+        ProductionLogger.info("All settings reset to defaults")
     }
     
     private func resetWindowPositions() {
-        // Reset all window positions and sizes
         ProductionLogger.userAction("Resetting window positions...")
+        
+        // Reset window-related UserDefaults
+        let windowKeys = [
+            "NSWindow Frame MainWindow",
+            "NSWindow Frame SettingsWindow",
+            "NSWindow Frame DebugWindow"
+        ]
+        
+        for key in windowKeys {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+        
+        ProductionLogger.info("Window positions reset")
     }
     
     private func clearRecentFiles() {
-        // Clear recent files list
         ProductionLogger.userAction("Clearing recent files...")
+        
+        // Clear recent files from UserDefaults
+        UserDefaults.standard.removeObject(forKey: "RecentFiles")
+        UserDefaults.standard.removeObject(forKey: "RecentFolders")
+        
+        // Clear NSDocumentController recent documents
+        NSDocumentController.shared.clearRecentDocuments(nil)
+        
+        ProductionLogger.info("Recent files cleared")
     }
 }
 
@@ -464,7 +558,7 @@ private struct SystemInformation {
     }
     
     private static func getAvailableMemory() -> String {
-        let pageSize = vm_page_size
+        let pageSize = UInt32(4096) // Standard page size to avoid vm_page_size concurrency issues
         var vmStats = vm_statistics64()
         var infoCount = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.stride / MemoryLayout<integer_t>.stride)
         
@@ -534,7 +628,7 @@ private struct SystemInfoDetailView: View {
                     }
                 }
             }
-            .navigationTitle("System Information")
+            .navigationTitle(String(localized: "window.system_information"))
             .frame(width: 600, height: 500)
         }
     }

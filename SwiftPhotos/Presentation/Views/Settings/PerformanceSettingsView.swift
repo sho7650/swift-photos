@@ -1,18 +1,20 @@
 import SwiftUI
+import Combine
 
 /// Performance settings view for slideshow optimization and memory management
 /// Provides controls for adjusting performance parameters for different collection sizes
 struct PerformanceSettingsView: View {
     var settings: ModernPerformanceSettingsManager
     @State private var selectedPreset: String = "Custom"
-    
-    var body: some View {
+    @Environment(\.localizationService) private var localizationService
+
+        var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Performance Presets Section
-            PerformanceSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: "Performance Presets",
                 icon: "gauge.high",
-                description: "Optimize slideshow performance for different collection sizes and system capabilities"
+                description: "Adjust performance settings based on collection size"
             ) {
                 VStack(spacing: 8) {
                     PresetButton(title: "Default (0-100 images)", preset: .default, current: settings.settings) {
@@ -38,15 +40,16 @@ struct PerformanceSettingsView: View {
                     PresetButton(title: "Extreme (50,001+ images)", preset: .extreme, current: settings.settings) {
                         settings.updateSettings(.extreme)
                         selectedPreset = "Extreme"
+                        
                     }
                 }
             }
             
             // Manual Configuration Section
-            PerformanceSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: "Manual Configuration",
                 icon: "slider.horizontal.3",
-                description: "Fine-tune performance settings for your specific needs"
+                description: "Customize performance settings manually"
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     SettingSlider(
@@ -115,10 +118,10 @@ struct PerformanceSettingsView: View {
             }
             
             // Advanced Settings Section
-            PerformanceSettingsSection(
+            SettingsComponentFactory.createSection(
                 title: "Advanced Settings",
-                icon: "gear.circle",
-                description: "Additional performance and memory management options"
+                icon: "gearshape.2",
+                description: "Fine-tune advanced performance options"
             ) {
                 VStack(alignment: .leading, spacing: 16) {
                     Toggle("Aggressive Memory Management", isOn: Binding(
@@ -187,36 +190,7 @@ struct PerformanceSettingsView: View {
     }
 }
 
-/// Reusable settings section component for performance settings
-private struct PerformanceSettingsSection<Content: View>: View {
-    let title: String
-    let icon: String
-    let description: String
-    let content: () -> Content
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.accentColor)
-                
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-            }
-            
-            if !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            content()
-        }
-        .padding(.vertical, 8)
-    }
-}
+
 
 /// Helper views
 private struct PresetButton: View {

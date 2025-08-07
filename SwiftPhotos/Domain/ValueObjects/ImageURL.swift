@@ -49,6 +49,7 @@ public enum SlideshowError: Error, LocalizedError, Equatable, Sendable {
     case invalidInterval(Double)
     case invalidIndex(Int)
     case securityError(String)
+    case folderAccessDenied(String)
     
     public static func == (lhs: SlideshowError, rhs: SlideshowError) -> Bool {
         switch (lhs, rhs) {
@@ -63,6 +64,8 @@ public enum SlideshowError: Error, LocalizedError, Equatable, Sendable {
         case (.invalidIndex(let lhsIndex), .invalidIndex(let rhsIndex)):
             return lhsIndex == rhsIndex
         case (.securityError(let lhsMessage), .securityError(let rhsMessage)):
+            return lhsMessage == rhsMessage
+        case (.folderAccessDenied(let lhsMessage), .folderAccessDenied(let rhsMessage)):
             return lhsMessage == rhsMessage
         default:
             return false
@@ -83,6 +86,8 @@ public enum SlideshowError: Error, LocalizedError, Equatable, Sendable {
             return "Invalid index: \(index)"
         case .securityError(let message):
             return "Security error: \(message)"
+        case .folderAccessDenied(let message):
+            return "Folder access denied: \(message)"
         }
     }
 }

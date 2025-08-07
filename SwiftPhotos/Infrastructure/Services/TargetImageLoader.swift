@@ -5,8 +5,8 @@ import AppKit
 /// 他のキャッシュ処理と独立して、選択された画像のみを緊急ロードする
 actor TargetImageLoader {
     private let imageLoader: ImageLoader
-    private var emergencyTasks: [UUID: Task<NSImage, Error>] = [:]
-    private var completionCallbacks: [UUID: (Result<NSImage, Error>) -> Void] = [:]
+    private var emergencyTasks: [UUID: Task<SendableImage, Error>] = [:]
+    private var completionCallbacks: [UUID: (Result<SendableImage, Error>) -> Void] = [:]
     
     // パフォーマンス統計
     private var emergencyLoads: Int = 0
@@ -23,7 +23,7 @@ actor TargetImageLoader {
     ///   - completion: ロード完了時のコールバック（メインスレッドで実行）
     func loadImageEmergency(
         photo: Photo,
-        completion: @escaping @MainActor (Result<NSImage, Error>) -> Void
+        completion: @escaping @MainActor (Result<SendableImage, Error>) -> Void
     ) {
         let startTime = Date()
         emergencyLoads += 1
@@ -34,7 +34,7 @@ actor TargetImageLoader {
         cancelPreviousEmergencyLoads()
         
         // 緊急ロードタスクを作成
-        let task = Task<NSImage, Error> { [weak self] in
+        let task = Task<SendableImage, Error> { [weak self] in
             do {
                 let image = try await self?.imageLoader.loadImage(from: photo.imageURL) ?? {
                     throw SlideshowError.fileNotFound(photo.imageURL.url)
@@ -140,7 +140,7 @@ extension TargetImageLoader {
     ///   - completion: 完了時のコールバック
     func handleProgressBarJump(
         to targetPhoto: Photo,
-        completion: @escaping @MainActor (Result<NSImage, Error>) -> Void
+        completion: @escaping @MainActor (Result<SendableImage, Error>) -> Void
     ) {
         print("🎯 TargetImageLoader: Handling progress bar jump to photo \(targetPhoto.id)")
         
@@ -156,7 +156,7 @@ extension TargetImageLoader {
     ///   - completion: 完了時のコールバック
     func handleFirstImageLoad(
         photo firstPhoto: Photo,
-        completion: @escaping @MainActor (Result<NSImage, Error>) -> Void
+        completion: @escaping @MainActor (Result<SendableImage, Error>) -> Void
     ) {
         ProductionLogger.performance("TargetImageLoader: Loading first image on folder open: \(firstPhoto.fileName)")
         
@@ -176,13 +176,13 @@ extension TargetImageLoader {
     func loadMultipleEmergency(
         photos: [Photo],
         primaryPhotoId: UUID,
-        completion: @escaping @MainActor ([UUID: NSImage]) -> Void
+        completion: @escaping @MainActor ([UUID: SendableImage]) -> Void
     ) async {
         print("🚨 TargetImageLoader: Loading \(photos.count) images with primary \(primaryPhotoId)")
         
         let startTime = Date()
         
-        let results = await withTaskGroup(of: (UUID, NSImage)?.self, returning: [UUID: NSImage].self) { group in
+        let results = await withTaskGroup(of: (UUID, SendableImage)?.self, returning: [UUID: SendableImage].self) { group in
             for photo in photos {
                 let isPrimary = photo.id == primaryPhotoId
                 let priority = isPrimary ? TaskPriority.userInitiated : TaskPriority.utility
@@ -198,7 +198,7 @@ extension TargetImageLoader {
                 }
             }
             
-            var collectedResults: [UUID: NSImage] = [:]
+            var collectedResults: [UUID: SendableImage] = [:]
             for await result in group {
                 if let (photoId, image) = result {
                     collectedResults[photoId] = image

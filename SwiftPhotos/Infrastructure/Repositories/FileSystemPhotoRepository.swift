@@ -1,17 +1,20 @@
 import Foundation
 import AppKit
 
-public class FileSystemPhotoRepository: SlideshowRepository {
+public final class FileSystemPhotoRepository: SlideshowRepository, @unchecked Sendable {
     private let fileAccess: SecureFileAccess
     private let imageLoader: ImageLoader
-    private let sortSettings: ModernSortSettingsManager
+    private let sortSettings: SortSettingsManagerProtocol
+    private let localizationService: LocalizationService
     
-    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: ModernSortSettingsManager) {
+    public init(fileAccess: SecureFileAccess, imageLoader: ImageLoader, sortSettings: SortSettingsManagerProtocol, localizationService: LocalizationService) {
         self.fileAccess = fileAccess
         self.imageLoader = imageLoader
         self.sortSettings = sortSettings
+        self.localizationService = localizationService
     }
     
+    @MainActor
     public func loadPhotos(from folderURL: URL) async throws -> [Photo] {
         ProductionLogger.debug("FileSystemPhotoRepository: Starting loadPhotos for: \(folderURL.path)")
         ProductionLogger.debug("FileSystemPhotoRepository: Starting loadPhotos")
@@ -19,12 +22,12 @@ public class FileSystemPhotoRepository: SlideshowRepository {
         do {
             ProductionLogger.debug("FileSystemPhotoRepository: Validating file access...")
             ProductionLogger.debug("FileSystemPhotoRepository: About to validate file access")
-            try await fileAccess.validateFileAccess(for: folderURL)
+            try fileAccess.validateFileAccess(for: folderURL)
             ProductionLogger.debug("FileSystemPhotoRepository: File access validation completed")
             
             ProductionLogger.debug("FileSystemPhotoRepository: Enumerating images...")
             ProductionLogger.debug("FileSystemPhotoRepository: About to enumerate images")
-            let imageURLs = try await fileAccess.enumerateImages(in: folderURL)
+            let imageURLs = try fileAccess.enumerateImages(in: folderURL)
             ProductionLogger.debug("FileSystemPhotoRepository: Image enumeration completed with \(imageURLs.count) images")
             
             ProductionLogger.debug("FileSystemPhotoRepository: Creating \(imageURLs.count) photo objects...")
@@ -45,7 +48,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
             ProductionLogger.debug("FileSystemPhotoRepository: Successfully created \(photos.count) photos, failed: \(failedCount)")
             
             // Apply sorting based on current sort settings
-            let currentSettings = await sortSettings.settings
+            let currentSettings = sortSettings.settings
             let sortedPhotos = await sortPhotos(photos, using: currentSettings)
             ProductionLogger.debug("FileSystemPhotoRepository: Applied sorting: \(currentSettings.order.displayName) \(currentSettings.direction.displayName)")
             
@@ -63,7 +66,7 @@ public class FileSystemPhotoRepository: SlideshowRepository {
         
         do {
             let image = try await imageLoader.loadImage(from: photo.imageURL)
-            updatedPhoto.updateLoadState(.loaded(SendableImage(image)))
+            updatedPhoto.updateLoadState(.loaded(image))
             return updatedPhoto
         } catch let error as SlideshowError {
             updatedPhoto.updateLoadState(.failed(error))
@@ -85,30 +88,45 @@ public class FileSystemPhotoRepository: SlideshowRepository {
         
         switch sortSettings.order {
         case .fileName:
-            return sortByFileName(photos, direction: sortSettings.direction)
+            return await sortByFileName(photos, direction: sortSettings.direction)
             
         case .creationDate:
-            return await sortByCreationDate(photos, direction: sortSettings.direction)
+            let direction = sortSettings.direction
+            return await sortByCreationDate(photos, direction: direction)
             
         case .modificationDate:
-            return await sortByModificationDate(photos, direction: sortSettings.direction)
+            let direction = sortSettings.direction
+            return await sortByModificationDate(photos, direction: direction)
             
         case .fileSize:
-            return await sortByFileSize(photos, direction: sortSettings.direction)
+            let direction = sortSettings.direction
+            return await sortByFileSize(photos, direction: direction)
             
         case .random:
             return sortByRandom(photos, seed: sortSettings.randomSeed)
         }
     }
     
-    /// Sort photos by file name
-    private func sortByFileName(_ photos: [Photo], direction: SortSettings.SortDirection) -> [Photo] {
+    /// Sort photos by file name using locale-aware comparison
+    private func sortByFileName(_ photos: [Photo], direction: SortSettings.SortDirection) async -> [Photo] {
+        let locale = await localizationService.currentLocale
+        
         let sorted = photos.sorted { photo1, photo2 in
-            let name1 = photo1.fileName.lowercased()
-            let name2 = photo2.fileName.lowercased()
-            return direction == .ascending ? name1 < name2 : name1 > name2
+            let name1 = photo1.fileName
+            let name2 = photo2.fileName
+            
+            // Use locale-aware comparison that respects different languages' collation rules
+            let comparisonResult = name1.compare(name2, options: .caseInsensitive, range: nil, locale: locale)
+            
+            switch direction {
+            case .ascending:
+                return comparisonResult == .orderedAscending
+            case .descending:
+                return comparisonResult == .orderedDescending
+            }
         }
-        ProductionLogger.debug("FileSystemPhotoRepository: Sorted by file name (\(direction.displayName))")
+        
+        ProductionLogger.debug("FileSystemPhotoRepository: Sorted by file name (\(direction.displayName)) using locale: \(locale.identifier)")
         return sorted
     }
     

@@ -96,6 +96,35 @@ public struct SwiftPhotosMenuBar: Commands {
                 }
             }
         }
+        
+        // Add Window menu items for window level control and fullscreen
+        CommandGroup(before: .windowArrangement) {
+            Button("Toggle Fullscreen") {
+                toggleFullscreen()
+            }
+            .keyboardShortcut("f", modifiers: [])
+            
+            Divider()
+            
+            Menu("Window Level") {
+                Button("Normal") {
+                    changeWindowLevel(.normal)
+                }
+                .keyboardShortcut("0", modifiers: [.command, .control])
+                
+                Button("Always on Top") {
+                    changeWindowLevel(.alwaysOnTop)
+                }
+                .keyboardShortcut("1", modifiers: [.command, .control])
+                
+                Button("Always at Bottom") {
+                    changeWindowLevel(.alwaysAtBottom)
+                }
+                .keyboardShortcut("2", modifiers: [.command, .control])
+            }
+            
+            Divider()
+        }
     }
     
     // MARK: - Action Methods
@@ -269,6 +298,33 @@ public struct SwiftPhotosMenuBar: Commands {
                 } catch {
                     showErrorAlert("Export failed: \(error.localizedDescription)")
                 }
+            }
+        }
+    }
+    
+    private func changeWindowLevel(_ level: WindowLevel) {
+        ProductionLogger.userAction("PhotoSlideshowMenuBar: Changing window level to \(level.displayName)")
+        NotificationCenter.default.post(
+            name: .init("SwiftPhotosWindowLevelChanged"),
+            object: level
+        )
+    }
+    
+    private func toggleFullscreen() {
+        ProductionLogger.userAction("SwiftPhotosMenuBar: Toggling fullscreen from menu")
+        
+        DispatchQueue.main.async {
+            guard let window = NSApplication.shared.mainWindow else {
+                ProductionLogger.error("SwiftPhotosMenuBar: No main window found for fullscreen toggle")
+                return
+            }
+            
+            if window.styleMask.contains(.fullScreen) {
+                ProductionLogger.debug("SwiftPhotosMenuBar: Exiting fullscreen")
+                window.toggleFullScreen(nil)
+            } else {
+                ProductionLogger.debug("SwiftPhotosMenuBar: Entering fullscreen")
+                window.toggleFullScreen(nil)
             }
         }
     }

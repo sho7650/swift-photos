@@ -1,7 +1,7 @@
 import Foundation
 import os.log
 
-public class SwiftPhotosLogger {
+public final class SwiftPhotosLogger: Sendable {
     public static let shared = SwiftPhotosLogger()
     
     private let logger = Logger(subsystem: "com.example.SwiftPhotos", category: "swiftphotos")

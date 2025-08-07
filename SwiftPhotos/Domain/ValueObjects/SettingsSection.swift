@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Domain value object representing a section within a settings category
 /// Groups related settings items with clear organizational structure
-public struct SettingsSection: Codable, Equatable, Identifiable, Hashable {
+public struct SettingsSection: Codable, Equatable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public let name: String
     public let displayOrder: Int
@@ -92,7 +92,7 @@ public struct SettingsSection: Codable, Equatable, Identifiable, Hashable {
 }
 
 /// Individual settings item within a section
-public struct SettingsItem: Codable, Equatable, Identifiable, Hashable {
+public struct SettingsItem: Codable, Equatable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public let name: String
     public let description: String
@@ -153,7 +153,7 @@ public struct SettingsItem: Codable, Equatable, Identifiable, Hashable {
 }
 
 /// Types of settings items that can be displayed
-public enum SettingsItemType: String, Codable, CaseIterable {
+public enum SettingsItemType: String, Codable, CaseIterable, Sendable {
     case toggle = "toggle"
     case slider = "slider"
     case picker = "picker"
@@ -392,6 +392,32 @@ extension SettingsSection {
         description: "System-level keyboard shortcuts",
         icon: "keyboard",
         searchKeywords: ["system", "open", "folder", "quit", "close"]
+    )
+    
+    // MARK: - Language Sections
+    
+    public static let languageSelection = SettingsSection(
+        name: "Language Selection",
+        displayOrder: 1,
+        description: "Choose application language and region",
+        icon: "globe",
+        searchKeywords: ["language", "region", "locale", "interface", "translation"]
+    )
+    
+    public static let regionalFormatting = SettingsSection(
+        name: "Regional Formatting",
+        displayOrder: 2,
+        description: "Configure date, number, and time formats",
+        icon: "textformat.123",
+        searchKeywords: ["format", "date", "number", "time", "regional", "measurement"]
+    )
+    
+    public static let localizationPreferences = SettingsSection(
+        name: "Localization Preferences",
+        displayOrder: 3,
+        description: "Advanced localization and accessibility options",
+        icon: "gear.badge",
+        searchKeywords: ["localization", "accessibility", "preferences", "advanced", "sorting"]
     )
     
     // MARK: - Advanced Sections

@@ -7,60 +7,117 @@
 
 import SwiftUI
 import AppKit
+import Combine
 
 struct ContentView: View {
-    @State private var viewModel: ModernSlideshowViewModel?
+    @State private var viewModel: (any SlideshowViewModelProtocol)?
     @State private var keyboardHandler: KeyboardHandler?
-    @State private var uiControlStateManager: UIControlStateManager?
+    @State private var uiInteractionManager: UIInteractionManager?
     @State private var isInitialized = false
     @State private var secureFileAccess = SecureFileAccess()
-    @State private var performanceSettings = ModernPerformanceSettingsManager()
-    @State private var slideshowSettings = ModernSlideshowSettingsManager()
-    @State private var sortSettings = ModernSortSettingsManager()
-    @State private var transitionSettings = ModernTransitionSettingsManager()
-    @State private var uiControlSettings = ModernUIControlSettingsManager()
+    @State private var appSettingsCoordinator = AppSettingsCoordinator()
+    @State private var localizationSettings: ModernLocalizationSettingsManager?
     @StateObject private var settingsWindowManager = SettingsWindowManager()
     @EnvironmentObject private var recentFilesManager: RecentFilesManager
+    @Environment(\.localizationService) private var localizationService
+    
+    // Add a computed property to ensure SwiftUI observes the LocalizationService
+    private var observedLanguage: String {
+        localizationService?.currentLanguage.rawValue ?? "system"
+    }
+    @State private var languageUpdateTrigger = 0
+    
+    // Add direct observation of the LocalizationService
+    @State private var currentLanguageObserver: String = ""
+    
+    init() {
+        // Initialize is now moved to onAppear to ensure environment values are available
+    }
     
     var body: some View {
         Group {
-            if isInitialized, 
-               let viewModel = viewModel, 
-               let keyboardHandler = keyboardHandler,
-               let uiControlStateManager = uiControlStateManager {
+            if isInitialized {
+                mainContentView
+            } else {
+                loadingView
+            }
+        }
+        .onAppear {
+            if !isInitialized {
+                initializeApp()
+                setupMenuNotificationObserver()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("ContentView: Received language change notification, trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLanguage) { oldValue, newValue in
+            languageUpdateTrigger += 1
+            ProductionLogger.debug("ContentView: Language changed from \(oldValue?.rawValue ?? "nil") to \(newValue?.rawValue ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .onChange(of: localizationService?.currentLocale) { oldValue, newValue in
+            languageUpdateTrigger += 1 
+            ProductionLogger.debug("ContentView: Locale changed from \(oldValue?.identifier ?? "nil") to \(newValue?.identifier ?? "nil"), trigger: \(languageUpdateTrigger)")
+        }
+        .id(languageUpdateTrigger) // Force view recreation when language changes
+    }
+    
+    @ViewBuilder
+    private var mainContentView: some View {
+        if let viewModel = viewModel, 
+           let keyboardHandler = keyboardHandler,
+           let uiInteractionManager = uiInteractionManager {
+            slideshowContentView(viewModel: viewModel, keyboardHandler: keyboardHandler, uiInteractionManager: uiInteractionManager)
+        } else {
+            componentLoadingView
+        }
+    }
+    
+    @ViewBuilder
+    private func slideshowContentView(viewModel: any SlideshowViewModelProtocol, keyboardHandler: KeyboardHandler, uiInteractionManager: UIInteractionManager) -> some View {
                 ZStack {
-                    // Main content (gesture functionality removed)
-                    SimpleImageDisplayView(
+                    // Main content with unified ViewModel approach
+                    // Use UnifiedImageDisplayView for all ViewModel types
+                    UnifiedImageDisplayView(
                         viewModel: viewModel,
-                        transitionSettings: transitionSettings
+                        transitionSettings: appSettingsCoordinator.transition,
+                        uiInteractionManager: uiInteractionManager
                     )
-                        .ignoresSafeArea()
+                    .ignoresSafeArea()
+                    
+                    // Window level accessor
+                    WindowLevelAccessor(windowLevel: viewModel.windowLevel)
+                        .allowsHitTesting(false)
+                        .frame(width: 0, height: 0)
                     
                     // Minimal controls overlay (always present in ZStack, visibility controlled internally)
                     MinimalControlsView(
                         viewModel: viewModel,
-                        uiControlStateManager: uiControlStateManager,
-                        uiControlSettings: uiControlSettings
+                        uiInteractionManager: uiInteractionManager,
+                        uiControlSettings: appSettingsCoordinator.uiControl,
+                        localizationService: localizationService
                     )
                     .shortcutTooltip("Hide/Show Controls", shortcut: "H")
                     
                     // Detailed info overlay (shown when toggled)
                     DetailedInfoOverlay(
                         viewModel: viewModel,
-                        uiControlStateManager: uiControlStateManager,
-                        uiControlSettings: uiControlSettings
+                        uiInteractionManager: uiInteractionManager,
+                        uiControlSettings: appSettingsCoordinator.uiControl,
+                        localizationService: localizationService
                     )
                 }
                 .keyboardHandler(keyboardHandler)
                 .onHover { hovering in
                     if hovering {
-                        uiControlStateManager.handleMouseInteraction(at: NSEvent.mouseLocation)
+                        uiInteractionManager.handleMouseInteraction(at: NSEvent.mouseLocation)
                     }
-                    uiControlStateManager.updateMouseInWindow(hovering)
+                    uiInteractionManager.isMouseInWindow = hovering
                 }
                 // Temporarily disable tap gesture to test swipe functionality
                 // .onTapGesture {
-                //     uiControlStateManager.handleGestureInteraction()
+                //     uiInteractionManager.handleUserInteraction()
                 // }
                 .alert("Error", isPresented: .constant(viewModel.error != nil)) {
                     Button("OK") {
@@ -71,9 +128,9 @@ struct ContentView: View {
                         Text(error.localizedDescription)
                     }
                 }
-                // Loading overlay for detailed feedback
+                // Loading overlay for detailed feedback - only show when no photos are loaded yet
                 .overlay {
-                    if viewModel.loadingState.isLoading {
+                    if viewModel.loadingState.isLoading && viewModel.slideshow?.currentPhoto == nil {
                         ZStack {
                             Color.black.opacity(0.8)
                                 .ignoresSafeArea()
@@ -99,34 +156,43 @@ struct ContentView: View {
                         }
                     }
                 }
-            } else {
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .scaleEffect(2.0)
-                        .tint(.white)
-                    
-                    VStack(spacing: 8) {
-                        Text("Swift Photos")
-                            .font(.title)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                        
-                        Text("Initializing application...")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .onAppear {
-                    ProductionLogger.lifecycle("ContentView loading screen appeared")
-                }
+    }
+    
+    @ViewBuilder
+    private var componentLoadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle())
+                .scaleEffect(2.0)
+                .tint(.white)
+            
+            Text("Loading components...")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+        }
+    }
+    
+    @ViewBuilder
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle())
+                .scaleEffect(2.0)
+                .tint(.white)
+            
+            VStack(spacing: 8) {
+                Text("Swift Photos")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                
+                Text("Initializing application...")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
             }
         }
         .onAppear {
-            if !isInitialized {
-                initializeApp()
-                setupMenuNotificationObserver()
-            }
+            ProductionLogger.lifecycle("ContentView loading screen appeared")
         }
     }
     
@@ -139,27 +205,42 @@ struct ContentView: View {
             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
             
             ProductionLogger.debug("Creating dependencies")
+            // Create localization settings with global service
+            let createdLocalizationSettings = ModernLocalizationSettingsManager(localizationService: localizationService)
+            
             // Create dependencies safely using persistent SecureFileAccess
             let imageLoader = ImageLoader()
-            let imageCache = ImageCache()
-            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings)
+            let imageCache = UnifiedImageCacheBridgeFactory.createForSlideshow()
+            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: appSettingsCoordinator.sort, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
-            // Create view model and UI managers
-            let createdViewModel = ModernSlideshowViewModel(domainService: domainService, fileAccess: secureFileAccess, performanceSettings: performanceSettings, slideshowSettings: slideshowSettings, sortSettings: sortSettings)
-            let createdKeyboardHandler = KeyboardHandler()
-            let createdUIControlStateManager = UIControlStateManager(uiControlSettings: uiControlSettings, slideshowViewModel: createdViewModel)
+            // Create view model using ViewModelFactory unified approach
+            ProductionLogger.info("ContentView: Creating unified ViewModel with automatic architecture detection")
+            // Create settings coordinator from individual settings
+            // Use the unified AppSettingsCoordinator instance
+            let settingsCoordinator = appSettingsCoordinator
             
-            // Setup keyboard handler connections
+            let createdViewModel = await ViewModelFactory.createSlideshowViewModel(
+                fileAccess: secureFileAccess,
+                settingsCoordinator: settingsCoordinator,
+                localizationService: localizationService!,
+                preferRepositoryPattern: true
+            )
+            
+            let createdKeyboardHandler = KeyboardHandler()
+            
+            // Setup UI Interaction Manager with unified ViewModel approach
+            let createdUIInteractionManager = UIInteractionManager(
+                uiControlSettings: appSettingsCoordinator.uiControl,
+                slideshowViewModel: createdViewModel
+            )
+            
+            // Setup keyboard handler connections for both ViewModel types
             createdKeyboardHandler.viewModel = createdViewModel
-            createdKeyboardHandler.performanceSettings = performanceSettings
+            createdKeyboardHandler.performanceSettings = appSettingsCoordinator.performance
             createdKeyboardHandler.onOpenSettings = {
                 settingsWindowManager.openSettingsWindow(
-                    performanceSettings: performanceSettings,
-                    slideshowSettings: slideshowSettings,
-                    sortSettings: sortSettings,
-                    transitionSettings: transitionSettings,
-                    uiControlSettings: uiControlSettings,
+                    settingsCoordinator: settingsCoordinator,
                     recentFilesManager: recentFilesManager
                 )
             }
@@ -169,19 +250,15 @@ struct ContentView: View {
                 }
             }
             
-            // Setup UI control state manager callbacks
+            // Setup UI interaction manager callbacks
             createdKeyboardHandler.onKeyboardInteraction = {
-                createdUIControlStateManager.handleKeyboardInteraction()
+                createdUIInteractionManager.handleKeyboardInteraction()
             }
             createdKeyboardHandler.onToggleDetailedInfo = {
-                createdUIControlStateManager.toggleDetailedInfo()
+                createdUIInteractionManager.toggleDetailedInfo()
             }
             createdKeyboardHandler.onToggleControlsVisibility = {
-                if createdUIControlStateManager.isControlsVisible {
-                    createdUIControlStateManager.hideControls(force: true)
-                } else {
-                    createdUIControlStateManager.showControls()
-                }
+                createdUIInteractionManager.toggleControls()
             }
             
             // Zoom callbacks removed (gesture functionality removed)
@@ -189,7 +266,8 @@ struct ContentView: View {
             // Set state
             self.viewModel = createdViewModel
             self.keyboardHandler = createdKeyboardHandler
-            self.uiControlStateManager = createdUIControlStateManager
+            self.uiInteractionManager = createdUIInteractionManager
+            self.localizationSettings = createdLocalizationSettings
             self.isInitialized = true
             
             ProductionLogger.lifecycle("Initialization completed successfully")
@@ -220,9 +298,9 @@ struct ContentView: View {
             do {
                 // Create security bookmark for the folder
                 let bookmarkData = try newFolderURL.bookmarkData(
-                    options: [.withSecurityScope],
-                    includingResourceValuesForKeys: nil,
-                    relativeTo: nil
+                    options: [URL.BookmarkCreationOptions.withSecurityScope],
+                    includingResourceValuesForKeys: nil as Set<URLResourceKey>?,
+                    relativeTo: nil as URL?
                 )
                 
                 // Add to recent files
@@ -253,6 +331,23 @@ struct ContentView: View {
                 }
             }
         }
+        
+        // Listen for window level changes from Window menu
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("SwiftPhotosWindowLevelChanged"),
+            object: nil,
+            queue: .main
+        ) { @Sendable notification in
+            // Extract windowLevel outside async context to avoid data race
+            guard let windowLevel = notification.object as? WindowLevel else { return }
+            
+            Task { @MainActor [windowLevel] in
+                if let viewModel = self.viewModel {
+                    ProductionLogger.userAction("Received window level change: \(windowLevel.displayName)")
+                    viewModel.windowLevel = windowLevel
+                }
+            }
+        }
     }
     
     private func handleFolderSelectedFromMenu(url: URL) async {
@@ -267,9 +362,9 @@ struct ContentView: View {
         viewModel.selectedFolderURL = url
         
         // Generate new random seed if sort order is random
-        if sortSettings.settings.order == .random {
+        if appSettingsCoordinator.sort.settings.order == .random {
             ProductionLogger.debug("Generating new random seed for menu folder selection")
-            sortSettings.regenerateRandomSeed()
+            appSettingsCoordinator.sort.regenerateRandomSeedSilently()
         }
         
         // Create slideshow from the selected folder with proper security scoped access
@@ -297,6 +392,7 @@ struct ContentView: View {
         viewModel.loadingState = .notLoading
     }
     
+    
     private func createSlideshowForMenuSelection(from folderURL: URL) async throws {
         ProductionLogger.userAction("Creating slideshow from menu selection: \(folderURL.path)")
         
@@ -317,13 +413,13 @@ struct ContentView: View {
             }
             
             let imageLoader = ImageLoader()
-            let imageCache = ImageCache()
-            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: sortSettings)
+            let imageCache = UnifiedImageCacheBridgeFactory.createForSlideshow()
+            let repository = FileSystemPhotoRepository(fileAccess: secureFileAccess, imageLoader: imageLoader, sortSettings: appSettingsCoordinator.sort, localizationService: localizationService!)
             let domainService = SlideshowDomainService(repository: repository, cache: imageCache)
             
             // Apply slideshow settings
             let mode: Slideshow.SlideshowMode = .sequential
-            let customInterval = try SlideshowInterval(slideshowSettings.settings.slideDuration)
+            let customInterval = try SlideshowInterval(appSettingsCoordinator.slideshow.settings.slideDuration)
             
             ProductionLogger.debug("Creating slideshow with domain service")
             let newSlideshow = try await domainService.createSlideshow(
@@ -333,18 +429,19 @@ struct ContentView: View {
             )
             
             ProductionLogger.info("Created slideshow with \(newSlideshow.photos.count) photos")
-            viewModel.slideshow = newSlideshow
+            ProductionLogger.debug("ContentView: Created slideshow details - photos.count: \(newSlideshow.photos.count), currentIndex: \(newSlideshow.currentIndex), count: \(newSlideshow.count), isEmpty: \(newSlideshow.isEmpty)")
+            viewModel.setSlideshow(newSlideshow)
             
             if !newSlideshow.isEmpty {
                 // Auto-recommend settings for collection size
-                let recommendedSettings = performanceSettings.recommendedSettings(for: newSlideshow.photos.count)
-                if recommendedSettings != performanceSettings.settings {
+                let recommendedSettings = appSettingsCoordinator.performance.recommendedSettings(for: newSlideshow.photos.count)
+                if recommendedSettings != appSettingsCoordinator.performance.settings {
                     ProductionLogger.info("Auto-applying recommended settings for \(newSlideshow.photos.count) photos")
-                    performanceSettings.updateSettings(recommendedSettings)
+                    appSettingsCoordinator.performance.updateSettings(recommendedSettings)
                 }
                 
                 // Load current image
-                if newSlideshow.photos.count > performanceSettings.settings.largeCollectionThreshold {
+                if newSlideshow.photos.count > appSettingsCoordinator.performance.settings.largeCollectionThreshold {
                     ProductionLogger.performance("Large collection detected - using virtual loading")
                     // Use viewModel's internal loading mechanisms
                     viewModel.currentPhoto = newSlideshow.currentPhoto
@@ -356,7 +453,7 @@ struct ContentView: View {
                 }
                 
                 // Auto-start slideshow if enabled
-                if slideshowSettings.settings.autoStart {
+                if appSettingsCoordinator.slideshow.settings.autoStart {
                     ProductionLogger.debug("Auto-starting slideshow per settings")
                     viewModel.play()
                 }

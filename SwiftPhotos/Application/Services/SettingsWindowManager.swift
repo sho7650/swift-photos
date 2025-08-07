@@ -7,23 +7,31 @@ public class SettingsWindowManager: ObservableObject {
     private var settingsWindow: NSWindow?
     
     public func openSettingsWindow(
-        performanceSettings: ModernPerformanceSettingsManager,
-        slideshowSettings: ModernSlideshowSettingsManager,
-        sortSettings: ModernSortSettingsManager,
-        transitionSettings: ModernTransitionSettingsManager,
-        uiControlSettings: ModernUIControlSettingsManager? = nil,
+        settingsCoordinator: AppSettingsCoordinator,
         recentFilesManager: RecentFilesManager? = nil
     ) {
         // Close existing window if open
         closeSettingsWindow()
         
-        // Create new modern sidebar-based settings window
+        // CRITICAL FIX: Use the SAME settings coordinator that UnifiedSlideshowViewModel uses
+        // This ensures both components are synchronized and use the same settings manager instances
+        let settingsCoordinatorAddress = "\(Unmanaged.passUnretained(settingsCoordinator).toOpaque())"
+        ProductionLogger.debug("SettingsWindowManager: Using settings coordinator instance: \(settingsCoordinatorAddress)")
+        
+        // Extract the Modern* managers from AppSettingsCoordinator
+        // These are the SAME instances that SlideshowViewModel uses directly
+        let modernSortSettings = settingsCoordinator.sort
+        let modernSortSettingsAddress = "\(Unmanaged.passUnretained(modernSortSettings).toOpaque())"
+        ProductionLogger.debug("SettingsWindowManager: Using ModernSortSettingsManager instance: \(modernSortSettingsAddress)")
+        
+        // Create new modern sidebar-based settings window using the SAME settings managers
         let settingsView = SidebarSettingsWindow(
-            performanceSettings: performanceSettings,
-            slideshowSettings: slideshowSettings,
-            sortSettings: sortSettings,
-            transitionSettings: transitionSettings,
-            uiControlSettings: uiControlSettings ?? ModernUIControlSettingsManager()
+            performanceSettings: settingsCoordinator.performance,
+            slideshowSettings: settingsCoordinator.slideshow,
+            sortSettings: settingsCoordinator.sort,
+            transitionSettings: settingsCoordinator.transition,
+            uiControlSettings: settingsCoordinator.uiControl,
+            localizationSettings: ModernLocalizationSettingsManager()
         )
         .environmentObject(recentFilesManager ?? RecentFilesManager())
         
@@ -55,14 +63,13 @@ public class SettingsWindowManager: ObservableObject {
         window.setContentSize(NSSize(width: 900, height: 650))
         window.center()
         
-        ProductionLogger.debug("SettingsWindowManager: Created modern sidebar settings window with size: \(window.frame.size)")
+        ProductionLogger.debug("SettingsWindowManager: Created modern sidebar settings window with synchronized settings managers")
         
         self.settingsWindow = window
         window.makeKeyAndOrderFront(nil)
         
-        ProductionLogger.userAction("SettingsWindowManager: Opened modern settings window")
+        ProductionLogger.userAction("SettingsWindowManager: Opened modern settings window with synchronized settings")
     }
-    
     
     public func closeSettingsWindow() {
         settingsWindow?.close()
@@ -73,4 +80,6 @@ public class SettingsWindowManager: ObservableObject {
     public var isWindowOpen: Bool {
         return settingsWindow?.isVisible ?? false
     }
+    
+    // Note: Now using AppSettingsCoordinator managers directly - no need for helper methods
 }

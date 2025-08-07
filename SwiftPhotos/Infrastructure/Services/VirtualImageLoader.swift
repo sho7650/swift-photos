@@ -6,8 +6,8 @@ import AppKit
 actor VirtualImageLoader {
     private var windowSize: Int
     private let imageLoader: ImageLoader
-    private var loadedImages: [UUID: NSImage] = [:]
-    private var loadingTasks: [UUID: Task<NSImage, Error>] = [:]
+    private var loadedImages: [UUID: SendableImage] = [:]
+    private var loadingTasks: [UUID: Task<SendableImage, Error>] = [:]
     private var maxMemoryUsage: Int // in MB
     private var settings: PerformanceSettings
     
@@ -16,8 +16,9 @@ actor VirtualImageLoader {
     private var cacheMisses: Int = 0
     private var totalLoads: Int = 0
     
-    // Completion callback for UI integration
-    private var onImageLoaded: (@MainActor (UUID, NSImage) -> Void)?
+    // Completion callbacks for UI integration
+    private var onImageLoaded: (@MainActor (UUID, SendableImage) -> Void)?
+    private var onImageLoadFailed: (@MainActor (UUID, Error) -> Void)?
     
     init(settings: PerformanceSettings = .default) {
         self.settings = settings
@@ -29,8 +30,13 @@ actor VirtualImageLoader {
     }
     
     /// Set callback for when images finish loading
-    func setImageLoadedCallback(_ callback: @escaping @MainActor (UUID, NSImage) -> Void) {
+    func setImageLoadedCallback(_ callback: @escaping @MainActor (UUID, SendableImage) -> Void) {
         self.onImageLoaded = callback
+    }
+    
+    /// Set callback for when image loading fails
+    func setImageLoadFailedCallback(_ callback: @escaping @MainActor (UUID, Error) -> Void) {
+        self.onImageLoadFailed = callback
     }
     
     /// Update performance settings at runtime
@@ -107,7 +113,7 @@ actor VirtualImageLoader {
         await withTaskGroup(of: Void.self) { group in
             var semaphore = 0
             
-            for (photo, distance, idx) in photosToLoad {
+            for (photo, distance, _) in photosToLoad {
                 // セマフォで並行数制御
                 while semaphore >= maxConcurrent {
                     await group.next()
@@ -163,7 +169,7 @@ actor VirtualImageLoader {
     }
     
     /// Get a loaded image if available
-    func getImage(for photoId: UUID) -> NSImage? {
+    func getImage(for photoId: UUID) -> SendableImage? {
         if let image = loadedImages[photoId] {
             cacheHits += 1
             return image
@@ -175,13 +181,15 @@ actor VirtualImageLoader {
     
     /// プログレスバージャンプ専用: 全タスクをキャンセルして特定画像のロードを優先
     func cancelAllForProgressJump() async {
-        print("🚫 VirtualImageLoader: Cancelling all tasks for progress bar jump")
-        
-        for (photoId, task) in loadingTasks {
-            task.cancel()
-            print("🚫 VirtualImageLoader: Cancelled task for \(photoId)")
+        let taskCount = loadingTasks.count
+        if taskCount > 0 {
+            ProductionLogger.debug("VirtualImageLoader: Cancelling \(taskCount) loading tasks")
+            
+            for (_, task) in loadingTasks {
+                task.cancel()
+            }
+            loadingTasks.removeAll()
         }
-        loadingTasks.removeAll()
     }
     
     /// 特定画像のロードタスクをキャンセル
@@ -225,7 +233,7 @@ actor VirtualImageLoader {
     private func loadImage(photo: Photo) async {
         totalLoads += 1
         
-        let task = Task<NSImage, Error> {
+        let task = Task<SendableImage, Error> {
             try await imageLoader.loadImage(from: photo.imageURL)
         }
         
@@ -256,7 +264,12 @@ actor VirtualImageLoader {
         } catch {
             loadingTasks.removeValue(forKey: photo.id)
             if !Task.isCancelled {
-                print("Failed to load image for photo \(photo.id): \(error)")
+                ProductionLogger.error("Failed to load image for photo \(photo.id): \(error)")
+                
+                // Notify UI that image loading failed
+                if let callback = onImageLoadFailed {
+                    await callback(photo.id, error)
+                }
             }
         }
     }
@@ -290,19 +303,62 @@ actor VirtualImageLoader {
         }
     }
     
-    /// Calculate effective window size based on collection size and settings
+    /// Calculate effective window size based on collection size, memory usage, and performance
     private func calculateEffectiveWindowSize(collectionSize: Int) -> Int {
+        // Base calculation using collection size
+        let baseSize = calculateBaseSizeForCollection(collectionSize)
+        
+        // Get current memory usage
+        let currentMemoryMB = getMemoryUsage()
+        let memoryPressure = Double(currentMemoryMB) / Double(maxMemoryUsage)
+        
+        // Get cache hit rate for performance feedback
+        let stats = getCacheStatistics()
+        let hitRateBonus = stats.hitRate > 0.8 ? 1.2 : (stats.hitRate < 0.5 ? 0.8 : 1.0)
+        
+        // Apply memory and performance adjustments
+        var adjustedSize = Double(baseSize)
+        
+        // Reduce window size under memory pressure
+        if memoryPressure > 0.8 {
+            adjustedSize *= 0.6 // Aggressive reduction
+        } else if memoryPressure > 0.6 {
+            adjustedSize *= 0.8 // Moderate reduction
+        }
+        
+        // Adjust based on cache performance
+        adjustedSize *= hitRateBonus
+        
+        // Ensure minimum efficiency and respect limits
+        let finalSize = max(10, min(windowSize, Int(adjustedSize)))
+        
+        ProductionLogger.debug("VirtualImageLoader: Window size calculation - base: \(baseSize), memory pressure: \(String(format: "%.2f", memoryPressure)), hit rate: \(String(format: "%.2f", stats.hitRate)), final: \(finalSize)")
+        
+        return finalSize
+    }
+    
+    /// Calculate base window size for collection size
+    private func calculateBaseSizeForCollection(_ collectionSize: Int) -> Int {
         switch collectionSize {
         case 0...100:
             return min(windowSize, collectionSize)
-        case 101...1000:
+        case 101...500:
+            // Small-medium collections: 10-20% window
+            return min(windowSize, max(20, collectionSize / 5))
+        case 501...2000:
+            // Medium collections: 5-10% window
             return min(windowSize, max(50, collectionSize / 10))
-        case 1001...10000:
-            return min(windowSize, max(100, collectionSize / 50))
+        case 2001...10000:
+            // Large collections: 2-5% window
+            return min(windowSize, max(100, collectionSize / 25))
+        case 10001...50000:
+            // Very large collections: 1-2% window
+            return min(windowSize, max(200, collectionSize / 75))
         default:
-            // For massive collections (10k+), use adaptive sizing
-            let adaptiveSize = max(200, min(windowSize, collectionSize / 100))
-            return adaptiveSize
+            // Massive collections (50k+): <1% window with logarithmic scaling
+            let logScale = log10(Double(collectionSize))
+            let dynamicSize = max(300, min(windowSize, Int(500 * logScale)))
+            return dynamicSize
         }
     }
     

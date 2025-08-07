@@ -2,7 +2,7 @@ import Foundation
 
 /// Configuration settings for the application's menu bar behavior
 /// Follows Domain-Driven Design principles with immutability and validation
-public struct MenuConfiguration: Codable, Equatable {
+public struct MenuConfiguration: Codable, Equatable, Sendable {
     /// Maximum number of recent files to maintain
     public let maxRecentFiles: Int
     

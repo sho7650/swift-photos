@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Slideshow: Equatable {
+public struct Slideshow: Equatable, Sendable {
     public private(set) var photos: [Photo]
     public private(set) var currentIndex: Int
     public private(set) var interval: SlideshowInterval
@@ -15,24 +15,29 @@ public struct Slideshow: Equatable {
         self.state = .stopped
     }
     
-    public enum SlideshowMode: String, CaseIterable, Equatable {
+    public enum SlideshowMode: String, CaseIterable, Equatable, Sendable {
         case sequential = "sequential"
-        case singleLoop = "single_loop"
         
         public var displayName: String {
             switch self {
             case .sequential:
                 return "Sequential"
-            case .singleLoop:
-                return "Single Loop"
             }
         }
     }
     
-    public enum SlideshowState: Equatable {
+    public enum SlideshowState: Equatable, Sendable {
         case stopped
         case playing
         case paused
+        
+        public var description: String {
+            switch self {
+            case .stopped: return "stopped"
+            case .playing: return "playing"
+            case .paused: return "paused"
+            }
+        }
     }
     
     public var currentPhoto: Photo? {
@@ -79,23 +84,18 @@ public struct Slideshow: Equatable {
     public mutating func nextPhoto() {
         guard !isEmpty else { return }
         
-        switch mode {
-        case .sequential:
-            currentIndex = (currentIndex + 1) % photos.count
-        case .singleLoop:
-            break
-        }
+        // Always advance to next photo regardless of mode
+        // singleLoop mode should still advance but may have different behavior at end
+        let oldIndex = currentIndex
+        currentIndex = (currentIndex + 1) % photos.count
+        print("📸 Slideshow.nextPhoto(): Advanced from photo \(oldIndex) to \(currentIndex) (total: \(photos.count))")
     }
     
     public mutating func previousPhoto() {
         guard !isEmpty else { return }
         
-        switch mode {
-        case .sequential:
-            currentIndex = currentIndex > 0 ? currentIndex - 1 : photos.count - 1
-        case .singleLoop:
-            break
-        }
+        // Always move to previous photo regardless of mode
+        currentIndex = currentIndex > 0 ? currentIndex - 1 : photos.count - 1
     }
     
     public mutating func setInterval(_ newInterval: SlideshowInterval) {

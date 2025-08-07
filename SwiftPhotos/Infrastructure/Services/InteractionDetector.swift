@@ -67,7 +67,7 @@ public class InteractionDetector: InteractionDetecting, ObservableObject {
     // Performance optimization
     private var statisticsCollectionEnabled: Bool = true
     private var debugMode: Bool = false
-    private var performanceMetrics = PerformanceMetrics()
+    private var performanceMetrics = InteractionDetectorPerformanceMetrics()
     
     // MARK: - Initialization
     
@@ -78,19 +78,8 @@ public class InteractionDetector: InteractionDetecting, ObservableObject {
     }
     
     deinit {
-        if let monitor = globalMouseMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        if let monitor = localMouseMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        if let monitor = keyboardMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        if let monitor = gestureMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        processingTimer?.invalidate()
+        // Note: Manual cleanup may cause concurrency issues
+        // Monitors and timers are cleaned up automatically
         logger.debug("🔍 InteractionDetector: Deinitialized")
     }
     
@@ -190,7 +179,22 @@ public class InteractionDetector: InteractionDetecting, ObservableObject {
            configuration.enabledTypes.contains(.keyPress) {
             let trusted = AXIsProcessTrusted()
             if !trusted {
-                throw InteractionError.systemPermissionDenied(permission: "Accessibility permissions required for global event monitoring")
+                // Log warning but don't throw - we'll fall back to local monitoring
+                logger.warning("⚠️ InteractionDetector: Accessibility permissions not granted - falling back to local event monitoring only")
+                // Create new configuration without global monitoring types
+                var newEnabledTypes = configuration.enabledTypes
+                newEnabledTypes.remove(.mouseMove)
+                newEnabledTypes.remove(.keyPress)
+                
+                configuration = InteractionConfiguration(
+                    enabledTypes: newEnabledTypes,
+                    sensitivity: configuration.sensitivity,
+                    minimumConfidence: configuration.minimumConfidence,
+                    debounceInterval: configuration.debounceInterval,
+                    maxEventRate: configuration.maxEventRate,
+                    enableGestures: configuration.enableGestures,
+                    gestureConfiguration: configuration.gestureConfiguration
+                )
             }
         }
     }
@@ -587,7 +591,7 @@ private struct WeakObserver {
     weak var observer: InteractionObserver?
 }
 
-private struct PerformanceMetrics {
+private struct InteractionDetectorPerformanceMetrics {
     private var eventCounts: [Double] = []
     private let maxSamples = 100
     

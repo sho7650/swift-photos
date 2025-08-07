@@ -3,7 +3,7 @@ import AppKit
 
 @MainActor
 public class KeyboardHandler: ObservableObject {
-    public weak var viewModel: ModernSlideshowViewModel?
+    public weak var viewModel: (any SlideshowViewModelProtocol)?
     public weak var performanceSettings: ModernPerformanceSettingsManager?
     public var onOpenSettings: (() -> Void)?
     public var onOpenFolder: (() -> Void)?
@@ -18,6 +18,27 @@ public class KeyboardHandler: ObservableObject {
     // Zoom callback functionality removed
     
     public init() {}
+    
+    // MARK: - Fullscreen Management
+    
+    private func toggleFullscreen() {
+        ProductionLogger.userAction("KeyboardHandler: Toggling fullscreen")
+        
+        DispatchQueue.main.async {
+            guard let window = NSApplication.shared.mainWindow else {
+                ProductionLogger.error("KeyboardHandler: No main window found for fullscreen toggle")
+                return
+            }
+            
+            if window.styleMask.contains(.fullScreen) {
+                ProductionLogger.debug("KeyboardHandler: Exiting fullscreen")
+                window.toggleFullScreen(nil)
+            } else {
+                ProductionLogger.debug("KeyboardHandler: Entering fullscreen")
+                window.toggleFullScreen(nil)
+            }
+        }
+    }
     
     public func handleKeyEvent(_ event: NSEvent) -> Bool {
         guard let viewModel = viewModel else { return false }
@@ -34,11 +55,15 @@ public class KeyboardHandler: ObservableObject {
             handled = true
             
         case 124, 125: // Right arrow, Down arrow - Next photo
-            viewModel.nextPhoto()
+            Task {
+                await viewModel.nextPhoto()
+            }
             handled = true
             
         case 123, 126: // Left arrow, Up arrow - Previous photo
-            viewModel.previousPhoto()
+            Task {
+                await viewModel.previousPhoto()
+            }
             handled = true
             
         case 53: // Escape - Stop/Pause
@@ -84,7 +109,7 @@ public class KeyboardHandler: ObservableObject {
         case 3: // 'F' key
             if !event.modifierFlags.contains(.command) {
                 ProductionLogger.userAction("KeyboardHandler: Fullscreen toggle shortcut pressed")
-                TransparencyManager.shared.toggleFullscreen()
+                toggleFullscreen()
                 handled = true
             }
             
@@ -111,17 +136,45 @@ public class KeyboardHandler: ObservableObject {
 
 public struct KeyboardHandlerViewModifier: ViewModifier {
     let keyboardHandler: KeyboardHandler
+    @State private var monitor: Any?
     
     public func body(content: Content) -> some View {
         content
+            .focusable()
             .onAppear {
-                NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-                    if keyboardHandler.handleKeyEvent(event) {
-                        return nil
-                    }
-                    return event
-                }
+                setupKeyboardMonitor()
             }
+            .onDisappear {
+                removeKeyboardMonitor()
+            }
+    }
+    
+    private func setupKeyboardMonitor() {
+        ProductionLogger.debug("KeyboardHandlerViewModifier: Setting up keyboard monitor")
+        
+        // Remove existing monitor first
+        removeKeyboardMonitor()
+        
+        // Add new local monitor for key down events
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            ProductionLogger.debug("KeyboardHandlerViewModifier: Received key event - keyCode: \(event.keyCode), modifierFlags: \(event.modifierFlags)")
+            
+            if keyboardHandler.handleKeyEvent(event) {
+                ProductionLogger.debug("KeyboardHandlerViewModifier: Key event handled, consuming event")
+                return nil  // Consume the event
+            }
+            
+            ProductionLogger.debug("KeyboardHandlerViewModifier: Key event not handled, passing through")
+            return event
+        }
+    }
+    
+    private func removeKeyboardMonitor() {
+        if let monitor = monitor {
+            ProductionLogger.debug("KeyboardHandlerViewModifier: Removing keyboard monitor")
+            NSEvent.removeMonitor(monitor)
+            self.monitor = nil
+        }
     }
 }
 

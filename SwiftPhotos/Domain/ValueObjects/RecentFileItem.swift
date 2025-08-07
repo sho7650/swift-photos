@@ -2,7 +2,7 @@ import Foundation
 
 /// Value object representing a recently accessed folder in the slideshow application
 /// Follows Domain-Driven Design principles with immutability and validation
-public struct RecentFileItem: Codable, Equatable, Identifiable, Hashable {
+public struct RecentFileItem: Codable, Equatable, Identifiable, Hashable, Sendable {
     /// Unique identifier for the recent file item
     public let id: UUID
     

@@ -8,29 +8,39 @@ struct SortSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             // Sort Presets Section
-            SortSettingsSection(
-                title: "Sort Presets",
+            SettingsComponentFactory.createSection(
+                title: L10n.SettingsString.sortPresets(),
                 icon: "arrow.up.arrow.down",
-                description: "Quick sorting configurations for common use cases"
+                description: L10n.SettingsString.sortPresetsDescription()
             ) {
                 VStack(spacing: 8) {
                     HStack(spacing: 12) {
-                        Button("Alphabetical") { settings.updateSettings(.alphabetical) }
+                        Button(L10n.ButtonString.alphabetical()) { 
+                            applyPresetPreservingDirection(.alphabetical)
+                        }
                             .buttonStyle(.bordered)
-                        Button("Chronological") { settings.updateSettings(.chronological) }
+                        Button(L10n.ButtonString.chronological()) { 
+                            applyPresetPreservingDirection(.chronological)
+                        }
                             .buttonStyle(.bordered)
-                        Button("Newest First") { settings.updateSettings(.newestFirst) }
+                        Button(L10n.ButtonString.newestFirst()) { 
+                            applyPresetWithDirectionOverride(.newestFirst)
+                        }
                             .buttonStyle(.bordered)
-                        Button("Largest First") { settings.updateSettings(.largestFirst) }
+                        Button(L10n.ButtonString.largestFirst()) { 
+                            applyPresetWithDirectionOverride(.largestFirst)
+                        }
                             .buttonStyle(.bordered)
                     }
                     
                     HStack {
-                        Button("Random") { settings.updateSettings(.randomized) }
+                        Button(L10n.ButtonString.random()) { 
+                            applyPresetWithDirectionOverride(.randomized)
+                        }
                             .buttonStyle(.bordered)
                         
                         if settings.settings.order == .random {
-                            Button("New Random Order") {
+                            Button(L10n.ButtonString.newRandomOrder()) {
                                 settings.regenerateRandomSeed()
                             }
                             .buttonStyle(.borderedProminent)
@@ -40,21 +50,37 @@ struct SortSettingsView: View {
             }
             
             // Sort Order Section
-            SortSettingsSection(
-                title: "Sort Order",
+            SettingsComponentFactory.createSection(
+                title: L10n.SettingsString.sortOrder(),
                 icon: "list.bullet",
-                description: "Choose how photos are ordered in the slideshow"
+                description: L10n.SettingsString.sortOrderDescription()
             ) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Picker("Sort Order", selection: Binding(
+                    Picker(L10n.SettingsString.sortOrder(), selection: Binding(
                         get: { settings.settings.order },
                         set: { newOrder in
+                            // ENHANCED DEBUGGING: Trace Settings Window manager instance
+                            let settingsManagerAddress = "\(Unmanaged.passUnretained(settings).toOpaque())"
+                            ProductionLogger.debug("SortSettingsView: Settings manager instance: \(settingsManagerAddress)")
+                            ProductionLogger.debug("SortSettingsView: User selected sort order: \(newOrder.displayName)")
+                            
                             let newSettings = SortSettings(
                                 order: newOrder,
                                 direction: settings.settings.direction,
                                 randomSeed: newOrder == .random ? UInt64.random(in: 0...UInt64.max) : settings.settings.randomSeed
                             )
+                            
+                            ProductionLogger.debug("SortSettingsView: About to save settings: \(newSettings)")
                             settings.updateSettings(newSettings)
+                            
+                            // Verify what was actually saved to UserDefaults
+                            if let data = UserDefaults.standard.data(forKey: "SwiftPhotosSortSettings"),
+                               let savedSettings = try? JSONDecoder().decode(SortSettings.self, from: data) {
+                                ProductionLogger.debug("SortSettingsView: UserDefaults after save: \(savedSettings)")
+                                ProductionLogger.debug("SortSettingsView: UserDefaults sort order after save: \(savedSettings.order.displayName)")
+                            } else {
+                                ProductionLogger.debug("SortSettingsView: Failed to read back saved settings from UserDefaults")
+                            }
                         }
                     )) {
                         ForEach(SortSettings.SortOrder.allCases, id: \.self) { order in
@@ -73,21 +99,39 @@ struct SortSettingsView: View {
             
             // Sort Direction Section (not applicable for random)
             if settings.settings.order != .random {
-                SortSettingsSection(
-                    title: "Sort Direction",
+                SettingsComponentFactory.createSection(
+                    title: L10n.SettingsString.sortDirection(),
                     icon: "arrow.up.down",
-                    description: "Choose ascending or descending order"
+                    description: L10n.SettingsString.sortDirectionDescription()
                 ) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Picker("Sort Direction", selection: Binding(
+                        Picker(L10n.SettingsString.sortDirection(), selection: Binding(
                             get: { settings.settings.direction },
                             set: { newDirection in
+                                // ENHANCED DEBUGGING: Trace direction picker changes
+                                let settingsManagerAddress = "\(Unmanaged.passUnretained(settings).toOpaque())"
+                                ProductionLogger.debug("SortSettingsView: Direction picker - Settings manager instance: \(settingsManagerAddress)")
+                                ProductionLogger.debug("SortSettingsView: Direction picker - Current direction: \(settings.settings.direction.displayName)")
+                                ProductionLogger.debug("SortSettingsView: Direction picker - User selected new direction: \(newDirection.displayName)")
+                                
                                 let newSettings = SortSettings(
                                     order: settings.settings.order,
                                     direction: newDirection,
                                     randomSeed: settings.settings.randomSeed
                                 )
+                                
+                                ProductionLogger.debug("SortSettingsView: Direction picker - About to save settings: \(newSettings)")
+                                ProductionLogger.debug("SortSettingsView: Direction picker - New settings direction: \(newSettings.direction.displayName)")
                                 settings.updateSettings(newSettings)
+                                
+                                // Verify what was actually saved to UserDefaults
+                                if let data = UserDefaults.standard.data(forKey: "SwiftPhotosSortSettings"),
+                                   let savedSettings = try? JSONDecoder().decode(SortSettings.self, from: data) {
+                                    ProductionLogger.debug("SortSettingsView: Direction picker - UserDefaults after save: \(savedSettings)")
+                                    ProductionLogger.debug("SortSettingsView: Direction picker - UserDefaults direction after save: \(savedSettings.direction.displayName)")
+                                } else {
+                                    ProductionLogger.debug("SortSettingsView: Direction picker - Failed to read back saved settings from UserDefaults")
+                                }
                             }
                         )) {
                             ForEach(SortSettings.SortDirection.allCases, id: \.self) { direction in
@@ -104,10 +148,10 @@ struct SortSettingsView: View {
             }
             
             // Current Settings Summary Section
-            SortSettingsSection(
-                title: "Current Settings",
+            SettingsComponentFactory.createSection(
+                title: L10n.SettingsString.currentSettings(),
                 icon: "info.circle",
-                description: "Summary of your current sort configuration"
+                description: L10n.SettingsString.currentSettingsDescription()
             ) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -130,15 +174,15 @@ struct SortSettingsView: View {
             }
             
             // Performance Information Section
-            SortSettingsSection(
-                title: "Performance Information",
+            SettingsComponentFactory.createSection(
+                title: L10n.SettingsString.performanceInformation(),
                 icon: "speedometer",
-                description: "How sorting affects slideshow performance"
+                description: L10n.SettingsString.performanceInformationDescription()
             ) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("💡")
-                        Text("Performance Tip")
+                        Text(L10n.UI.performanceTip)
                             .fontWeight(.medium)
                             .foregroundColor(.blue)
                     }
@@ -166,38 +210,48 @@ struct SortSettingsView: View {
         .padding(.horizontal, 32)
         .padding(.bottom, 32)
     }
-}
-
-/// Reusable settings section component for sort settings
-private struct SortSettingsSection<Content: View>: View {
-    let title: String
-    let icon: String
-    let description: String
-    let content: () -> Content
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.accentColor)
-                
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-            }
-            
-            if !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            content()
-        }
-        .padding(.vertical, 8)
+    // MARK: - Helper Methods
+    
+    /// Apply preset while preserving user's current direction preference (for order-only presets)
+    private func applyPresetPreservingDirection(_ preset: SortSettings) {
+        // ENHANCED DEBUGGING: Trace preset application with direction preservation
+        let currentDirection = settings.settings.direction
+        let presetDirection = preset.direction
+        
+        ProductionLogger.debug("SortSettingsView: Applying preset with direction preservation")
+        ProductionLogger.debug("SortSettingsView: Preset: \(preset.order.displayName) (default direction: \(presetDirection.displayName))")
+        ProductionLogger.debug("SortSettingsView: Current user direction: \(currentDirection.displayName)")
+        
+        // Create new settings that uses the preset's order but preserves user's direction
+        let newSettings = SortSettings(
+            order: preset.order,
+            direction: currentDirection, // Preserve user's current direction preference
+            randomSeed: preset.order == .random ? UInt64.random(in: 0...UInt64.max) : settings.settings.randomSeed
+        )
+        
+        ProductionLogger.debug("SortSettingsView: Final preset settings: order=\(newSettings.order.displayName), direction=\(newSettings.direction.displayName)")
+        settings.updateSettings(newSettings)
+    }
+    
+    /// Apply preset that explicitly overrides direction (for semantic presets like "Newest First")
+    private func applyPresetWithDirectionOverride(_ preset: SortSettings) {
+        // ENHANCED DEBUGGING: Trace preset application with direction override
+        let currentDirection = settings.settings.direction
+        let presetDirection = preset.direction
+        
+        ProductionLogger.debug("SortSettingsView: Applying preset with direction override")
+        ProductionLogger.debug("SortSettingsView: Preset: \(preset.order.displayName) → \(presetDirection.displayName)")
+        ProductionLogger.debug("SortSettingsView: Overriding user direction: \(currentDirection.displayName) → \(presetDirection.displayName)")
+        
+        // Use the preset exactly as defined (including its direction)
+        settings.updateSettings(preset)
+        
+        ProductionLogger.debug("SortSettingsView: Applied preset with override: order=\(preset.order.displayName), direction=\(preset.direction.displayName)")
     }
 }
+
+
 
 #Preview {
     SortSettingsView(settings: ModernSortSettingsManager())

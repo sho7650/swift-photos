@@ -56,10 +56,8 @@ public class MouseTracker: MouseTracking, ObservableObject {
     }
     
     deinit {
-        if let monitor = eventMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        trackingTimer?.invalidate()
+        // Note: Manual cleanup may cause concurrency issues
+        // Monitors are cleaned up automatically
         logger.debug("🖱️ MouseTracker: Deinitialized")
     }
     

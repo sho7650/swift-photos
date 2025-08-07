@@ -248,6 +248,13 @@ public class SettingsCategoryService: ObservableObject {
                 .systemShortcuts
             ].sorted { $0.displayOrder < $1.displayOrder }
             
+        case "Language":
+            return [
+                .languageSelection,
+                .regionalFormatting,
+                .localizationPreferences
+            ].sorted { $0.displayOrder < $1.displayOrder }
+            
         case "Advanced":
             return [
                 .debuggingOptions,

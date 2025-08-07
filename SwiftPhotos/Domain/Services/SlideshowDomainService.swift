@@ -17,6 +17,9 @@ public class SlideshowDomainService: ObservableObject {
         ProductionLogger.debug("SlideshowDomainService: Loading photos from repository...")
         ProductionLogger.debug("SlideshowDomainService: About to call repository.loadPhotos")
         
+        // Create local reference to avoid data race
+        let repository = self.repository
+        
         do {
             let photos = try await repository.loadPhotos(from: folderURL)
             ProductionLogger.debug("SlideshowDomainService: Loaded \(photos.count) photos")
@@ -24,7 +27,7 @@ public class SlideshowDomainService: ObservableObject {
             
             let slideshow = Slideshow(photos: photos, interval: interval, mode: mode)
             ProductionLogger.debug("SlideshowDomainService: Created slideshow successfully")
-            ProductionLogger.debug("SlideshowDomainService: Created slideshow successfully")
+            ProductionLogger.debug("SlideshowDomainService: Created slideshow details - photos.count: \(slideshow.photos.count), currentIndex: \(slideshow.currentIndex), count: \(slideshow.count), isEmpty: \(slideshow.isEmpty)")
             return slideshow
         } catch {
             ProductionLogger.error("SlideshowDomainService: Error in createSlideshow: \(error)")
@@ -34,16 +37,20 @@ public class SlideshowDomainService: ObservableObject {
     }
     
     public func loadImage(for photo: Photo) async throws -> Photo {
+        // Create local references to avoid data race
+        let cache = self.cache
+        let repository = self.repository
+        
         if let cachedImage = await cache.getCachedImage(for: photo.imageURL) {
             var updatedPhoto = photo
-            updatedPhoto.updateLoadState(.loaded(SendableImage(cachedImage)))
+            updatedPhoto.updateLoadState(.loaded(cachedImage))
             return updatedPhoto
         }
         
         let loadedPhoto = try await repository.loadImage(for: photo)
         
         if let image = loadedPhoto.loadState.image {
-            await cache.setCachedImage(image, for: photo.imageURL)
+            await cache.setCachedImage(SendableImage(image), for: photo.imageURL)
         }
         
         return loadedPhoto
