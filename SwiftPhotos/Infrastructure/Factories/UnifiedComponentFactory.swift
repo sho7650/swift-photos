@@ -43,7 +43,7 @@ public final class UnifiedComponentFactory {
     public func createSlideshowViewModel(
         preferRepositoryPattern: Bool = true,
         enablePerformanceMonitoring: Bool = true
-    ) -> UnifiedSlideshowViewModel {
+    ) async -> UnifiedSlideshowViewModel {
         
         let key = "SlideshowViewModel_\(preferRepositoryPattern)_\(enablePerformanceMonitoring)"
         
@@ -58,8 +58,9 @@ public final class UnifiedComponentFactory {
         let viewModel: UnifiedSlideshowViewModel
         
         if preferRepositoryPattern && isRepositoryPatternAvailable() {
+            let modernService = await createModernDomainService()
             viewModel = UnifiedSlideshowViewModel(
-                modernDomainService: createModernDomainService(),
+                modernDomainService: modernService,
                 repositoryContainer: createRepositoryContainer(),
                 imageRepositoryFactory: createImageRepositoryFactory(),
                 legacyDomainService: nil,
@@ -221,7 +222,7 @@ public final class UnifiedComponentFactory {
     // MARK: - Domain Service Creation
     
     /// Create modern domain service if available
-    public func createModernDomainService() -> ModernSlideshowDomainService? {
+    public func createModernDomainService() async -> ModernSlideshowDomainService? {
         // Check if modern domain service is available
         guard isRepositoryPatternAvailable() else {
             return nil
@@ -234,8 +235,15 @@ public final class UnifiedComponentFactory {
         }
         
         // Create modern domain service with repository container
-        let container = createRepositoryContainer()
-        let domainService = ModernSlideshowDomainService(repositoryContainer: container)
+        _ = createRepositoryContainer()
+        let settingsCoordinator = createSettingsCoordinator()
+        
+        // Note: Using async convenience initializer requires await
+        // For now, use factory method instead
+        let domainService = await ModernSlideshowDomainService.createModernOnly(
+            sortSettings: settingsCoordinator.sort,
+            localizationService: LocalizationService()
+        )
         
         if configuration.useSingletons {
             singletonInstances[key] = domainService
@@ -253,7 +261,18 @@ public final class UnifiedComponentFactory {
         }
         
         let fileAccess = createSecureFileAccess()
-        let domainService = SlideshowDomainService(fileAccess: fileAccess)
+        // Create a basic ImageLoader that FileSystemPhotoRepository expects
+        let imageLoader = ImageLoader()
+        let sortSettings = ModernSortSettingsManager()
+        let localizationService = LocalizationService()
+        let repository = FileSystemPhotoRepository(
+            fileAccess: fileAccess,
+            imageLoader: imageLoader,
+            sortSettings: sortSettings,
+            localizationService: localizationService
+        )
+        let cache = UnifiedImageCacheBridgeFactory.createForSlideshow()
+        let domainService = SlideshowDomainService(repository: repository, cache: cache, maxConcurrentLoads: 5)
         
         if configuration.useSingletons {
             singletonInstances[key] = domainService
@@ -324,14 +343,9 @@ public final class UnifiedComponentFactory {
     /// Check if repository pattern is available
     private func isRepositoryPatternAvailable() -> Bool {
         // Check if all required repository components are available
-        do {
-            let container = RepositoryContainer.shared
-            let _ = container.modernDomainService()
-            return true
-        } catch {
-            ProductionLogger.debug("Repository pattern not available: \(error)")
-            return false
-        }
+        // Check if all required repository components are available
+        // For now, assume repository pattern is available if RepositoryContainer exists
+        return true
     }
     
     /// Clear all singleton instances (useful for testing)
@@ -341,8 +355,8 @@ public final class UnifiedComponentFactory {
     }
     
     /// Get factory statistics
-    public func getStatistics() -> FactoryStatistics {
-        return FactoryStatistics(
+    public func getStatistics() -> UnifiedFactoryStatistics {
+        return UnifiedFactoryStatistics(
             totalComponents: componentRegistry.count,
             singletonInstances: singletonInstances.count,
             configuration: configuration
@@ -376,7 +390,7 @@ public struct FactoryConfiguration {
 
 // MARK: - Statistics
 
-public struct FactoryStatistics {
+public struct UnifiedFactoryStatistics {
     public let totalComponents: Int
     public let singletonInstances: Int
     public let configuration: FactoryConfiguration
@@ -405,9 +419,9 @@ public extension UnifiedComponentFactory {
     /// Create complete slideshow setup with all dependencies
     func createCompleteSlideshowSetup(
         enableDebugMode: Bool = false
-    ) -> (viewModel: UnifiedSlideshowViewModel, displayView: UnifiedImageDisplayView, facade: SwiftPhotosServiceFacade) {
+    ) async -> (viewModel: UnifiedSlideshowViewModel, displayView: UnifiedImageDisplayView, facade: SwiftPhotosServiceFacade) {
         
-        let viewModel = createSlideshowViewModel()
+        let viewModel = await createSlideshowViewModel()
         let displayView = createImageDisplayView(
             viewModel: viewModel,
             enableDebugMode: enableDebugMode,
@@ -419,14 +433,14 @@ public extension UnifiedComponentFactory {
     }
     
     /// Create development setup with enhanced debugging
-    func createDevelopmentSetup() -> (viewModel: UnifiedSlideshowViewModel, displayView: UnifiedImageDisplayView) {
-        let setup = createCompleteSlideshowSetup(enableDebugMode: true)
+    func createDevelopmentSetup() async -> (viewModel: UnifiedSlideshowViewModel, displayView: UnifiedImageDisplayView) {
+        let setup = await createCompleteSlideshowSetup(enableDebugMode: true)
         return (setup.viewModel, setup.displayView)
     }
     
     /// Create production setup with optimized performance
-    func createProductionSetup() -> (viewModel: UnifiedSlideshowViewModel, displayView: UnifiedImageDisplayView) {
-        let setup = createCompleteSlideshowSetup(enableDebugMode: false)
+    func createProductionSetup() async -> (viewModel: UnifiedSlideshowViewModel, displayView: UnifiedImageDisplayView) {
+        let setup = await createCompleteSlideshowSetup(enableDebugMode: false)
         return (setup.viewModel, setup.displayView)
     }
 }

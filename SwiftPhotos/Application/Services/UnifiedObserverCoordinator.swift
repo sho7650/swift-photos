@@ -71,10 +71,10 @@ public final class UnifiedObserverCoordinator {
     @discardableResult
     public func observeSettingsEvents(
         source: String = "UnknownSource",
-        handler: @escaping (SettingsChangeEvent) async -> Void
+        handler: @escaping (UnifiedSettingsChangeEvent) async -> Void
     ) -> UUID {
         return registerObserver(
-            eventType: SettingsChangeEvent.self,
+            eventType: UnifiedSettingsChangeEvent.self,
             source: source,
             priority: .normal,
             handler: handler
@@ -99,10 +99,10 @@ public final class UnifiedObserverCoordinator {
     @discardableResult
     public func observePerformanceEvents(
         source: String = "UnknownSource",
-        handler: @escaping (PerformanceEvent) async -> Void
+        handler: @escaping (UnifiedPerformanceEvent) async -> Void
     ) -> UUID {
         return registerObserver(
-            eventType: PerformanceEvent.self,
+            eventType: UnifiedPerformanceEvent.self,
             source: source,
             priority: .low,
             handler: handler
@@ -180,8 +180,8 @@ public final class UnifiedObserverCoordinator {
     
     /// Publish settings change event
     public func publishSettingsEvent(
-        category: SettingsChangeEvent.SettingsCategory,
-        action: SettingsChangeEvent.SettingsAction,
+        category: UnifiedSettingsChangeEvent.SettingsCategory,
+        action: UnifiedSettingsChangeEvent.SettingsAction,
         oldValue: Any? = nil,
         newValue: Any? = nil
     ) {
@@ -210,10 +210,10 @@ public final class UnifiedObserverCoordinator {
     
     /// Publish performance event
     public func publishPerformanceEvent(
-        metric: PerformanceEvent.MetricType,
+        metric: UnifiedPerformanceEvent.MetricType,
         value: Double,
         unit: String,
-        category: PerformanceEvent.PerformanceCategory
+        category: UnifiedPerformanceEvent.PerformanceCategory
     ) {
         let event = EventFactory.performance(
             metric: metric,
@@ -375,7 +375,7 @@ public final class UnifiedObserverCoordinator {
         eventCount += 1
         
         // Calculate average processing time
-        let metrics = await eventBus.getMetrics()
+        let metrics = await eventBus.getPerformanceMetrics()
         averageProcessingTime = metrics.averageProcessingTime
         
         // Emit performance event for monitoring
@@ -431,7 +431,7 @@ public final class UnifiedObserverCoordinator {
     
     private func handlePerformanceMetric(_ event: PerformanceEvent) async {
         // Track performance trends
-        if event.metric == .memoryUsage && event.value > 1024 * 1024 * 1024 { // 1GB
+        if event.metric == "memoryUsage" && event.value > 1024 * 1024 * 1024 { // 1GB
             ProductionLogger.warning("⚠️ High memory usage detected: \(event.value / 1024 / 1024)MB")
         }
     }
@@ -524,7 +524,7 @@ public extension UnifiedSlideshowViewModel {
         ProductionLogger.debug("🖼️ SlideshowViewModel: Photo \(event.action) for \(event.photoId)")
     }
     
-    func handleSettingsEvent(_ event: SettingsChangeEvent) async {
+    func handleSettingsEvent(_ event: UnifiedSettingsChangeEvent) async {
         // Handle settings events in ViewModel
         ProductionLogger.debug("⚙️ SlideshowViewModel: Settings \(event.action) in \(event.category)")
     }
@@ -543,7 +543,7 @@ public extension UIInteractionManager {
 }
 
 public extension PerformanceMetricsManager {
-    func handlePerformanceEvent(_ event: PerformanceEvent) async {
+    func handlePerformanceEvent(_ event: UnifiedPerformanceEvent) async {
         // Handle performance events
         ProductionLogger.debug("📊 PerformanceManager: \(event.metric) = \(event.value) \(event.unit)")
     }
