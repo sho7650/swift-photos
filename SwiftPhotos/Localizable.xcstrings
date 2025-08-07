@@ -3378,6 +3378,9 @@
     "Settings for %@ will be implemented here." : {
 
     },
+    "Settings View - To be implemented" : {
+
+    },
     "settings.about" : {
       "extractionState" : "stale",
       "localizations" : {
